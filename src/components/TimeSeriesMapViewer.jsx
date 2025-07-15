@@ -201,7 +201,7 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
       return {
         ...baseStyle,
         fillColor,
-        weight: 3,
+        weight: 1,
         color: "#000",
         fillOpacity: 0.9,
       };
@@ -538,7 +538,7 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
                   click: (e) => handleFeatureClick(feature, e),
                   mouseover: (e) => {
                     e.target.setStyle({
-                      weight: 3,
+                      weight: 1,
                       color: "#666",
                       fillOpacity: 0.9,
                     });

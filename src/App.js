@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 import MapChart from "./components/MapChart";
@@ -12,7 +12,6 @@ function StoryMapSection({ children, title, subtitle, id }) {
     threshold: 0.5,
     triggerOnce: false,
   });
-
   return (
     <section
       ref={ref}
@@ -27,13 +26,24 @@ function StoryMapSection({ children, title, subtitle, id }) {
         className="section-content"
         style={{ maxWidth: 1200, margin: "0 auto" }}
       >
-        {title && <h1 style={{ marginBottom: 8 }}>{title}</h1>}
+        {title && (
+          <h1
+            style={{
+              fontFamily: "Roboto, sans-serif",
+              marginBottom: 8,
+              color: "white",
+            }}
+          >
+            {title}
+          </h1>
+        )}
         {subtitle && (
           <h2
             style={{
+              fontFamily: "Roboto, sans-serif",
               marginBottom: 24,
               fontWeight: 400,
-              color: "#444",
+              color: "white",
             }}
           >
             {subtitle}
@@ -47,20 +57,36 @@ function StoryMapSection({ children, title, subtitle, id }) {
 
 function Header() {
   return (
-    <header className="main-header">
-      <div className="header-content">
+    <header className="header-pronatura">
+      <div className="header-container">
         <img
-          src="/logo.png" // Cambia por la ruta de tu logo
+          src="/logo.png"
           alt="Logo Tierra de Agaves"
-          className="logo"
+          className="header-logo"
         />
-        <nav>
-          <ul className="nav-list">
-            <li>Tierra de agaves Monitoreo</li>
-            <li className="active">Caracterización del área de estudio</li>
-            <li>Degradación funcional del paisaje</li>
-            <li>Cambio Climático</li>
-            <li>Plan de manejo integral del paisaje</li>
+        <nav className="header-nav">
+          <ul className="header-menu">
+            <li>
+              <a href="#">
+                <span className="menu-stack">
+                  Tierra de Agaves
+                  <br />
+                  Monitoreo
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href="#">Caracterización del área de estudio</a>
+            </li>
+            <li>
+              <a href="#">Degradación funcional del paisaje</a>
+            </li>
+            <li>
+              <a href="#">Cambio Climático</a>
+            </li>
+            <li>
+              <a href="#">Plan de manejo integral del paisaje</a>
+            </li>
           </ul>
         </nav>
       </div>
@@ -69,55 +95,9 @@ function Header() {
 }
 
 function CaracterizacionSeccion() {
-  const [activeTab, setActiveTab] = useState("climas");
-  const tabs = [
-    { key: "climas", label: "Distribución Climática" },
-    { key: "suelos", label: "Suelos" },
-    { key: "humedad", label: "Humedad" },
-    { key: "poblacion", label: "Población" },
-    { key: "series-tiempo", label: "Cambios de Uso de Suelo" },
-    { key: "raster-compare", label: "Potencial Productivo" },
-  ];
-
   return (
-    <StoryMapSection id="caracterizacion">
-      {/* Submenú solo aquí */}
-      <nav style={{ marginBottom: 24 }}>
-        <ul className="tabs-submenu">
-          {tabs.map((tab) => (
-            <li
-              key={tab.key}
-              className={activeTab === tab.key ? "active" : ""}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </li>
-          ))}
-        </ul>
-      </nav>
-      {/* Renderiza el mapa/tab seleccionado */}
-      {activeTab === "climas" && (
-        <MapChart
-          geoJsonUrl="/CLIMA.geojson"
-          categoriaCol="CLIMA"
-          hectareasCol="HECTARES"
-        />
-      )}
-      {activeTab === "suelos" && (
-        <MapChart
-          geoJsonUrl="/EDAFOLOGIA.geojson"
-          categoriaCol="SUELO"
-          hectareasCol="HAS_SUELO"
-        />
-      )}
-      {activeTab === "humedad" && (
-        <MapChart
-          geoJsonUrl="/HUMEDAD.geojson"
-          categoriaCol="HUMEDAD"
-          hectareasCol="HAS_SUELO"
-        />
-      )}
-      {activeTab === "poblacion" && (
+    <>
+      <StoryMapSection id="poblacion" title="Población">
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -126,15 +106,62 @@ function CaracterizacionSeccion() {
           borderColor="#333"
           borderWidth={0.4}
         />
-      )}
-      {activeTab === "series-tiempo" && (
+      </StoryMapSection>
+
+      <StoryMapSection id="pobreza" title="Pobreza">
+        <Heatmap
+          geojsonUrl="/POBREZA.geojson"
+          valueColumn="POBR20"
+          startColor="#ffffff"
+          endColor="#ff0000"
+          borderColor="#333"
+          borderWidth={0.4}
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="marginacion" title="Marginación">
+        <MapChart
+          geoJsonUrl="/MARGINACION.geojson"
+          categoriaCol="GM_2020"
+          hectareasCol="HAS_POLY"
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="climas" title="Distribución Climática">
+        <MapChart
+          geoJsonUrl="/CLIMA.geojson"
+          categoriaCol="CLIMA"
+          hectareasCol="HECTARES"
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="suelos" title="Edafología del Sitio">
+        <MapChart
+          geoJsonUrl="/EDAFOLOGIA.geojson"
+          categoriaCol="SUELO"
+          hectareasCol="HAS_SUELO"
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="humedad" title="Humedad">
+        <MapChart
+          geoJsonUrl="/HUMEDAD.geojson"
+          categoriaCol="HUMEDAD"
+          hectareasCol="HAS_SUELO"
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="series-tiempo" title="Cambios de Uso de Suelo">
         <TimeSeriesMapViewer
           initialCenter={[23.6345, -102.5528]}
           initialZoom={6}
         />
-      )}
-      {activeTab === "raster-compare" && <RasterSlideCompare />}
-    </StoryMapSection>
+      </StoryMapSection>
+
+      <StoryMapSection id="raster-compare" title="Potencial Productivo">
+        <RasterSlideCompare />
+      </StoryMapSection>
+    </>
   );
 }
 
@@ -142,7 +169,6 @@ function App() {
   return (
     <div className="App">
       <Header />
-
       <AnimatePresence>
         <CaracterizacionSeccion />
       </AnimatePresence>

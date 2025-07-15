@@ -8,17 +8,114 @@ html,
   height: 100%;
   overflow-x: hidden; /* Evita scroll horizontal */
 }
+/* === Estilo Navbar Tierra de Agaves === */
+.header-pronatura {
+  height: 98px;
+  background-color: #fff8e6;
+  padding: 8px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
 
-/* Asegura que las secciones ocupen todo el espacio */
+.header-container {
+  z-index: 1000;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-logo {
+  z-index: 1000;
+  height: 48px;
+  object-fit: contain;
+}
+
+.header-nav {
+  z-index: 1000;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.header-menu {
+  z-index: 1000;
+  list-style: none;
+  display: flex;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.header-menu li a {
+  z-index: 1000;
+  text-decoration: none;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #2a2a2a;
+  transition: color 0.3s ease;
+}
+
+.header-menu li a:hover {
+  color: #00552e;
+}
+.menu-stack {
+  display: inline-block;
+  line-height: 1.2;
+  text-align: center;
+}
+/* Altura fija de 88px en escritorio */
+@media (min-width: 1024px) {
+  .header-pronatura {
+    height: 88px;
+  }
+
+  .header-container {
+    height: 100%;
+  }
+
+  .header-logo {
+    height: 60px; /* Ajusta si el logo se ve muy grande o pequeño */
+  }
+
+  .header-menu li {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-nav {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .header-menu {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .header-menu li a {
+    font-size: 16px;
+  }
+}
+
 .story-section {
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-}
-
-.App {
-  text-align: center;
-  height: 100vh;
 }
 
 /* Estilo para el contenedor del mapa */
@@ -32,7 +129,7 @@ html,
   left: 0;
   right: 0;
   width: 100% !important;
-  z-index: 1000;
+  z-index: 999;
   pointer-events: auto;
 }
 
@@ -46,12 +143,6 @@ html,
   background: #1e3c20;
 }
 
-.App {
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  height: 100vh;
-}
-
 .section-content {
   max-width: 100%;
   margin: 0 auto;
@@ -59,10 +150,11 @@ html,
 
 .main-header {
   position: sticky;
+  font-family: Roboto;
   top: 0;
   width: 100%;
   background: #fff8e6;
-  z-index: 1000;
+  z-index: 999;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   padding: 0.5rem 0;
 }
@@ -74,35 +166,6 @@ html,
   margin: 0 auto;
   padding: 0 2vw;
   flex-wrap: wrap;
-}
-
-.logo {
-  height: 36px;
-  margin-right: 1rem;
-}
-
-.nav-list {
-  display: flex;
-  gap: 1rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 1rem;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-.nav-list li {
-  cursor: pointer;
-  padding: 0.5rem 0.8rem;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.nav-list li.active,
-.nav-list li:hover {
-  background: #f0e6d6;
-  font-weight: bold;
 }
 
 /* Main content */
@@ -135,8 +198,9 @@ html,
 .mapchart-maparea {
   width: 100% !important;
   min-height: 40vh;
-  height: 50vh !important;
+  height: 100% !important;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 
 /* Opcional: para que el contenido no se recorte en pantallas pequeñas */
@@ -170,6 +234,7 @@ html,
 /* Puedes poner esto en src/components/TimeSeriesMapViewer.css */
 .tsmv-container {
   display: flex;
+  height: 70vh;
 }
 
 .tsmv-sidebar {
@@ -212,7 +277,7 @@ html,
   opacity: 1 !important;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  z-index: 1001;
+  z-index: 999;
   padding: 8px 0 !important;
   min-width: 180px;
   margin-top: 4px;
@@ -280,7 +345,7 @@ html,
   background: rgba(255, 255, 255, 0.97);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 999;
 }
 
 @media (max-width: 900px) {
@@ -383,7 +448,7 @@ button {
   position: absolute;
   top: 20px;
   left: 20px;
-  z-index: 1000;
+  z-index: 999;
   min-width: 140px;
   max-width: 200px;
 }

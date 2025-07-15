@@ -99,7 +99,7 @@ const MapChart = ({
     weight: 1,
     opacity: 1,
     color: "#333",
-    fillOpacity: 0.7,
+    fillOpacity: 0.6,
   });
 
   // Estilo para las features según selección
@@ -122,7 +122,7 @@ const MapChart = ({
         return {
           ...baseStyle,
           fillColor: colorScale(feature.properties[categoriaCol]),
-          weight: 3,
+          weight: 1,
           color: "#000",
         };
       }
@@ -365,8 +365,8 @@ const MapChart = ({
           ref={mapRef}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; OpenStreetMap contributors"
+            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
           />
           {geoData && (
             <GeoJSON

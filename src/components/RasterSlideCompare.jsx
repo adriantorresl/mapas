@@ -104,7 +104,7 @@ const RasterSlideCompare = () => {
   ];
 
   return (
-    <div style={{ height: "auto", width: "auto", position: "relative" }}>
+    <div style={{ height: "70vh", width: "auto", position: "relative" }}>
       {/* Título de comparación */}
       <div
         style={{
