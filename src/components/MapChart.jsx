@@ -42,6 +42,9 @@ const MapChart = ({
   geoJsonUrl,
   categoriaCol = "CLIMA",
   hectareasCol = "HECTARES",
+  showDelimitationControl = true,
+  showPaletteControl = true,
+  showChart = true,
 }) => {
   const [geoData, setGeoData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -75,7 +78,6 @@ const MapChart = ({
       });
   }, [geoJsonUrl]);
 
-  // Agrupar features por la delimitación seleccionada
   const groupedFeatures = useMemo(() => {
     if (!geoData || selectedDelimitation === "all") return null;
 
@@ -94,7 +96,6 @@ const MapChart = ({
     return groups;
   }, [geoData, selectedDelimitation]);
 
-  // Estilo base para los polígonos
   const getBaseStyle = () => ({
     weight: 1,
     opacity: 1,
@@ -102,7 +103,6 @@ const MapChart = ({
     fillOpacity: 0.6,
   });
 
-  // Estilo para las features según selección
   const getFeatureStyle = (feature) => {
     const baseStyle = getBaseStyle();
 
@@ -115,9 +115,7 @@ const MapChart = ({
 
     const areaValue = feature.properties[selectedDelimitation];
 
-    // Si hay un área seleccionada
     if (selectedArea) {
-      // Si esta feature pertenece al área seleccionada
       if (areaValue === selectedArea) {
         return {
           ...baseStyle,
@@ -126,7 +124,6 @@ const MapChart = ({
           color: "#000",
         };
       }
-      // Otras features
       return {
         ...baseStyle,
         fillColor: "transparent",
@@ -135,21 +132,18 @@ const MapChart = ({
       };
     }
 
-    // Sin selección - mostrar todas con colores
     return {
       ...baseStyle,
       fillColor: colorScale(feature.properties[categoriaCol]),
     };
   };
 
-  // Manejar clic en las features
   const onFeatureClick = (e) => {
     if (selectedDelimitation !== "all") {
       const clickedFeature = e.target.feature;
       const clickedArea = clickedFeature.properties[selectedDelimitation];
       setSelectedArea(clickedArea);
 
-      // Zoom al grupo completo
       if (groupedFeatures && groupedFeatures[clickedArea]) {
         const bounds = L.geoJSON(groupedFeatures[clickedArea]).getBounds();
         mapRef.current.fitBounds(bounds);
@@ -157,7 +151,6 @@ const MapChart = ({
     }
   };
 
-  // Añadir eventos a cada feature
   const onEachFeature = (feature, layer) => {
     if (selectedDelimitation !== "all") {
       layer.on({
@@ -176,7 +169,6 @@ const MapChart = ({
     }
   };
 
-  // Resetear vista
   const resetView = () => {
     setSelectedArea(null);
     setHighlightedAreas([]);
@@ -186,7 +178,6 @@ const MapChart = ({
     }
   };
 
-  // Datos para el gráfico
   const chartData = useMemo(() => {
     if (!geoData) return null;
 
@@ -258,111 +249,64 @@ const MapChart = ({
         minHeight: 400,
       }}
     >
-      {/* Controles */}
       <div className="mapchart-controls">
-        <div>
-          <label
-            htmlFor="delimitationSelect"
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              fontWeight: 500,
-              fontSize: "0.98em",
-            }}
-          >
-            Delimitar por:
-          </label>
-          <select
-            id="delimitationSelect"
-            value={selectedDelimitation}
-            onChange={(e) => {
-              setSelectedDelimitation(e.target.value);
-              resetView();
-            }}
-            style={{
-              minWidth: 120,
-              maxWidth: 180,
-              padding: "4px 8px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              fontSize: "0.98em",
-              background: "#fafafa",
-              marginBottom: 8,
-            }}
-          >
-            {DELIMITATION_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showDelimitationControl && (
+          <div>
+            <label htmlFor="delimitationSelect" style={{ ...styles.label }}>
+              Delimitar por:
+            </label>
+            <select
+              id="delimitationSelect"
+              value={selectedDelimitation}
+              onChange={(e) => {
+                setSelectedDelimitation(e.target.value);
+                resetView();
+              }}
+              style={{ ...styles.select }}
+            >
+              {DELIMITATION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-        <div>
-          <label
-            htmlFor="paletteSelect"
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              fontWeight: 500,
-              fontSize: "0.98em",
-            }}
-          >
-            Paleta de colores:
-          </label>
-          <select
-            id="paletteSelect"
-            value={selectedPaletteName}
-            onChange={(e) => setSelectedPaletteName(e.target.value)}
-            style={{
-              minWidth: 120,
-              maxWidth: 180,
-              padding: "4px 8px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              fontSize: "0.98em",
-              background: "#fafafa",
-              marginBottom: 8,
-            }}
-          >
-            {Object.keys(paletteOptions).map((name) => (
-              <option key={name} value={name}>
-                {name.replace("scheme", "")}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showPaletteControl && (
+          <div>
+            <label htmlFor="paletteSelect" style={{ ...styles.label }}>
+              Paleta de colores:
+            </label>
+            <select
+              id="paletteSelect"
+              value={selectedPaletteName}
+              onChange={(e) => setSelectedPaletteName(e.target.value)}
+              style={{ ...styles.select }}
+            >
+              {Object.keys(paletteOptions).map((name) => (
+                <option key={name} value={name}>
+                  {name.replace("scheme", "")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {selectedArea && (
-          <button
-            onClick={resetView}
-            style={{
-              minWidth: 120,
-              maxWidth: 180,
-              padding: "6px 10px",
-              backgroundColor: "#f5f5f5",
-              color: "#1976d2",
-              border: "1px solid #bdbdbd",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.98em",
-              marginTop: 6,
-              transition: "background 0.2s, color 0.2s",
-            }}
-          >
+          <button onClick={resetView} style={{ ...styles.button }}>
             Mostrar todo
           </button>
         )}
       </div>
 
-      {/* Mapa */}
       <div className="mapchart-maparea">
         <MapContainer
           center={[23.6345, -102.5528]}
           zoom={5}
           style={{ height: "100%", width: "100%" }}
           ref={mapRef}
+          zoomControl={false}
         >
           <TileLayer
             url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -380,8 +324,7 @@ const MapChart = ({
         </MapContainer>
       </div>
 
-      {/* Gráfico */}
-      {chartData && (
+      {showChart && chartData && (
         <div className="mapchart-chart">
           <h3 style={{ marginBottom: "12px", fontSize: "16px" }}>
             {selectedArea
@@ -395,6 +338,39 @@ const MapChart = ({
       )}
     </div>
   );
+};
+
+const styles = {
+  label: {
+    display: "block",
+    marginBottom: "4px",
+    fontWeight: 500,
+    fontSize: "0.98em",
+  },
+  select: {
+    minWidth: 120,
+    maxWidth: 180,
+    padding: "4px 8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "0.98em",
+    background: "#fafafa",
+    marginBottom: 8,
+  },
+  button: {
+    minWidth: 120,
+    maxWidth: 180,
+    padding: "6px 10px",
+    backgroundColor: "#f5f5f5",
+    color: "#1976d2",
+    border: "1px solid #bdbdbd",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: 500,
+    fontSize: "0.98em",
+    marginTop: 6,
+    transition: "background 0.2s, color 0.2s",
+  },
 };
 
 export default MapChart;

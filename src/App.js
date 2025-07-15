@@ -5,6 +5,8 @@ import MapChart from "./components/MapChart";
 import Heatmap from "./components/Heatmap";
 import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
+import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
+import FadeInBox from "./components/FadeInBox";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id }) {
@@ -97,7 +99,16 @@ function Header() {
 function CaracterizacionSeccion() {
   return (
     <>
-      <StoryMapSection id="poblacion" title="Población">
+      <StoryMapSection id="bioclimaticos" title="Área de estudio">
+        <MapChart
+          geoJsonUrl="/CLIMA.geojson"
+          categoriaCol="PAISAJE"
+          hectareasCol="HECTARES"
+          showDelimitationControl={false}
+          showPaletteControl={true}
+        />
+      </StoryMapSection>
+      <StoryMapSection id="poblacion" title="Distribución de la Población">
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -108,22 +119,37 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="pobreza" title="Pobreza">
+      <StoryMapSection id="pobreza" title="Pobreza en el Área de Estudio">
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POBR20"
-          startColor="#ffffff"
-          endColor="#ff0000"
+          legendTitle="Índice de Pobreza (%)"
+          valueUnit="%"
+          colorRamp={[
+            "#03fc20",
+            "#fcf403",
+            "#fcb503",
+            "#fc7703",
+            "#fc1c03",
+            "#8c0606",
+          ]}
           borderColor="#333"
           borderWidth={0.4}
         />
       </StoryMapSection>
 
       <StoryMapSection id="marginacion" title="Marginación">
-        <MapChart
-          geoJsonUrl="/MARGINACION.geojson"
-          categoriaCol="GM_2020"
-          hectareasCol="HAS_POLY"
+        <GeoJsonLayerWithLegend
+          nombreCapa="Grado de Marginación"
+          atributoValor="GM_2020"
+          nombreArchivo="MARGINACION.geojson"
+          coloresPorValor={`{
+            "Muy bajo": "#038a24",
+            "Bajo": "#1bde4b",
+            "Medio": "#f3fc44",
+            "Alto": "#fcaa44",
+            "Muy alto": "#d11919"
+          }`}
         />
       </StoryMapSection>
 

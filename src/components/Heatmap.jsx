@@ -6,11 +6,14 @@ import "leaflet/dist/leaflet.css";
 const Heatmap = ({
   geojsonUrl,
   valueColumn,
-  startColor = "#ffeda0",
+  colorRamp = null, // ✅ Rampa personalizada opcional
+  startColor = "#ffeda0", // ✅ Fallback si no se pasa colorRamp
   endColor = "#f03b20",
   style = { height: "100vh", width: "100%" },
   borderColor = "#333",
   borderWidth = 1,
+  legendTitle = "Población Total", // ✅ Título personalizable
+  valueUnit = "habitantes", // ✅ Unidad personalizable
 }) => {
   const [geojsonData, setGeojsonData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,17 +21,7 @@ const Heatmap = ({
   const mapRef = useRef(null);
   const geojsonRef = useRef(null);
 
-  // Genera una rampa de colores entre startColor y endColor
-  const generateColorRamp = (steps = 10) => {
-    const colors = [];
-    for (let i = 0; i < steps; i++) {
-      const ratio = i / (steps - 1);
-      colors.push(interpolateColor(startColor, endColor, ratio));
-    }
-    return colors;
-  };
-
-  // Función para interpolar colores
+  // Interpolación de colores entre dos extremos
   const interpolateColor = (color1, color2, factor) => {
     const hex = (color) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
@@ -49,6 +42,17 @@ const Heatmap = ({
     );
 
     return `#${result.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+  };
+
+  // Genera la rampa si no se pasa directamente como prop
+  const generateColorRamp = (steps = 10) => {
+    if (colorRamp && Array.isArray(colorRamp)) return colorRamp;
+    const colors = [];
+    for (let i = 0; i < steps; i++) {
+      const ratio = i / (steps - 1);
+      colors.push(interpolateColor(startColor, endColor, ratio));
+    }
+    return colors;
   };
 
   useEffect(() => {
@@ -72,7 +76,6 @@ const Heatmap = ({
     if (geojsonUrl) fetchGeoJSON();
   }, [geojsonUrl]);
 
-  // Zoom to bounds cuando los datos están listos
   useEffect(() => {
     if (geojsonData && mapRef.current && geojsonRef.current) {
       const bounds = geojsonRef.current.getBounds();
@@ -80,15 +83,25 @@ const Heatmap = ({
     }
   }, [geojsonData]);
 
-  // Calcula valores para la leyenda y el mapa
   const values = geojsonData
     ? geojsonData.features
         .map((f) => f.properties[valueColumn])
         .filter((val) => typeof val === "number")
     : [];
+
   const minValue = values.length ? Math.min(...values) : 0;
   const maxValue = values.length ? Math.max(...values) : 0;
-  const colorRamp = generateColorRamp();
+  const ramp = generateColorRamp();
+
+  const getColor = (value, min, max, ramp) => {
+    if (min === max) return ramp[0];
+    const normalized = (value - min) / (max - min);
+    const index = Math.min(
+      Math.floor(normalized * ramp.length),
+      ramp.length - 1
+    );
+    return ramp[index];
+  };
 
   const renderHeatmap = () => {
     if (!geojsonData || !valueColumn) return null;
@@ -96,23 +109,13 @@ const Heatmap = ({
     const styleFeature = (feature) => {
       const value = feature.properties[valueColumn];
       return {
-        fillColor: getColor(value, minValue, maxValue, colorRamp),
+        fillColor: getColor(value, minValue, maxValue, ramp),
         weight: borderWidth,
         opacity: 1,
         color: borderColor,
         dashArray: "3",
         fillOpacity: 0.7,
       };
-    };
-
-    const getColor = (value, min, max, ramp) => {
-      if (min === max) return ramp[0];
-      const normalized = (value - min) / (max - min);
-      const index = Math.min(
-        Math.floor(normalized * ramp.length),
-        ramp.length - 1
-      );
-      return ramp[index];
     };
 
     return (
@@ -125,7 +128,7 @@ const Heatmap = ({
             `
             <div>
               <strong>${feature.properties.NOMGEO || "Municipio"}</strong><br/>
-              ${feature.properties[valueColumn]} habitantes
+              ${feature.properties[valueColumn]} ${valueUnit}
             </div>
           `,
             {
@@ -145,6 +148,7 @@ const Heatmap = ({
         ref={mapRef}
         center={[0, 0]}
         zoom={2}
+        zoomControl={false}
         style={style}
         whenCreated={(map) => {
           mapRef.current = map;
@@ -169,7 +173,6 @@ const Heatmap = ({
         </div>
       )}
 
-      {/* Leyenda de simbología */}
       {geojsonData && (
         <div
           style={{
@@ -186,17 +189,17 @@ const Heatmap = ({
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: 6 }}>
-            Población Total
+            {legendTitle}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span>{minValue}</span>
             <div style={{ flex: 1, height: 16, display: "flex" }}>
-              {colorRamp.map((color, i) => (
+              {ramp.map((color, i) => (
                 <div
                   key={i}
                   style={{
                     background: color,
-                    width: `${100 / colorRamp.length}%`,
+                    width: `${100 / ramp.length}%`,
                     height: "100%",
                   }}
                 />

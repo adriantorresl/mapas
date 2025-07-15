@@ -178,7 +178,7 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
 
   // Estilo base para los polígonos
   const getBaseStyle = () => ({
-    weight: 1,
+    weight: 0.5,
     opacity: 1,
     color: "#555",
     fillOpacity: 0.7,
@@ -522,8 +522,8 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
           }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
+            attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
           />
           {geoData && (
             <GeoJSON

@@ -40,12 +40,14 @@ const RasterComparison = ({ species }) => {
       const layer1 = new GeoRasterLayer({
         georaster: r1,
         pixelValuesToColorFn: ([val]) => getColorRamp(val),
+        resolution: 256,
         opacity: 1,
       });
 
       const layer2 = new GeoRasterLayer({
         georaster: r2,
         pixelValuesToColorFn: ([val]) => getColorRamp(val),
+        resolution: 256,
         opacity: 1,
       });
 
@@ -190,11 +192,10 @@ const RasterSlideCompare = () => {
         zoom={5}
         style={{ height: "auto", width: "auto" }}
         zoomControl={false}
-        dragging={false}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+          attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
         />
         <RasterComparison species={selectedSpecies} />
       </MapContainer>
