@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 import MapChart from "./components/MapChart";
@@ -7,6 +7,7 @@ import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import FadeInBox from "./components/FadeInBox";
+import RasterViewer from "./components/RasterViewer";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id }) {
@@ -57,7 +58,7 @@ function StoryMapSection({ children, title, subtitle, id }) {
   );
 }
 
-function Header() {
+function Header({ onNavigate }) {
   return (
     <header className="header-pronatura">
       <div className="header-container">
@@ -69,7 +70,7 @@ function Header() {
         <nav className="header-nav">
           <ul className="header-menu">
             <li>
-              <a href="#">
+              <a href="#" onClick={() => onNavigate("caracterizacion")}>
                 <span className="menu-stack">
                   Tierra de Agaves
                   <br />
@@ -78,10 +79,14 @@ function Header() {
               </a>
             </li>
             <li>
-              <a href="#">Caracterización del área de estudio</a>
+              <a href="#" onClick={() => onNavigate("caracterizacion")}>
+                Caracterización del área de estudio
+              </a>
             </li>
             <li>
-              <a href="#">Degradación funcional del paisaje</a>
+              <a href="#" onClick={() => onNavigate("degradacion")}>
+                Degradación funcional del paisaje
+              </a>
             </li>
             <li>
               <a href="#">Cambio Climático</a>
@@ -108,6 +113,7 @@ function CaracterizacionSeccion() {
           showPaletteControl={true}
         />
       </StoryMapSection>
+
       <StoryMapSection id="poblacion" title="Distribución de la Población">
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
@@ -191,12 +197,68 @@ function CaracterizacionSeccion() {
   );
 }
 
+function DegradacionSeccion() {
+  return (
+    <>
+      <StoryMapSection id="erosion" title="Pérdida de Suelo por Erosión">
+        <RasterViewer
+          fileName="reprojected_USLE_Tendencia.tif"
+          colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
+          legendItems={[
+            { label: "Muy baja", color: "#004a13" },
+            { label: "Media", color: "#41b963" },
+            { label: "Alta", color: "#fff200" },
+            { label: "Muy Alta", color: "#dc0b00" },
+          ]}
+        />
+      </StoryMapSection>
+
+      <StoryMapSection
+        id="nutrientes"
+        title="Disponibilidad de Nutrientes"
+      ></StoryMapSection>
+
+      <StoryMapSection
+        id="carbono"
+        title="Almacenamiento de Carbono"
+      ></StoryMapSection>
+
+      <StoryMapSection
+        id="polinizadores"
+        title="Hábitat para Polinizadores"
+      ></StoryMapSection>
+
+      <StoryMapSection
+        id="climas-degradacion"
+        title="Distribución Climática"
+      ></StoryMapSection>
+
+      <StoryMapSection
+        id="suelos-degradacion"
+        title="Edafología del Sitio"
+      ></StoryMapSection>
+
+      <StoryMapSection
+        id="humedad-degradacion"
+        title="Humedad"
+      ></StoryMapSection>
+    </>
+  );
+}
+
 function App() {
+  const [seccionActiva, setSeccionActiva] = useState("caracterizacion");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [seccionActiva]);
+
   return (
     <div className="App">
-      <Header />
+      <Header onNavigate={setSeccionActiva} />
       <AnimatePresence>
-        <CaracterizacionSeccion />
+        {seccionActiva === "caracterizacion" && <CaracterizacionSeccion />}
+        {seccionActiva === "degradacion" && <DegradacionSeccion />}
       </AnimatePresence>
     </div>
   );
