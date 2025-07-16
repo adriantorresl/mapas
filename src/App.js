@@ -8,6 +8,7 @@ import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import FadeInBox from "./components/FadeInBox";
 import RasterViewer from "./components/RasterViewer";
+import SideBySideRasters from "./components/SideBySideRasters";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id }) {
@@ -196,6 +197,44 @@ function CaracterizacionSeccion() {
     </>
   );
 }
+function NutrientesSection() {
+  const [capaActiva, setCapaActiva] = useState("N");
+
+  return (
+    <StoryMapSection id="nutrientes" title="Disponibilidad de Nutrientes">
+      <div style={{ marginBottom: 10 }}>
+        <button onClick={() => setCapaActiva("N")} style={{ marginRight: 10 }}>
+          Ver Nitrógeno
+        </button>
+        <button onClick={() => setCapaActiva("P")}>Ver Fósforo</button>
+      </div>
+
+      {capaActiva === "N" && (
+        <RasterViewer
+          fileName="reprojected_Tend_N.tif"
+          colorMap="0:#004a13,1:#fff200,2:#41b963,3:#dc0b00"
+          legendItems={[
+            { label: "Muy baja", color: "#004a13" },
+            { label: "Media", color: "#fff200" },
+            { label: "Alta", color: "#dc0b00" },
+          ]}
+        />
+      )}
+
+      {capaActiva === "P" && (
+        <RasterViewer
+          fileName="reprojected_tend_P.tif"
+          colorMap="0:#004a13,1:#fff200,2:#dc0b00"
+          legendItems={[
+            { label: "Baja", color: "#004a13" },
+            { label: "Media", color: "#fff200" },
+            { label: "Alta", color: "#dc0b00" },
+          ]}
+        />
+      )}
+    </StoryMapSection>
+  );
+}
 
 function DegradacionSeccion() {
   return (
@@ -213,35 +252,28 @@ function DegradacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection
-        id="nutrientes"
-        title="Disponibilidad de Nutrientes"
-      ></StoryMapSection>
+      <NutrientesSection />
 
-      <StoryMapSection
-        id="carbono"
-        title="Almacenamiento de Carbono"
-      ></StoryMapSection>
+      <StoryMapSection id="carbono" title="Almacenamiento de Carbono">
+        <RasterViewer
+          fileName="reprojected_tend_co2.tif"
+          colorMap="0:#004a13,1:#fff200,2:#dc0b00"
+          legendItems={[
+            { label: "Bajo", color: "#004a13" },
+            { label: "Medio", color: "#fff200" },
+            { label: "Alto", color: "#dc0b00" },
+          ]}
+        />
+      </StoryMapSection>
 
-      <StoryMapSection
-        id="polinizadores"
-        title="Hábitat para Polinizadores"
-      ></StoryMapSection>
-
-      <StoryMapSection
-        id="climas-degradacion"
-        title="Distribución Climática"
-      ></StoryMapSection>
-
-      <StoryMapSection
-        id="suelos-degradacion"
-        title="Edafología del Sitio"
-      ></StoryMapSection>
-
-      <StoryMapSection
-        id="humedad-degradacion"
-        title="Humedad"
-      ></StoryMapSection>
+      <StoryMapSection id="polinizadores" title="Hábitat para Polinizadores">
+        <SideBySideRasters
+          leftFileName="reprojected_abundance_total_primavera.tif"
+          rightFileName="reprojected_abundance_total_verano.tif"
+          startColor="#004a13"
+          endColor="#dc0b00"
+        />
+      </StoryMapSection>
     </>
   );
 }
