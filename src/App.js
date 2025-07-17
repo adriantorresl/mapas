@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 import MapChart from "./components/MapChart";
@@ -8,6 +8,8 @@ import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import FadeInBox from "./components/FadeInBox";
 import CardsOverlay from "./components/CardsOverlay";
+import RasterViewer from "./components/RasterViewer";
+import SideBySideRasters from "./components/SideBySideRasters";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
@@ -114,7 +116,7 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
   );
 }
 
-function Header() {
+function Header({ onNavigate }) {
   return (
     <header className="header-pronatura">
       <div className="header-container">
@@ -126,7 +128,7 @@ function Header() {
         <nav className="header-nav">
           <ul className="header-menu">
             <li>
-              <a href="#">
+              <a href="#" onClick={() => onNavigate("caracterizacion")}>
                 <span className="menu-stack">
                   Tierra de Agaves
                   <br />
@@ -135,10 +137,14 @@ function Header() {
               </a>
             </li>
             <li>
-              <a href="#">Caracterización del área de estudio</a>
+              <a href="#" onClick={() => onNavigate("caracterizacion")}>
+                Caracterización del área de estudio
+              </a>
             </li>
             <li>
-              <a href="#">Degradación funcional del paisaje</a>
+              <a href="#" onClick={() => onNavigate("degradacion")}>
+                Degradación funcional del paisaje
+              </a>
             </li>
             <li>
               <a href="#">Cambio Climático</a>
@@ -303,13 +309,100 @@ function CaracterizacionSeccion() {
     </>
   );
 }
+function NutrientesSection() {
+  const [capaActiva, setCapaActiva] = useState("N");
+
+  return (
+    <StoryMapSection id="nutrientes" title="Disponibilidad de Nutrientes">
+      <div style={{ marginBottom: 10 }}>
+        <button onClick={() => setCapaActiva("N")} style={{ marginRight: 10 }}>
+          Ver Nitrógeno
+        </button>
+        <button onClick={() => setCapaActiva("P")}>Ver Fósforo</button>
+      </div>
+
+      {capaActiva === "N" && (
+        <RasterViewer
+          fileName="reprojected_Tend_N.tif"
+          colorMap="0:#004a13,1:#fff200,2:#41b963,3:#dc0b00"
+          legendItems={[
+            { label: "Muy baja", color: "#004a13" },
+            { label: "Media", color: "#fff200" },
+            { label: "Alta", color: "#dc0b00" },
+          ]}
+        />
+      )}
+
+      {capaActiva === "P" && (
+        <RasterViewer
+          fileName="reprojected_tend_P.tif"
+          colorMap="0:#004a13,1:#fff200,2:#dc0b00"
+          legendItems={[
+            { label: "Baja", color: "#004a13" },
+            { label: "Media", color: "#fff200" },
+            { label: "Alta", color: "#dc0b00" },
+          ]}
+        />
+      )}
+    </StoryMapSection>
+  );
+}
+
+function DegradacionSeccion() {
+  return (
+    <>
+      <StoryMapSection id="erosion" title="Pérdida de Suelo por Erosión">
+        <RasterViewer
+          fileName="reprojected_USLE_Tendencia.tif"
+          colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
+          legendItems={[
+            { label: "Muy baja", color: "#004a13" },
+            { label: "Media", color: "#41b963" },
+            { label: "Alta", color: "#fff200" },
+            { label: "Muy Alta", color: "#dc0b00" },
+          ]}
+        />
+      </StoryMapSection>
+
+      <NutrientesSection />
+
+      <StoryMapSection id="carbono" title="Almacenamiento de Carbono">
+        <RasterViewer
+          fileName="reprojected_tend_co2.tif"
+          colorMap="0:#004a13,1:#fff200,2:#dc0b00"
+          legendItems={[
+            { label: "Bajo", color: "#004a13" },
+            { label: "Medio", color: "#fff200" },
+            { label: "Alto", color: "#dc0b00" },
+          ]}
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="polinizadores" title="Hábitat para Polinizadores">
+        <SideBySideRasters
+          leftFileName="reprojected_abundance_total_primavera.tif"
+          rightFileName="reprojected_abundance_total_verano.tif"
+          startColor="#004a13"
+          endColor="#dc0b00"
+        />
+      </StoryMapSection>
+    </>
+  );
+}
 
 function App() {
+  const [seccionActiva, setSeccionActiva] = useState("caracterizacion");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [seccionActiva]);
+
   return (
     <div className="App">
-      <Header />
+      <Header onNavigate={setSeccionActiva} />
       <AnimatePresence>
-        <CaracterizacionSeccion />
+        {seccionActiva === "caracterizacion" && <CaracterizacionSeccion />}
+        {seccionActiva === "degradacion" && <DegradacionSeccion />}
       </AnimatePresence>
     </div>
   );
