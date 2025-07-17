@@ -7,28 +7,74 @@ import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import FadeInBox from "./components/FadeInBox";
+import CardsOverlay from "./components/CardsOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
 import "./App.css";
 
-function StoryMapSection({ children, title, subtitle, id }) {
+function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: false,
   });
+  
+  const [cardsCompleted, setCardsCompleted] = React.useState(false);
+  const [cardsHidden, setCardsHidden] = React.useState(false);
+
+  const handleAllCardsCompleted = React.useCallback(() => {
+    setCardsCompleted(true);
+  }, []);
+
+  const handleCardsHidden = React.useCallback(() => {
+    setCardsHidden(true);
+  }, []);
+
+  // Reset cuando la sección sale de vista o cuando cambia a una nueva sección con cards
+  React.useEffect(() => {
+    if (!inView && cards.length > 0) {
+      setCardsCompleted(false);
+      setCardsHidden(false); // Reset cuando sale de vista
+    }
+    // Cuando la sección entra en vista y tiene cards, asegurar que no estén marcadas como completadas
+    if (inView && cards.length > 0 && cardsCompleted) {
+      setCardsCompleted(false);
+      setCardsHidden(false); // Reset cuando vuelve a entrar
+    }
+  }, [inView, cards.length, cardsCompleted]);
+
+  // Si no hay cards, marcar como completado inmediatamente
+  React.useEffect(() => {
+    if (cards.length === 0) {
+      setCardsCompleted(true);
+    } else {
+      setCardsCompleted(false);
+      setCardsHidden(false);
+    }
+  }, [cards.length]);
+
+  // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
+  const shouldShowCards = cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
   return (
     <section
       ref={ref}
       id={id}
       className="story-section"
-      style={{ minHeight: "100vh", paddingTop: 40, paddingBottom: 40 }}
+      style={{ 
+        minHeight: "100vh", 
+        paddingTop: 40, 
+        paddingBottom: 40
+      }}
     >
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
         transition={{ duration: 0.8 }}
         className="section-content"
-        style={{ maxWidth: 1200, margin: "0 auto" }}
+        style={{ 
+          maxWidth: 1200, 
+          margin: "0 auto",
+          position: "relative",
+        }}
       >
         {title && (
           <h1
@@ -53,7 +99,18 @@ function StoryMapSection({ children, title, subtitle, id }) {
             {subtitle}
           </h2>
         )}
-        {children}
+        
+        <div style={{ zIndex: shouldShowCards ? 1 : 11 }}>
+          {children}
+        </div>
+          {shouldShowCards && (
+            <CardsOverlay
+              cards={cards}
+              isCompleted={cardsCompleted}
+              onAllCardsCompleted={handleAllCardsCompleted}
+              onCardsHidden={handleCardsHidden}
+            />
+          )}
       </motion.div>
     </section>
   );
@@ -102,6 +159,54 @@ function Header({ onNavigate }) {
   );
 }
 
+const cardsDistribucionPoblacional = [
+  {
+    title: "Contexto Demográfico",
+    description: "La región presenta una distribución poblacional heterogénea, con concentraciones urbanas significativas contrastando con zonas rurales de baja densidad. Esta distribución influye directamente en los patrones de uso del suelo y la presión sobre los ecosistemas naturales.",
+    metrics: [
+      { value: "2.1M", label: "Habitantes" },
+      { value: "45.2", label: "Hab/km²" }
+    ]
+  },
+  {
+    title: "Patrones de Concentración",
+    description: "Las áreas urbanas concentran el 78% de la población total, mientras que las zonas rurales mantienen densidades bajas que permiten la conservación de corredores biológicos importantes para la fauna nativa.",
+    metrics: [
+      { value: "78%", label: "Población Urbana" },
+      { value: "22%", label: "Población Rural" }
+    ]
+  },
+  {
+    title: "Impacto en el Paisaje",
+    description: "La presión demográfica ha resultado en la transformación del 35% del paisaje original. Sin embargo, las políticas de ordenamiento territorial han logrado mantener corredores ecológicos funcionales.",
+    metrics: [
+      { value: "35%", label: "Área Transformada" },
+      { value: "65%", label: "Área Conservada" }
+    ]
+  }
+];
+
+const cardsPobreza = [
+  [
+    {
+      title: "Indicadores Socioeconómicos",
+      description: "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
+      metrics: [
+        { value: "24.8%", label: "Pobreza Promedio" },
+        { value: "8.2%", label: "Pobreza Extrema" }
+      ]
+    },
+    {
+      title: "Correlación Territorial",
+      description: "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
+      metrics: [
+        { value: "42%", label: "Municipios Rurales" },
+        { value: "85%", label: "Cobertura Forestal" }
+      ]
+    }
+  ]
+]
+
 function CaracterizacionSeccion() {
   return (
     <>
@@ -114,8 +219,11 @@ function CaracterizacionSeccion() {
           showPaletteControl={true}
         />
       </StoryMapSection>
-
-      <StoryMapSection id="poblacion" title="Distribución de la Población">
+      <StoryMapSection 
+        id="poblacion" 
+        title="Distribución de la Población"
+        cards={cardsDistribucionPoblacional}
+      >
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -126,7 +234,11 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="pobreza" title="Pobreza en el Área de Estudio">
+      <StoryMapSection 
+        id="pobreza" 
+        title="Pobreza en el Área de Estudio"
+        cards={cardsPobreza}
+      >
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POBR20"
