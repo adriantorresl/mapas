@@ -6,7 +6,6 @@ import Heatmap from "./components/Heatmap";
 import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
-import FadeInBox from "./components/FadeInBox";
 import CardsOverlay from "./components/CardsOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
@@ -17,7 +16,7 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
     threshold: 0.5,
     triggerOnce: false,
   });
-  
+
   const [cardsCompleted, setCardsCompleted] = React.useState(false);
   const [cardsHidden, setCardsHidden] = React.useState(false);
 
@@ -53,16 +52,17 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
   }, [cards.length]);
 
   // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
-  const shouldShowCards = cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
+  const shouldShowCards =
+    cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
   return (
     <section
       ref={ref}
       id={id}
       className="story-section"
-      style={{ 
-        minHeight: "100vh", 
-        paddingTop: 40, 
-        paddingBottom: 40
+      style={{
+        minHeight: "100vh",
+        paddingTop: 40,
+        paddingBottom: 40,
       }}
     >
       <motion.div
@@ -70,8 +70,8 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
         transition={{ duration: 0.8 }}
         className="section-content"
-        style={{ 
-          maxWidth: 1200, 
+        style={{
+          maxWidth: 1200,
           margin: "0 auto",
           position: "relative",
         }}
@@ -99,18 +99,16 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
             {subtitle}
           </h2>
         )}
-        
-        <div style={{ zIndex: shouldShowCards ? 1 : 11 }}>
-          {children}
-        </div>
-          {shouldShowCards && (
-            <CardsOverlay
-              cards={cards}
-              isCompleted={cardsCompleted}
-              onAllCardsCompleted={handleAllCardsCompleted}
-              onCardsHidden={handleCardsHidden}
-            />
-          )}
+
+        <div style={{ zIndex: shouldShowCards ? 1 : 11 }}>{children}</div>
+        {shouldShowCards && (
+          <CardsOverlay
+            cards={cards}
+            isCompleted={cardsCompleted}
+            onAllCardsCompleted={handleAllCardsCompleted}
+            onCardsHidden={handleCardsHidden}
+          />
+        )}
       </motion.div>
     </section>
   );
@@ -147,10 +145,9 @@ function Header({ onNavigate }) {
               </a>
             </li>
             <li>
-              <a href="#">Cambio Climático</a>
-            </li>
-            <li>
-              <a href="#">Plan de manejo integral del paisaje</a>
+              <a href="#" onClick={() => onNavigate("cambio-climatico")}>
+                Cambio Climático
+              </a>
             </li>
           </ul>
         </nav>
@@ -158,59 +155,72 @@ function Header({ onNavigate }) {
     </header>
   );
 }
-
+const contextoGeografico = [
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+];
 const cardsDistribucionPoblacional = [
   {
     title: "Contexto Demográfico",
-    description: "La región presenta una distribución poblacional heterogénea, con concentraciones urbanas significativas contrastando con zonas rurales de baja densidad. Esta distribución influye directamente en los patrones de uso del suelo y la presión sobre los ecosistemas naturales.",
-    metrics: [
-      { value: "2.1M", label: "Habitantes" },
-      { value: "45.2", label: "Hab/km²" }
-    ]
+    description:
+      "De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican",
+    metrics: [{ value: "306 142", label: "Habitantes" }],
   },
   {
     title: "Patrones de Concentración",
-    description: "Las áreas urbanas concentran el 78% de la población total, mientras que las zonas rurales mantienen densidades bajas que permiten la conservación de corredores biológicos importantes para la fauna nativa.",
     metrics: [
-      { value: "78%", label: "Población Urbana" },
-      { value: "22%", label: "Población Rural" }
-    ]
+      { value: "146 249", label: "Hombres" },
+      { value: "159 893", label: "Mujeres" },
+    ],
+  },
+];
+const cardsPobreza = [
+  {
+    title: "Indicadores Socioeconómicos",
+    description:
+      "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
+    metrics: [
+      { value: "24.8%", label: "Pobreza Promedio" },
+      { value: "8.2%", label: "Pobreza Extrema" },
+    ],
   },
   {
-    title: "Impacto en el Paisaje",
-    description: "La presión demográfica ha resultado en la transformación del 35% del paisaje original. Sin embargo, las políticas de ordenamiento territorial han logrado mantener corredores ecológicos funcionales.",
+    title: "Correlación Territorial",
+    description:
+      "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
     metrics: [
-      { value: "35%", label: "Área Transformada" },
-      { value: "65%", label: "Área Conservada" }
-    ]
-  }
+      { value: "42%", label: "Municipios Rurales" },
+      { value: "85%", label: "Cobertura Forestal" },
+    ],
+  },
 ];
-
-const cardsPobreza = [
-  [
-    {
-      title: "Indicadores Socioeconómicos",
-      description: "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
-      metrics: [
-        { value: "24.8%", label: "Pobreza Promedio" },
-        { value: "8.2%", label: "Pobreza Extrema" }
-      ]
-    },
-    {
-      title: "Correlación Territorial",
-      description: "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
-      metrics: [
-        { value: "42%", label: "Municipios Rurales" },
-        { value: "85%", label: "Cobertura Forestal" }
-      ]
-    }
-  ]
-]
+const cardsEdafologia = [
+  {
+    title: "Edafología del Sitio",
+    description:
+      "Oaxaca presenta una gran diversidad de suelos, resultado de su variada geografía, topografía y clima. Los suelos incluyen formaciones volcánicas, aluviales y sedimentarias distribuidas en el estado según sus características geográficas (INEGI, 2014).",
+  },
+];
+const cardsHumedad = [
+  {
+    title: "Humedad de los Suelos",
+    description:
+      "La húmedad de los suelos se representa por los meses en los que los suelos reciben lluvias. En la zona de estudio, la duración de la humedad en los suelos varía de dos a doce meses por año, predominando las zonas con seis meses de humedad en suelos.",
+  },
+];
 
 function CaracterizacionSeccion() {
   return (
     <>
-      <StoryMapSection id="bioclimaticos" title="Área de estudio">
+      <StoryMapSection
+        id="bioclimaticos"
+        title="Área de estudio"
+        cards={contextoGeografico}
+      >
         <MapChart
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="PAISAJE"
@@ -219,8 +229,9 @@ function CaracterizacionSeccion() {
           showPaletteControl={true}
         />
       </StoryMapSection>
-      <StoryMapSection 
-        id="poblacion" 
+
+      <StoryMapSection
+        id="poblacion"
         title="Distribución de la Población"
         cards={cardsDistribucionPoblacional}
       >
@@ -234,8 +245,8 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection 
-        id="pobreza" 
+      <StoryMapSection
+        id="pobreza"
         title="Pobreza en el Área de Estudio"
         cards={cardsPobreza}
       >
@@ -271,6 +282,25 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
+      <StoryMapSection
+        id="suelos"
+        title="Edafología del Sitio"
+        cards={cardsEdafologia}
+      >
+        <MapChart
+          geoJsonUrl="/EDAFOLOGIA.geojson"
+          categoriaCol="SUELO"
+          hectareasCol="HAS_SUELO"
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="humedad" title="Humedad" cards={cardsHumedad}>
+        <MapChart
+          geoJsonUrl="/HUMEDAD.geojson"
+          categoriaCol="HUMEDAD"
+          hectareasCol="HAS_SUELO"
+        />
+      </StoryMapSection>
 
       <StoryMapSection id="climas" title="Distribución Climática">
         <MapChart
@@ -280,31 +310,11 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="suelos" title="Edafología del Sitio">
-        <MapChart
-          geoJsonUrl="/EDAFOLOGIA.geojson"
-          categoriaCol="SUELO"
-          hectareasCol="HAS_SUELO"
-        />
-      </StoryMapSection>
-
-      <StoryMapSection id="humedad" title="Humedad">
-        <MapChart
-          geoJsonUrl="/HUMEDAD.geojson"
-          categoriaCol="HUMEDAD"
-          hectareasCol="HAS_SUELO"
-        />
-      </StoryMapSection>
-
       <StoryMapSection id="series-tiempo" title="Cambios de Uso de Suelo">
         <TimeSeriesMapViewer
           initialCenter={[23.6345, -102.5528]}
           initialZoom={6}
         />
-      </StoryMapSection>
-
-      <StoryMapSection id="raster-compare" title="Potencial Productivo">
-        <RasterSlideCompare />
       </StoryMapSection>
     </>
   );
@@ -390,6 +400,16 @@ function DegradacionSeccion() {
   );
 }
 
+function PotencialSection() {
+  return (
+    <>
+      <StoryMapSection id="raster-compare" title="Potencial Productivo">
+        <RasterSlideCompare />
+      </StoryMapSection>
+    </>
+  );
+}
+
 function App() {
   const [seccionActiva, setSeccionActiva] = useState("caracterizacion");
 
@@ -403,6 +423,7 @@ function App() {
       <AnimatePresence>
         {seccionActiva === "caracterizacion" && <CaracterizacionSeccion />}
         {seccionActiva === "degradacion" && <DegradacionSeccion />}
+        {seccionActiva === "cambio-climatico" && <PotencialSection />}
       </AnimatePresence>
     </div>
   );
