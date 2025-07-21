@@ -324,11 +324,44 @@ function NutrientesSection() {
 
   return (
     <StoryMapSection id="nutrientes" title="Disponibilidad de Nutrientes">
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={() => setCapaActiva("N")} style={{ marginRight: 10 }}>
-          Ver Nitrógeno
+      <div
+        style={{
+          display: "inline-flex",
+          width: "auto",
+          justifyContent: "left",
+          marginBottom: 10,
+        }}
+      >
+        <button
+          onClick={() => setCapaActiva("N")}
+          style={{
+            marginRight: 10,
+            padding: "6px 12px",
+            border: "none",
+            borderRadius: 4,
+            cursor: "pointer",
+            textAlign: "center",
+            boxSizing: "border-box",
+            width: "auto",
+          }}
+        >
+          Nitrógeno
         </button>
-        <button onClick={() => setCapaActiva("P")}>Ver Fósforo</button>
+        <button
+          onClick={() => setCapaActiva("P")}
+          style={{
+            marginRight: 10,
+            padding: "6px 12px",
+            border: "none",
+            borderRadius: 4,
+            cursor: "pointer",
+            textAlign: "center",
+            boxSizing: "border-box",
+            width: "auto",
+          }}
+        >
+          Fósforo
+        </button>
       </div>
 
       {capaActiva === "N" && (
@@ -392,8 +425,8 @@ function DegradacionSeccion() {
         <SideBySideRasters
           leftFileName="reprojected_abundance_total_primavera.tif"
           rightFileName="reprojected_abundance_total_verano.tif"
-          startColor="#004a13"
-          endColor="#dc0b00"
+          startColor="#ffffff"
+          endColor="#004a13"
         />
       </StoryMapSection>
     </>

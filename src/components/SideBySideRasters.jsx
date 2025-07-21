@@ -458,8 +458,8 @@ const SideBySideRasters = ({
   rightFileName,
   startColor = "#004a13",
   endColor = "#dc0b00",
-  leftTitle = "Capa 1",
-  rightTitle = "Capa 2",
+  leftTitle = "Primavera",
+  rightTitle = "Verano",
 }) => {
   const [activeSide, setActiveSide] = useState("left");
   const [stats, setStats] = useState(null);
@@ -472,17 +472,33 @@ const SideBySideRasters = ({
   }, []);
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif" }}>
-      <div style={{ marginBottom: 10, display: "flex", gap: 10 }}>
+    <div
+      style={{
+        fontFamily: "Roboto, sans-serif",
+        justifyContent: "left",
+        alignItems: "left",
+      }}
+    >
+      <div
+        style={{
+          marginBottom: 10,
+          justifyContent: "left",
+          display: "inline-flex",
+          gap: 8,
+        }}
+      >
         <button
           onClick={() => setActiveSide("left")}
           style={{
             padding: "6px 12px",
-            backgroundColor: activeSide === "left" ? "#1976d2" : "#e0e0e0",
-            color: activeSide === "left" ? "#fff" : "#000",
+            backgroundColor: activeSide === "left" ? "#EDE0D6" : "#fff8e6",
+            color: activeSide === "left" ? "#000" : "#000",
             border: "none",
             borderRadius: 4,
             cursor: "pointer",
+            textAlign: "center",
+            boxSizing: "border-box",
+            width: "auto",
           }}
         >
           {leftTitle}
@@ -491,24 +507,18 @@ const SideBySideRasters = ({
           onClick={() => setActiveSide("right")}
           style={{
             padding: "6px 12px",
-            backgroundColor: activeSide === "right" ? "#1976d2" : "#e0e0e0",
-            color: activeSide === "right" ? "#fff" : "#000",
+            backgroundColor: activeSide === "right" ? "#EDE0D6" : "#fff8e6",
+            color: activeSide === "right" ? "#000" : "#000",
             border: "none",
             borderRadius: 4,
             cursor: "pointer",
+            textAlign: "center",
+            boxSizing: "border-box",
+            width: "auto",
           }}
         >
           {rightTitle}
         </button>
-      </div>
-
-      <div style={{ marginBottom: 8 }}>
-        <h3 style={{ margin: 0, fontSize: 16 }}>
-          {currentTitle ||
-            (currentFileName
-              ? currentFileName.replace(/\.(tif|tiff)$/i, "")
-              : "Mapa")}
-        </h3>
       </div>
 
       <MapContainer
@@ -540,7 +550,7 @@ const SideBySideRasters = ({
           max={stats.max}
           startColor={startColor}
           endColor={endColor}
-          title={`Rango de valores (${stats.validCount}/${stats.totalCount} válidos)`}
+          title={`Abundancia de Polinizadores`}
         />
       )}
 
