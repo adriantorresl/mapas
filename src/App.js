@@ -229,6 +229,7 @@ function CaracterizacionSeccion() {
           showDelimitationControl={true}
           showPaletteControl={false}
           showChartLabels={true}
+          mapTitle="Paísajes Bioculturales"
         />
       </StoryMapSection>
 

@@ -63,7 +63,8 @@ const MapChart = ({
   showDelimitationControl = true,
   showPaletteControl = true,
   showChart = true,
-  showChartLabels = true, // ✅ NUEVA PROP
+  showChartLabels = true,
+  mapTitle, // ✅ NUEVA PROP
 }) => {
   const [geoData, setGeoData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -301,6 +302,27 @@ const MapChart = ({
         minHeight: 400,
       }}
     >
+      {mapTitle && (
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 600,
+            zIndex: 1000,
+            background: "rgba(255,248,230,0.95)",
+            padding: "auto auto",
+            borderRadius: 8,
+            fontFamily: "Roboto",
+            fontWeight: 800,
+            fontSize: 25,
+            color: "#333",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            pointerEvents: "none",
+          }}
+        >
+          {mapTitle}
+        </div>
+      )}
       <div className="mapchart-controls">
         {showDelimitationControl && (
           <div>
