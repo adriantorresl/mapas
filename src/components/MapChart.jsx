@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   schemeCategory10,
   schemeAccent,
@@ -17,7 +18,7 @@ import {
 } from "d3-scale-chromatic";
 import { scaleOrdinal } from "d3-scale";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const paletteOptions = {
   schemeCategory10,
@@ -37,6 +38,23 @@ const DELIMITATION_OPTIONS = [
   { value: "RM", label: "Región" },
   { value: "NOMGEO", label: "Municipio" },
 ];
+const capitalizeFirstLetter = (str) => {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+function toRGBA(color, alpha = 1) {
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.fillStyle = color;
+  const computed = ctx.fillStyle;
+  const m = computed.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  if (!m) return computed;
+
+  const [_, r, g, b] = m;
+  return `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(
+    b,
+    16
+  )}, ${alpha})`;
+}
 
 const MapChart = ({
   geoJsonUrl,
@@ -45,6 +63,7 @@ const MapChart = ({
   showDelimitationControl = true,
   showPaletteControl = true,
   showChart = true,
+  showChartLabels = true, // ✅ NUEVA PROP
 }) => {
   const [geoData, setGeoData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -52,6 +71,8 @@ const MapChart = ({
   const [selectedPaletteName, setSelectedPaletteName] =
     useState("schemeCategory10");
   const [highlightedAreas, setHighlightedAreas] = useState([]);
+  const [areaBorders, setAreaBorders] = useState(null);
+  const [paisajeBorders, setPaisajeBorders] = useState(null);
 
   const mapRef = useRef(null);
   const geoJsonLayerRef = useRef(null);
@@ -78,6 +99,16 @@ const MapChart = ({
       });
   }, [geoJsonUrl]);
 
+  useEffect(() => {
+    fetch("AREA.geojson")
+      .then((res) => res.json())
+      .then(setAreaBorders);
+
+    fetch("PAISAJES.geojson")
+      .then((res) => res.json())
+      .then(setPaisajeBorders);
+  }, []);
+
   const groupedFeatures = useMemo(() => {
     if (!geoData || selectedDelimitation === "all") return null;
 
@@ -97,10 +128,10 @@ const MapChart = ({
   }, [geoData, selectedDelimitation]);
 
   const getBaseStyle = () => ({
-    weight: 1,
-    opacity: 1,
-    color: "#333",
-    fillOpacity: 0.6,
+    weight: 0.5,
+    opacity: 0.5,
+    color: "red",
+    fillOpacity: 0.5,
   });
 
   const getFeatureStyle = (feature) => {
@@ -200,7 +231,9 @@ const MapChart = ({
       datasets: [
         {
           data: Object.values(summary),
-          backgroundColor: labels.map((label) => colorScale(label)),
+          backgroundColor: labels.map((label) =>
+            toRGBA(colorScale(label), 0.5)
+          ),
         },
       ],
     };
@@ -235,6 +268,25 @@ const MapChart = ({
           },
         },
       },
+      datalabels: showChartLabels
+        ? {
+            color: "#000",
+            font: {
+              weight: "bold",
+              size: 12,
+            },
+            formatter: (value, context) => {
+              const total = context.chart.data.datasets[0].data.reduce(
+                (a, b) => a + b,
+                0
+              );
+              const percentage = Math.round((value / total) * 100);
+              return `${value.toLocaleString()} ha\n(${percentage}%)`;
+            },
+          }
+        : {
+            display: false, // This explicitly disables the datalabels plugin
+          },
     },
     maintainAspectRatio: false,
   };
@@ -252,7 +304,7 @@ const MapChart = ({
       <div className="mapchart-controls">
         {showDelimitationControl && (
           <div>
-            <label htmlFor="delimitationSelect" style={{ ...styles.label }}>
+            <label htmlFor="delimitationSelect" style={styles.label}>
               Delimitar por:
             </label>
             <select
@@ -262,7 +314,7 @@ const MapChart = ({
                 setSelectedDelimitation(e.target.value);
                 resetView();
               }}
-              style={{ ...styles.select }}
+              style={styles.select}
             >
               {DELIMITATION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -275,14 +327,14 @@ const MapChart = ({
 
         {showPaletteControl && (
           <div>
-            <label htmlFor="paletteSelect" style={{ ...styles.label }}>
+            <label htmlFor="paletteSelect" style={styles.label}>
               Paleta de colores:
             </label>
             <select
               id="paletteSelect"
               value={selectedPaletteName}
               onChange={(e) => setSelectedPaletteName(e.target.value)}
-              style={{ ...styles.select }}
+              style={styles.select}
             >
               {Object.keys(paletteOptions).map((name) => (
                 <option key={name} value={name}>
@@ -294,7 +346,7 @@ const MapChart = ({
         )}
 
         {selectedArea && (
-          <button onClick={resetView} style={{ ...styles.button }}>
+          <button onClick={resetView} style={styles.button}>
             Mostrar todo
           </button>
         )}
@@ -312,6 +364,29 @@ const MapChart = ({
             url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
             attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
           />
+
+          {areaBorders && (
+            <GeoJSON
+              data={areaBorders}
+              style={() => ({
+                color: "black",
+                weight: 3,
+                fillOpacity: 0,
+              })}
+            />
+          )}
+
+          {paisajeBorders && selectedDelimitation === "PAISAJE" && (
+            <GeoJSON
+              data={paisajeBorders}
+              style={() => ({
+                color: "black",
+                weight: 3,
+                fillOpacity: 0,
+              })}
+            />
+          )}
+
           {geoData && (
             <GeoJSON
               key={`${selectedDelimitation}-${selectedArea}`}
@@ -328,8 +403,12 @@ const MapChart = ({
         <div className="mapchart-chart">
           <h3 style={{ marginBottom: "12px", fontSize: "16px" }}>
             {selectedArea
-              ? `Distribución de ${categoriaCol} en ${selectedArea} (ha)`
-              : `Distribución de ${categoriaCol} en Área de Estudio (ha)`}
+              ? `Distribución de ${capitalizeFirstLetter(
+                  categoriaCol
+                )} en ${selectedArea} (ha)`
+              : `Distribución de ${capitalizeFirstLetter(
+                  categoriaCol
+                )} en Área de Estudio (ha)`}
           </h3>
           <div style={{ height: "300px" }}>
             <Pie data={chartData} options={chartOptions} />

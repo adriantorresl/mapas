@@ -10,9 +10,8 @@ html,
 }
 /* === Estilo Navbar Tierra de Agaves === */
 .header-pronatura {
-  height: 98px;
+  height: 88px;
   background-color: #fff8e6;
-  padding: 8px 24px;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -120,7 +119,7 @@ html,
 
 /* Estilo para el contenedor del mapa */
 .leaflet-container {
-  height: 80vh;
+  height: 100%;
   width: 100%;
 }
 /* Asegura que el deslizador ocupe toda la anchura */
@@ -139,13 +138,12 @@ html,
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 2rem;
   background: #1e3c20;
 }
 
 .section-content {
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0 0;
 }
 
 .main-header {
@@ -175,14 +173,10 @@ html,
   min-height: 100vh;
 }
 
-.story-section {
-  padding: 2rem 0;
-}
-
 .section-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  max-width: 1600px;
+  margin: 0 0;
+  padding: 0 0;
   width: 100%;
   min-height: calc(100vh - 100px);
   display: flex;
@@ -549,7 +543,7 @@ button {
 .metric-value {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #4CAF50;
+  color: #4caf50;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -570,9 +564,15 @@ button {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.8; }
-  50% { opacity: 1; }
-  100% { opacity: 0.8; }
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
 }
 
 /* Responsive styles for cards */
@@ -583,17 +583,17 @@ button {
     left: 10px !important;
     right: 10px !important;
   }
-  
+
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 16px !important;
   }
-  
+
   .card-metrics {
     gap: 12px;
     justify-content: space-around;
   }
-  
+
   .metric-item {
     min-width: 60px;
   }
@@ -606,24 +606,24 @@ button {
     left: 10px !important;
     top: 10px !important;
   }
-  
+
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 12px !important;
     font-size: 0.85rem !important;
   }
-  
+
   .card-metrics {
     gap: 8px;
     flex-direction: column !important;
     align-items: center !important;
   }
-  
+
   .metric-item {
     min-width: auto !important;
     margin: 4px 0 !important;
   }
-  
+
   /* Ocultar la barra de progreso en móviles para dar más espacio */
   .cards-overlay > div:nth-child(2) {
     display: none !important;

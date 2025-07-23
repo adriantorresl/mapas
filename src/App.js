@@ -9,6 +9,7 @@ import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import CardsOverlay from "./components/CardsOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
+import MapChartEnhanced from "./components/MapChartEnhanced";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
@@ -71,8 +72,8 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
         transition={{ duration: 0.8 }}
         className="section-content"
         style={{
-          maxWidth: 1200,
-          margin: "0 auto",
+          maxWidth: "100%",
+          margin: "0 0",
           position: "relative",
         }}
       >
@@ -222,11 +223,12 @@ function CaracterizacionSeccion() {
         cards={contextoGeografico}
       >
         <MapChart
-          geoJsonUrl="/CLIMA.geojson"
+          geoJsonUrl="/MARGINACION.geojson"
           categoriaCol="PAISAJE"
-          hectareasCol="HECTARES"
-          showDelimitationControl={false}
-          showPaletteControl={true}
+          hectareasCol="HAS_POLY"
+          showDelimitationControl={true}
+          showPaletteControl={false}
+          showChartLabels={true}
         />
       </StoryMapSection>
 
@@ -291,6 +293,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/EDAFOLOGIA.geojson"
           categoriaCol="SUELO"
           hectareasCol="HAS_SUELO"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
@@ -299,6 +302,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"
           hectareasCol="HAS_SUELO"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
@@ -307,6 +311,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="CLIMA"
           hectareasCol="HECTARES"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
