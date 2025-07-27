@@ -180,7 +180,7 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
   const getBaseStyle = () => ({
     weight: 0.5,
     opacity: 1,
-    color: "#555",
+    color: "#333",
     fillOpacity: 0.7,
   });
 
@@ -232,6 +232,48 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
 
   return (
     <div className="tsmv-container">
+      <main className="tsmv-maparea" style={{ flex: 1, height: "auto" }}>
+        <MapContainer
+          ref={mapRef}
+          center={[23, -102]}
+          zoom={5}
+          style={{ height: "auto", width: "auto" }}
+          whenCreated={(map) => {
+            mapRef.current = map;
+          }}
+        >
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
+            attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
+          />
+          {geoData && (
+            <GeoJSON
+              key={`geojson-${scale}-${selectedPaisaje}-${selectedMunicipio}-${yearIndex}`}
+              data={{
+                type: "FeatureCollection",
+                features: getFeaturesToRender(),
+              }}
+              style={getFeatureStyle}
+              onEachFeature={(feature, layer) => {
+                layer.on({
+                  click: (e) => handleFeatureClick(feature, e),
+                  mouseover: (e) => {
+                    e.target.setStyle({
+                      weight: 1,
+                      color: "#666",
+                      fillOpacity: 0.9,
+                    });
+                  },
+                  mouseout: (e) => {
+                    e.target.setStyle(getFeatureStyle(feature));
+                  },
+                });
+              }}
+              ref={geoJsonLayerRef}
+            />
+          )}
+        </MapContainer>
+      </main>
       <aside
         className="tsmv-sidebar"
         style={{
@@ -266,12 +308,14 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
                     paddingLeft: "15px",
                     marginTop: "5px",
                     listStyle: "none",
-                    background: "#fff", // <-- Fondo blanco sólido
+                    background: "#fff",
                     borderRadius: "8px",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                     zIndex: 1001,
                     padding: "8px 0",
                     minWidth: 160,
+                    maxHeight: 220,
+                    overflowY: "auto",
                   }}
                 >
                   <li
@@ -312,12 +356,15 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
                       paddingLeft: "15px",
                       marginTop: "5px",
                       listStyle: "none",
-                      background: "#fff", // <-- Fondo blanco sólido
+                      background: "#fff",
                       borderRadius: "8px",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                       zIndex: 1001,
                       padding: "8px 0",
                       minWidth: 160,
+                      maxHeight: 220,
+                      overflowY: "auto",
+                      position: "absolute",
                     }}
                   >
                     {paisajes.length === 0 && (
@@ -357,12 +404,15 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
                       paddingLeft: "15px",
                       marginTop: "5px",
                       listStyle: "none",
-                      background: "#fff", // <-- Fondo blanco sólido
+                      background: "#fff",
                       borderRadius: "8px",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                       zIndex: 1001,
                       padding: "8px 0",
                       minWidth: 160,
+                      maxHeight: 220,
+                      overflowY: "auto",
+                      position: "absolute",
                     }}
                   >
                     {municipiosByPaisaje(selectedPaisaje).map((m) => (
@@ -422,13 +472,12 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
         </div>
 
         <div style={{ marginTop: "20px" }}>
-          <h4>Leyenda</h4>
           <table
             className="tsmv-leyenda-table"
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              background: "#fff",
+              background: "transparent",
             }}
           >
             <tbody>
@@ -510,49 +559,6 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
           </table>
         </div>
       </aside>
-
-      <main className="tsmv-maparea" style={{ flex: 1, height: "auto" }}>
-        <MapContainer
-          ref={mapRef}
-          center={[23, -102]}
-          zoom={5}
-          style={{ height: "auto", width: "auto" }}
-          whenCreated={(map) => {
-            mapRef.current = map;
-          }}
-        >
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
-            attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
-          />
-          {geoData && (
-            <GeoJSON
-              key={`geojson-${scale}-${selectedPaisaje}-${selectedMunicipio}-${yearIndex}`}
-              data={{
-                type: "FeatureCollection",
-                features: getFeaturesToRender(),
-              }}
-              style={getFeatureStyle}
-              onEachFeature={(feature, layer) => {
-                layer.on({
-                  click: (e) => handleFeatureClick(feature, e),
-                  mouseover: (e) => {
-                    e.target.setStyle({
-                      weight: 1,
-                      color: "#666",
-                      fillOpacity: 0.9,
-                    });
-                  },
-                  mouseout: (e) => {
-                    e.target.setStyle(getFeatureStyle(feature));
-                  },
-                });
-              }}
-              ref={geoJsonLayerRef}
-            />
-          )}
-        </MapContainer>
-      </main>
     </div>
   );
 };

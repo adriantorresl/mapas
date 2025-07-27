@@ -6,8 +6,9 @@ html,
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow-x: hidden; /* Evita scroll horizontal */
+  overflow-x: hidden;
 }
+
 /* === Estilo Navbar Tierra de Agaves === */
 .header-pronatura {
   height: 88px;
@@ -64,25 +65,24 @@ html,
 .header-menu li a:hover {
   color: #00552e;
 }
+
 .menu-stack {
   display: inline-block;
   line-height: 1.2;
   text-align: center;
 }
+
 /* Altura fija de 88px en escritorio */
 @media (min-width: 1024px) {
   .header-pronatura {
     height: 88px;
   }
-
   .header-container {
     height: 100%;
   }
-
   .header-logo {
-    height: 60px; /* Ajusta si el logo se ve muy grande o pequeño */
+    height: 60px;
   }
-
   .header-menu li {
     height: 100%;
     display: flex;
@@ -95,33 +95,44 @@ html,
     flex-direction: column;
     align-items: flex-start;
   }
-
   .header-nav {
     width: 100%;
     margin-top: 8px;
   }
-
   .header-menu {
     flex-direction: column;
     gap: 12px;
   }
-
   .header-menu li a {
     font-size: 16px;
   }
 }
 
 .story-section {
+  height: max-content;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  scroll-snap-align: start;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: #1e3c20;
 }
 
 /* Estilo para el contenedor del mapa */
-.leaflet-container {
-  height: 100%;
-  width: 100%;
+.leaflet-container,
+.heatmap-container,
+.raster-slide-compare,
+.timeseries-map-viewer,
+.mapchart-maparea {
+  width: 100% !important;
+  min-height: 70vh;
+  height: calc(100vh - 88px) !important;
+  overflow: hidden;
 }
+
 /* Asegura que el deslizador ocupe toda la anchura */
 .leaflet-sbs-range {
   position: absolute;
@@ -132,18 +143,15 @@ html,
   pointer-events: auto;
 }
 
-.story-section {
-  scroll-snap-align: start;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  background: #1e3c20;
-}
-
 .section-content {
-  max-width: 100%;
-  margin: 0 0;
+  max-width: 1600px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
 }
 
 .main-header {
@@ -166,38 +174,11 @@ html,
   flex-wrap: wrap;
 }
 
-/* Main content */
 .main-content {
-  margin-top: 80px; /* Ajusta según la altura del header */
   background: #fff;
-  min-height: 100vh;
+  height: 100%;
 }
 
-.section-content {
-  max-width: 1600px;
-  margin: 0 0;
-  padding: 0 0;
-  width: 100%;
-  min-height: calc(100vh - 100px);
-  display: flex;
-  flex-direction: column;
-  gap: 2rem; /* Espacio entre componentes */
-}
-
-/* Haz que los mapas y visualizaciones ocupen todo el ancho disponible */
-.leaflet-container,
-.heatmap-container,
-.raster-slide-compare,
-.timeseries-map-viewer,
-.mapchart-maparea {
-  width: 100% !important;
-  min-height: 40vh;
-  height: 70vh !important;
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-/* Opcional: para que el contenido no se recorte en pantallas pequeñas */
 @media (max-width: 900px) {
   .section-content {
     max-width: 100vw;
@@ -207,7 +188,7 @@ html,
   .heatmap-container,
   .timeseries-map-viewer {
     min-height: 40vh;
-    height: 50vh !important;
+    height: 100% !important;
   }
 }
 
@@ -215,7 +196,6 @@ html,
   .section-content {
     padding: 0 0.5rem;
     min-height: unset;
-    gap: 1rem;
   }
   .mapchart-maparea,
   .heatmap-container,
@@ -225,10 +205,10 @@ html,
   }
 }
 
-/* Puedes poner esto en src/components/TimeSeriesMapViewer.css */
+/* TimeSeriesMapViewer */
 .tsmv-container {
   display: flex;
-  height: 70vh;
+  height: calc(100vh - 88px);
 }
 
 .tsmv-sidebar {
@@ -256,7 +236,7 @@ html,
   padding: 6px 0;
   font-size: 1rem;
   color: #222;
-  position: relative; /* <-- Agrega esto */
+  position: relative;
 }
 
 .tsmv-menu > li.bold {
@@ -290,15 +270,12 @@ html,
   background: #e0e7ff;
 }
 
-.tsmv-leyenda-table td {
-  padding: 2px 8px;
-  font-size: 0.97rem;
-}
-
+.tsmv-leyenda-table td,
 .tsmv-summary-table th,
 .tsmv-summary-table td {
-  text-align: left;
+  padding: 2px 8px;
   font-size: 0.97rem;
+  text-align: left;
 }
 
 .tsmv-maparea {
@@ -327,42 +304,9 @@ html,
   }
 }
 
-.mapchart-chart {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 340px;
-  max-width: 95vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-}
-
-@media (max-width: 900px) {
-  .mapchart-chart {
-    position: static !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    top: auto;
-    right: auto;
-    left: auto;
-    background: #fff;
-    border-radius: 8px;
-    max-height: none;
-    padding: 10px;
-  }
-}
-
 .tsmv-summary-table,
 .tsmv-leyenda-table {
   width: 100%;
-  font-size: 0.97rem;
   border-collapse: collapse;
   overflow-x: auto;
   display: block;
@@ -375,17 +319,7 @@ html,
   }
 }
 
-select,
-button {
-  width: 100%;
-  min-width: 0;
-  font-size: 1rem;
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-}
-
-/* App.css */
+/* Tabs submenu */
 .tabs-submenu {
   display: flex;
   justify-content: space-evenly;
@@ -431,6 +365,7 @@ button {
   }
 }
 
+/* Mapchart controls */
 .mapchart-controls {
   display: flex;
   flex-direction: column;
@@ -474,7 +409,6 @@ button {
 
 /* Estilos para el contenedor de scroll */
 .cards-scroll-container {
-  /* Webkit browsers (Chrome, Safari, newer versions of Edge) */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
 }
@@ -583,17 +517,14 @@ button {
     left: 10px !important;
     right: 10px !important;
   }
-
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 16px !important;
   }
-
   .card-metrics {
     gap: 12px;
     justify-content: space-around;
   }
-
   .metric-item {
     min-width: 60px;
   }
@@ -606,26 +537,63 @@ button {
     left: 10px !important;
     top: 10px !important;
   }
-
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 12px !important;
     font-size: 0.85rem !important;
   }
-
   .card-metrics {
     gap: 8px;
     flex-direction: column !important;
     align-items: center !important;
   }
-
   .metric-item {
     min-width: auto !important;
     margin: 4px 0 !important;
   }
-
-  /* Ocultar la barra de progreso en móviles para dar más espacio */
   .cards-overlay > div:nth-child(2) {
     display: none !important;
+  }
+}
+
+select,
+button {
+  width: 100%;
+  min-width: 0;
+  font-size: 1rem;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+}
+
+.mapchart-chart {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 340px;
+  max-width: 95vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+}
+
+@media (max-width: 900px) {
+  .mapchart-chart {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    top: auto;
+    right: auto;
+    left: auto;
+    background: #fff;
+    border-radius: 8px;
+    max-height: none;
+    padding: 10px;
   }
 }

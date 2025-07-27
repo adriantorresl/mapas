@@ -389,7 +389,7 @@ const MapChart = ({
 
           {areaBorders && (
             <GeoJSON
-              data={areaBorders}
+              data={paisajeBorders}
               style={() => ({
                 color: "black",
                 weight: 3,

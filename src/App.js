@@ -62,8 +62,6 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
       className="story-section"
       style={{
         minHeight: "100vh",
-        paddingTop: 40,
-        paddingBottom: 40,
       }}
     >
       <motion.div
@@ -81,7 +79,6 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
           <h1
             style={{
               fontFamily: "Roboto, sans-serif",
-              marginBottom: 8,
               color: "white",
             }}
           >
@@ -217,19 +214,14 @@ const cardsHumedad = [
 function CaracterizacionSeccion() {
   return (
     <>
-      <StoryMapSection
-        id="bioclimaticos"
-        title="Área de estudio"
-        cards={contextoGeografico}
-      >
+      <StoryMapSection id="bioclimaticos" cards={contextoGeografico}>
         <MapChart
           geoJsonUrl="/MARGINACION.geojson"
           categoriaCol="PAISAJE"
           hectareasCol="HAS_POLY"
-          showDelimitationControl={true}
+          showDelimitationControl={false}
           showPaletteControl={false}
           showChartLabels={true}
-          mapTitle="Paísajes Bioculturales"
         />
       </StoryMapSection>
 

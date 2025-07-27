@@ -18,6 +18,7 @@ const Heatmap = ({
   const [geojsonData, setGeojsonData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paisajesData, setPaisajesData] = useState(null);
   const mapRef = useRef(null);
   const geojsonRef = useRef(null);
 
@@ -75,6 +76,20 @@ const Heatmap = ({
 
     if (geojsonUrl) fetchGeoJSON();
   }, [geojsonUrl]);
+
+  useEffect(() => {
+    const fetchPaisajes = async () => {
+      try {
+        const response = await fetch("/PAISAJES.geojson");
+        if (!response.ok) throw new Error("No se pudo cargar PAISAJES.geojson");
+        const data = await response.json();
+        setPaisajesData(data);
+      } catch (err) {
+        console.error("Error cargando PAISAJES.geojson:", err);
+      }
+    };
+    fetchPaisajes();
+  }, []);
 
   useEffect(() => {
     if (geojsonData && mapRef.current && geojsonRef.current) {
@@ -159,6 +174,18 @@ const Heatmap = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {renderHeatmap()}
+        {paisajesData && (
+          <GeoJSON
+            data={paisajesData}
+            style={{
+              color: "black",
+              weight: 3,
+              fillOpacity: 0,
+              opacity: 1,
+            }}
+            interactive={false}
+          />
+        )}
       </MapContainer>
 
       {loading && (
@@ -178,7 +205,7 @@ const Heatmap = ({
           style={{
             position: "absolute",
             bottom: 24,
-            left: 24,
+            right: 24,
             background: "rgba(255,255,255,0.95)",
             borderRadius: 8,
             boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
