@@ -225,11 +225,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection
-        id="poblacion"
-        title="Distribución de la Población"
-        cards={cardsDistribucionPoblacional}
-      >
+      <StoryMapSection id="poblacion" cards={cardsDistribucionPoblacional}>
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -240,11 +236,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection
-        id="pobreza"
-        title="Pobreza en el Área de Estudio"
-        cards={cardsPobreza}
-      >
+      <StoryMapSection id="pobreza" cards={cardsPobreza}>
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POBR20"
@@ -263,7 +255,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="marginacion" title="Marginación">
+      <StoryMapSection id="marginacion">
         <GeoJsonLayerWithLegend
           nombreCapa="Grado de Marginación"
           atributoValor="GM_2020"
@@ -277,11 +269,7 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
-      <StoryMapSection
-        id="suelos"
-        title="Edafología del Sitio"
-        cards={cardsEdafologia}
-      >
+      <StoryMapSection id="suelos" cards={cardsEdafologia}>
         <MapChart
           geoJsonUrl="/EDAFOLOGIA.geojson"
           categoriaCol="SUELO"
@@ -290,7 +278,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="humedad" title="Humedad" cards={cardsHumedad}>
+      <StoryMapSection id="humedad" cards={cardsHumedad}>
         <MapChart
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"
@@ -299,7 +287,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="climas" title="Distribución Climática">
+      <StoryMapSection id="climas">
         <MapChart
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="CLIMA"
@@ -308,7 +296,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="series-tiempo" title="Cambios de Uso de Suelo">
+      <StoryMapSection id="series-tiempo">
         <TimeSeriesMapViewer
           initialCenter={[23.6345, -102.5528]}
           initialZoom={6}
@@ -321,7 +309,7 @@ function NutrientesSection() {
   const [capaActiva, setCapaActiva] = useState("N");
 
   return (
-    <StoryMapSection id="nutrientes" title="Disponibilidad de Nutrientes">
+    <StoryMapSection id="nutrientes">
       <div
         style={{
           display: "inline-flex",
@@ -392,7 +380,7 @@ function NutrientesSection() {
 function DegradacionSeccion() {
   return (
     <>
-      <StoryMapSection id="erosion" title="Pérdida de Suelo por Erosión">
+      <StoryMapSection id="erosion">
         <RasterViewer
           fileName="reprojected_USLE_Tendencia.tif"
           colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
@@ -407,7 +395,7 @@ function DegradacionSeccion() {
 
       <NutrientesSection />
 
-      <StoryMapSection id="carbono" title="Almacenamiento de Carbono">
+      <StoryMapSection id="carbono">
         <RasterViewer
           fileName="reprojected_tend_co2.tif"
           colorMap="0:#004a13,1:#fff200,2:#dc0b00"
@@ -419,7 +407,7 @@ function DegradacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="polinizadores" title="Hábitat para Polinizadores">
+      <StoryMapSection id="polinizadores">
         <SideBySideRasters
           leftFileName="reprojected_abundance_total_primavera.tif"
           rightFileName="reprojected_abundance_total_verano.tif"
@@ -434,7 +422,7 @@ function DegradacionSeccion() {
 function PotencialSection() {
   return (
     <>
-      <StoryMapSection id="raster-compare" title="Potencial Productivo">
+      <StoryMapSection id="raster-compare">
         <RasterSlideCompare />
       </StoryMapSection>
     </>
