@@ -39,7 +39,7 @@ const CardsOverlay = ({ cards, isCompleted }) => {
   return (
     <motion.div
       className="cards-overlay"
-      initial={{ opacity: 0, scale: 0.95 }}
+      // initial={{ opacity: 0, scale: 0.95 }}
       animate={{ 
         opacity: 1, 
         scale: 1,
@@ -54,7 +54,7 @@ const CardsOverlay = ({ cards, isCompleted }) => {
         duration: 0.5,
         ease: "easeInOut"
       }}
-      onClick={handleBackgroundClick}
+      // onClick={handleBackgroundClick}
       style={{
         pointerEvents: "auto",
         height: "100vh",

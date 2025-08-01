@@ -7,7 +7,7 @@ import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
-import MapChartEnhanced from "./components/MapChartEnhanced";
+// import MapChartEnhanced from "./components/MapChartEnhanced";
 import StoryMapSection from "./components/StoryMapSection";
 import "./App.css";
 const contextoGeografico = [
