@@ -1,160 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import MapChart from "./components/MapChart";
 import Heatmap from "./components/Heatmap";
 import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
-import CardsOverlay from "./components/CardsOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
+import StoryMapSection from "./components/StoryMapSection";
 import "./App.css";
 
-function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
-  const [ref, inView] = useInView({
-    threshold: 0.5,
-    triggerOnce: false,
-  });
-
-  const [cardsCompleted, setCardsCompleted] = React.useState(false);
-  const [cardsHidden, setCardsHidden] = React.useState(false);
-
-  const handleAllCardsCompleted = React.useCallback(() => {
-    setCardsCompleted(true);
-  }, []);
-
-  const handleCardsHidden = React.useCallback(() => {
-    setCardsHidden(true);
-  }, []);
-
-  // Reset cuando la sección sale de vista o cuando cambia a una nueva sección con cards
-  React.useEffect(() => {
-    if (!inView && cards.length > 0) {
-      setCardsCompleted(false);
-      setCardsHidden(false); // Reset cuando sale de vista
-    }
-    // Cuando la sección entra en vista y tiene cards, asegurar que no estén marcadas como completadas
-    if (inView && cards.length > 0 && cardsCompleted) {
-      setCardsCompleted(false);
-      setCardsHidden(false); // Reset cuando vuelve a entrar
-    }
-  }, [inView, cards.length, cardsCompleted]);
-
-  // Si no hay cards, marcar como completado inmediatamente
-  React.useEffect(() => {
-    if (cards.length === 0) {
-      setCardsCompleted(true);
-    } else {
-      setCardsCompleted(false);
-      setCardsHidden(false);
-    }
-  }, [cards.length]);
-
-  // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
-  const shouldShowCards =
-    cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
-  return (
-    <section
-      ref={ref}
-      id={id}
-      className="story-section"
-      style={{
-        minHeight: "100vh",
-        paddingTop: 40,
-        paddingBottom: 40,
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        transition={{ duration: 0.8 }}
-        className="section-content"
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          position: "relative",
-        }}
-      >
-        {title && (
-          <h1
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              marginBottom: 8,
-              color: "white",
-            }}
-          >
-            {title}
-          </h1>
-        )}
-        {subtitle && (
-          <h2
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              marginBottom: 24,
-              fontWeight: 400,
-              color: "white",
-            }}
-          >
-            {subtitle}
-          </h2>
-        )}
-
-        <div style={{ zIndex: shouldShowCards ? 1 : 11 }}>{children}</div>
-        {shouldShowCards && (
-          <CardsOverlay
-            cards={cards}
-            isCompleted={cardsCompleted}
-            onAllCardsCompleted={handleAllCardsCompleted}
-            onCardsHidden={handleCardsHidden}
-          />
-        )}
-      </motion.div>
-    </section>
-  );
-}
-
-function Header({ onNavigate }) {
-  return (
-    <header className="header-pronatura">
-      <div className="header-container">
-        <img
-          src="/logo.png"
-          alt="Logo Tierra de Agaves"
-          className="header-logo"
-        />
-        <nav className="header-nav">
-          <ul className="header-menu">
-            <li>
-              <a href="#" onClick={() => onNavigate("caracterizacion")}>
-                <span className="menu-stack">
-                  Tierra de Agaves
-                  <br />
-                  Monitoreo
-                </span>
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => onNavigate("caracterizacion")}>
-                Caracterización del área de estudio
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => onNavigate("degradacion")}>
-                Degradación funcional del paisaje
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => onNavigate("cambio-climatico")}>
-                Cambio Climático
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-  );
-}
+// Datos de las cards
 const contextoGeografico = [
   {
     title: "Caracterización del Área de Estudio",
@@ -162,7 +18,44 @@ const contextoGeografico = [
       "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
     metrics: [{ value: "816,566.9", label: "hectáreas" }],
   },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
+  {
+    title: "Caracterización del Área de Estudio",
+    description:
+      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
+    metrics: [{ value: "816,566.9", label: "hectáreas" }],
+  },
 ];
+
 const cardsDistribucionPoblacional = [
   {
     title: "Contexto Demográfico",
@@ -178,6 +71,7 @@ const cardsDistribucionPoblacional = [
     ],
   },
 ];
+
 const cardsPobreza = [
   {
     title: "Indicadores Socioeconómicos",
@@ -198,6 +92,7 @@ const cardsPobreza = [
     ],
   },
 ];
+
 const cardsEdafologia = [
   {
     title: "Edafología del Sitio",
@@ -205,6 +100,7 @@ const cardsEdafologia = [
       "Oaxaca presenta una gran diversidad de suelos, resultado de su variada geografía, topografía y clima. Los suelos incluyen formaciones volcánicas, aluviales y sedimentarias distribuidas en el estado según sus características geográficas (INEGI, 2014).",
   },
 ];
+
 const cardsHumedad = [
   {
     title: "Humedad de los Suelos",
@@ -213,12 +109,65 @@ const cardsHumedad = [
   },
 ];
 
+function Header({ onNavigate }) {
+  return (
+    <header className="header-pronatura">
+      <div className="header-container">
+        <img
+          src="/logo.png"
+          alt="Logo Tierra de Agaves"
+          className="header-logo"
+        />
+        <nav className="header-nav">
+          <ul className="header-menu">
+            <li>
+              <button 
+                onClick={() => onNavigate("caracterizacion")}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              >
+                <span className="menu-stack">
+                  Tierra de Agaves
+                  <br />
+                  Monitoreo
+                </span>
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => onNavigate("caracterizacion")}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              >
+                Caracterización del área de estudio
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => onNavigate("degradacion")}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              >
+                Degradación funcional del paisaje
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => onNavigate("cambio-climatico")}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              >
+                Cambio Climático
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
 function CaracterizacionSeccion() {
   return (
     <>
       <StoryMapSection
         id="bioclimaticos"
-        title="Área de estudio"
         cards={contextoGeografico}
       >
         <MapChart
@@ -232,7 +181,6 @@ function CaracterizacionSeccion() {
 
       <StoryMapSection
         id="poblacion"
-        title="Distribución de la Población"
         cards={cardsDistribucionPoblacional}
       >
         <Heatmap
@@ -247,7 +195,6 @@ function CaracterizacionSeccion() {
 
       <StoryMapSection
         id="pobreza"
-        title="Pobreza en el Área de Estudio"
         cards={cardsPobreza}
       >
         <Heatmap
@@ -268,7 +215,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="marginacion" title="Marginación">
+      <StoryMapSection id="marginacion">
         <GeoJsonLayerWithLegend
           nombreCapa="Grado de Marginación"
           atributoValor="GM_2020"
@@ -282,9 +229,9 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
+      
       <StoryMapSection
         id="suelos"
-        title="Edafología del Sitio"
         cards={cardsEdafologia}
       >
         <MapChart
@@ -294,7 +241,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="humedad" title="Humedad" cards={cardsHumedad}>
+      <StoryMapSection id="humedad" cards={cardsHumedad}>
         <MapChart
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"
@@ -302,7 +249,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="climas" title="Distribución Climática">
+      <StoryMapSection id="climas">
         <MapChart
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="CLIMA"
@@ -310,7 +257,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="series-tiempo" title="Cambios de Uso de Suelo">
+      <StoryMapSection id="series-tiempo">
         <TimeSeriesMapViewer
           initialCenter={[23.6345, -102.5528]}
           initialZoom={6}
@@ -319,11 +266,12 @@ function CaracterizacionSeccion() {
     </>
   );
 }
+
 function NutrientesSection() {
   const [capaActiva, setCapaActiva] = useState("N");
 
   return (
-    <StoryMapSection id="nutrientes" title="Disponibilidad de Nutrientes">
+    <StoryMapSection id="nutrientes">
       <div
         style={{
           display: "inline-flex",
@@ -394,7 +342,7 @@ function NutrientesSection() {
 function DegradacionSeccion() {
   return (
     <>
-      <StoryMapSection id="erosion" title="Pérdida de Suelo por Erosión">
+      <StoryMapSection id="erosion">
         <RasterViewer
           fileName="reprojected_USLE_Tendencia.tif"
           colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
@@ -409,7 +357,7 @@ function DegradacionSeccion() {
 
       <NutrientesSection />
 
-      <StoryMapSection id="carbono" title="Almacenamiento de Carbono">
+      <StoryMapSection id="carbono">
         <RasterViewer
           fileName="reprojected_tend_co2.tif"
           colorMap="0:#004a13,1:#fff200,2:#dc0b00"
@@ -421,7 +369,7 @@ function DegradacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="polinizadores" title="Hábitat para Polinizadores">
+      <StoryMapSection id="polinizadores">
         <SideBySideRasters
           leftFileName="reprojected_abundance_total_primavera.tif"
           rightFileName="reprojected_abundance_total_verano.tif"
@@ -435,11 +383,9 @@ function DegradacionSeccion() {
 
 function PotencialSection() {
   return (
-    <>
-      <StoryMapSection id="raster-compare" title="Potencial Productivo">
-        <RasterSlideCompare />
-      </StoryMapSection>
-    </>
+    <StoryMapSection id="raster-compare">
+      <RasterSlideCompare />
+    </StoryMapSection>
   );
 }
 
@@ -453,10 +399,10 @@ function App() {
   return (
     <div className="App">
       <Header onNavigate={setSeccionActiva} />
-      <AnimatePresence>
-        {seccionActiva === "caracterizacion" && <CaracterizacionSeccion />}
-        {seccionActiva === "degradacion" && <DegradacionSeccion />}
-        {seccionActiva === "cambio-climatico" && <PotencialSection />}
+      <AnimatePresence mode="wait">
+        {seccionActiva === "caracterizacion" && <CaracterizacionSeccion key="caracterizacion" />}
+        {seccionActiva === "degradacion" && <DegradacionSeccion key="degradacion" />}
+        {seccionActiva === "cambio-climatico" && <PotencialSection key="cambio-climatico" />}
       </AnimatePresence>
     </div>
   );
