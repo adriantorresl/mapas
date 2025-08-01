@@ -17,43 +17,7 @@ const contextoGeografico = [
     description:
       "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
     metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
+  }
 ];
 
 const cardsDistribucionPoblacional = [
