@@ -521,38 +521,55 @@ const SideBySideRasters = ({
         </button>
       </div>
 
-      <MapContainer
-        style={{ height: "600px", width: "100%", border: "1px solid #ddd" }}
-        center={[16.5, -96]}
-        zoom={8}
-        scrollWheelZoom={true}
-        zoomControl={true}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          maxZoom={18}
-        />
-        {currentFileName && (
-          <RasterLayer
-            key={currentFileName} // Forzar re-mount cuando cambie el archivo
-            fileName={currentFileName}
-            startColor={startColor}
-            endColor={endColor}
-            onStatsUpdate={handleStatsUpdate}
+      <div style={{ position: "relative" }}>
+        <MapContainer
+          style={{ height: "600px", width: "100%", border: "1px solid #ddd" }}
+          center={[16.5, -96]}
+          zoom={8}
+          scrollWheelZoom={true}
+          zoomControl={true}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            maxZoom={18}
           />
-        )}
-      </MapContainer>
-
-      {stats && !stats.error && (
-        <Legend
-          min={stats.min}
-          max={stats.max}
-          startColor={startColor}
-          endColor={endColor}
-          title={`Abundancia de Polinizadores`}
-        />
-      )}
+          {currentFileName && (
+            <RasterLayer
+              key={currentFileName}
+              fileName={currentFileName}
+              startColor={startColor}
+              endColor={endColor}
+              onStatsUpdate={handleStatsUpdate}
+            />
+          )}
+          {/* Leyenda dentro del mapa, esquina inferior derecha */}
+          {stats && !stats.error && (
+            <div
+              style={{
+                position: "absolute",
+                right: 16,
+                bottom: 16,
+                zIndex: 1000,
+                background: "rgba(255,255,255,0.95)",
+                padding: 10,
+                borderRadius: 8,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                minWidth: 180,
+                maxWidth: 260,
+              }}
+            >
+              <Legend
+                min={stats.min}
+                max={stats.max}
+                startColor={startColor}
+                endColor={endColor}
+                title={`Abundancia de Polinizadores`}
+              />
+            </div>
+          )}
+        </MapContainer>
+      </div>
 
       {stats && stats.error && (
         <div

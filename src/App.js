@@ -7,10 +7,9 @@ import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
+import MapChartEnhanced from "./components/MapChartEnhanced";
 import StoryMapSection from "./components/StoryMapSection";
 import "./App.css";
-
-// Datos de las cards
 const contextoGeografico = [
   {
     title: "Caracterización del Área de Estudio",
@@ -135,11 +134,12 @@ function CaracterizacionSeccion() {
         cards={contextoGeografico}
       >
         <MapChart
-          geoJsonUrl="/CLIMA.geojson"
+          geoJsonUrl="/MARGINACION.geojson"
           categoriaCol="PAISAJE"
-          hectareasCol="HECTARES"
+          hectareasCol="HAS_POLY"
           showDelimitationControl={false}
-          showPaletteControl={true}
+          showPaletteControl={false}
+          showChartLabels={true}
         />
       </StoryMapSection>
 
@@ -193,7 +193,6 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
-      
       <StoryMapSection
         id="suelos"
         cards={cardsEdafologia}
@@ -202,6 +201,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/EDAFOLOGIA.geojson"
           categoriaCol="SUELO"
           hectareasCol="HAS_SUELO"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
@@ -210,6 +210,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"
           hectareasCol="HAS_SUELO"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
@@ -218,6 +219,7 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="CLIMA"
           hectareasCol="HECTARES"
+          showChartLabels={false}
         />
       </StoryMapSection>
 
