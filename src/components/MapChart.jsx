@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { MapContainer, GeoJSON, TileLayer } from "react-leaflet";
+import { MapContainer, GeoJSON, TileLayer, LayersControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Pie } from "react-chartjs-2";
@@ -17,6 +17,7 @@ import {
   schemePastel2,
 } from "d3-scale-chromatic";
 import { scaleOrdinal } from "d3-scale";
+import { useMapLayers } from "../hooks/useMapLayers";
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -72,9 +73,6 @@ const MapChart = ({
   const [selectedPaletteName, setSelectedPaletteName] =
     useState("schemeCategory10");
   const [highlightedAreas, setHighlightedAreas] = useState([]);
-  const [areaBorders, setAreaBorders] = useState(null);
-  const [paisajeBorders, setPaisajeBorders] = useState(null);
-
   const mapRef = useRef(null);
   const geoJsonLayerRef = useRef(null);
 
@@ -100,15 +98,14 @@ const MapChart = ({
       });
   }, [geoJsonUrl]);
 
-  useEffect(() => {
-    fetch("AREA.geojson")
-      .then((res) => res.json())
-      .then(setAreaBorders);
+  const layersConfig = [
+    { key: "areaBorders", url: "AREA.geojson" },
+    { key: "paisajeBorders", url: "PAISAJES.geojson" },
+    { key: "municipiosBorders", url: "MARGINACION.geojson" }, // o MUNICIPIOS.geojson si lo tienes
+  ];
 
-    fetch("PAISAJES.geojson")
-      .then((res) => res.json())
-      .then(setPaisajeBorders);
-  }, []);
+  const { areaBorders, paisajeBorders, municipiosBorders } =
+    useMapLayers(layersConfig);
 
   const groupedFeatures = useMemo(() => {
     if (!geoData || selectedDelimitation === "all") return null;
@@ -265,7 +262,9 @@ const MapChart = ({
             const value = context.raw || 0;
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value.toLocaleString()} ha (${percentage}%)`;
+            // Redondear a cientos de miles y mostrar como "mil"
+            const valueMiles = Math.round(value / 1000);
+            return `${label}: ${valueMiles.toLocaleString()} mil ha (${percentage}%)`;
           },
         },
       },
@@ -282,11 +281,13 @@ const MapChart = ({
                 0
               );
               const percentage = Math.round((value / total) * 100);
-              return `${value.toLocaleString()} ha\n(${percentage}%)`;
+              // Redondear a cientos de miles y mostrar como "mil"
+              const valueMiles = Math.round(value / 1000);
+              return `${valueMiles.toLocaleString()} mil\n(${percentage}%)`;
             },
           }
         : {
-            display: false, // This explicitly disables the datalabels plugin
+            display: false,
           },
     },
     maintainAspectRatio: false,
@@ -323,56 +324,58 @@ const MapChart = ({
           {mapTitle}
         </div>
       )}
-      <div className="mapchart-controls">
-        {showDelimitationControl && (
-          <div>
-            <label htmlFor="delimitationSelect" style={styles.label}>
-              Delimitar por:
-            </label>
-            <select
-              id="delimitationSelect"
-              value={selectedDelimitation}
-              onChange={(e) => {
-                setSelectedDelimitation(e.target.value);
-                resetView();
-              }}
-              style={styles.select}
-            >
-              {DELIMITATION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+      {(showDelimitationControl || showPaletteControl || selectedArea) && (
+        <div className="mapchart-controls">
+          {showDelimitationControl && (
+            <div>
+              <label htmlFor="delimitationSelect" style={styles.label}>
+                Delimitar por:
+              </label>
+              <select
+                id="delimitationSelect"
+                value={selectedDelimitation}
+                onChange={(e) => {
+                  setSelectedDelimitation(e.target.value);
+                  resetView();
+                }}
+                style={styles.select}
+              >
+                {DELIMITATION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        {showPaletteControl && (
-          <div>
-            <label htmlFor="paletteSelect" style={styles.label}>
-              Paleta de colores:
-            </label>
-            <select
-              id="paletteSelect"
-              value={selectedPaletteName}
-              onChange={(e) => setSelectedPaletteName(e.target.value)}
-              style={styles.select}
-            >
-              {Object.keys(paletteOptions).map((name) => (
-                <option key={name} value={name}>
-                  {name.replace("scheme", "")}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+          {showPaletteControl && (
+            <div>
+              <label htmlFor="paletteSelect" style={styles.label}>
+                Paleta de colores:
+              </label>
+              <select
+                id="paletteSelect"
+                value={selectedPaletteName}
+                onChange={(e) => setSelectedPaletteName(e.target.value)}
+                style={styles.select}
+              >
+                {Object.keys(paletteOptions).map((name) => (
+                  <option key={name} value={name}>
+                    {name.replace("scheme", "")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        {selectedArea && (
-          <button onClick={resetView} style={styles.button}>
-            Mostrar todo
-          </button>
-        )}
-      </div>
+          {selectedArea && (
+            <button onClick={resetView} style={styles.button}>
+              Mostrar todo
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="mapchart-maparea">
         <MapContainer
@@ -382,42 +385,77 @@ const MapChart = ({
           ref={mapRef}
           zoomControl={false}
         >
-          <TileLayer
-            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-            attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
-          />
+          <LayersControl position="topleft">
+            <LayersControl.BaseLayer checked name="OpenTopoMap">
+              <TileLayer
+                url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+                attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="OpenStreetMap">
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satélite (Esri)">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              />
+            </LayersControl.BaseLayer>
 
-          {areaBorders && (
-            <GeoJSON
-              data={paisajeBorders}
-              style={() => ({
-                color: "black",
-                weight: 3,
-                fillOpacity: 0,
-              })}
-            />
-          )}
+            {areaBorders && (
+              <LayersControl.Overlay checked name="Área de Estudio">
+                <GeoJSON
+                  data={areaBorders}
+                  style={() => ({
+                    color: "black",
+                    weight: 5,
+                    fillOpacity: 0,
+                  })}
+                />
+              </LayersControl.Overlay>
+            )}
 
-          {paisajeBorders && selectedDelimitation === "PAISAJE" && (
-            <GeoJSON
-              data={paisajeBorders}
-              style={() => ({
-                color: "black",
-                weight: 3,
-                fillOpacity: 0,
-              })}
-            />
-          )}
+            {paisajeBorders && (
+              <LayersControl.Overlay checked name="Paisajes">
+                <GeoJSON
+                  data={paisajeBorders}
+                  style={() => ({
+                    color: "black",
+                    weight: 4,
+                    fillOpacity: 0,
+                  })}
+                />
+              </LayersControl.Overlay>
+            )}
 
-          {geoData && (
-            <GeoJSON
-              key={`${selectedDelimitation}-${selectedArea}`}
-              data={geoData}
-              style={getFeatureStyle}
-              onEachFeature={onEachFeature}
-              ref={geoJsonLayerRef}
-            />
-          )}
+            {municipiosBorders && (
+              <LayersControl.Overlay checked name="Municipios">
+                <GeoJSON
+                  data={municipiosBorders}
+                  style={() => ({
+                    color: "white",
+                    weight: 1,
+                    fillOpacity: 0,
+                  })}
+                />
+              </LayersControl.Overlay>
+            )}
+
+            {geoData && (
+              <LayersControl.Overlay checked name="Datos principales">
+                <GeoJSON
+                  key={`${selectedDelimitation}-${selectedArea}`}
+                  data={geoData}
+                  style={getFeatureStyle}
+                  onEachFeature={onEachFeature}
+                  ref={geoJsonLayerRef}
+                />
+              </LayersControl.Overlay>
+            )}
+          </LayersControl>
         </MapContainer>
       </div>
 

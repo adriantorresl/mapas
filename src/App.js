@@ -9,7 +9,6 @@ import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
 import CardsOverlay from "./components/CardsOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
-import MapChartEnhanced from "./components/MapChartEnhanced";
 import "./App.css";
 
 function StoryMapSection({ children, title, subtitle, id, cards = [] }) {

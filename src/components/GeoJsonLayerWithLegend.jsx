@@ -1,44 +1,64 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  useMap,
+  LayersControl,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useMapLayers } from "../hooks/useMapLayers";
 
-// Componente leyenda react-leaflet
-const Legend = ({ colorMap, nombreCapa }) => {
-  const map = useMap();
+const layersConfig = [
+  { key: "areaBorders", url: "AREA.geojson" },
+  { key: "paisajeBorders", url: "PAISAJES.geojson" },
+  { key: "municipiosBorders", url: "MARGINACION.geojson" }, // o MUNICIPIOS.geojson si lo tienes
+];
 
-  useEffect(() => {
-    if (!map) return;
-
-    const legend = L.control({ position: "bottomright" });
-
-    legend.onAdd = function () {
-      const div = L.DomUtil.create("div", "info legend");
-      div.style.background = "white";
-      div.style.padding = "10px";
-      div.style.borderRadius = "6px";
-      div.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
-      div.style.textAlign = "left";
-      div.innerHTML = `<strong>${nombreCapa}</strong><br/>`;
-      for (const key in colorMap) {
-        div.innerHTML +=
-          `<i style="background:${colorMap[key]}; width:14px; height:14px; display:inline-block; margin-right:6px;"></i>` +
-          key +
-          "<br/>";
-      }
-      return div;
-    };
-
-    legend.addTo(map);
-
-    // Limpieza al desmontar
-    return () => {
-      legend.remove();
-    };
-  }, [map, colorMap, nombreCapa]);
-
-  return null; // Este componente no renderiza nada por React
-};
+const Legend = ({ colorMap, nombreCapa }) => (
+  <div
+    style={{
+      position: "absolute",
+      bottom: 30,
+      right: 30,
+      background: "white",
+      padding: 12,
+      borderRadius: 8,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+      zIndex: 999,
+      minWidth: 120,
+      fontSize: 14,
+    }}
+  >
+    <strong>{nombreCapa}</strong>
+    <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      {Object.entries(colorMap).map(([key, color]) => (
+        <li
+          key={key}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: 4,
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              width: 18,
+              height: 18,
+              background: color,
+              marginRight: 8,
+              border: "1px solid #ccc",
+              borderRadius: 3,
+            }}
+          />
+          <span>{key}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 
 const GeoJsonLayerWithLegend = ({
   nombreCapa,
@@ -46,6 +66,10 @@ const GeoJsonLayerWithLegend = ({
   coloresPorValor,
   nombreArchivo,
 }) => {
+  // ⬇️ Mueve aquí el hook
+  const { areaBorders, paisajeBorders, municipiosBorders } =
+    useMapLayers(layersConfig);
+
   const [geojsonData, setGeojsonData] = useState(null);
   const colorMap = JSON.parse(coloresPorValor);
 
@@ -96,12 +120,67 @@ const GeoJsonLayerWithLegend = ({
       center={[23.6345, -102.5528]} // Centro temporal
       zoom={5} // Zoom temporal
       style={{ height: "100vh", width: "100%" }}
-      scrollWheelZoom={true}
+      scrollWheelZoom={false}
     >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; OpenStreetMap contributors"
-      />
+      <LayersControl position="topleft">
+        <LayersControl.BaseLayer checked name="OpenTopoMap">
+          <TileLayer
+            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OpenStreetMap">
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="Satélite (Esri)">
+          <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+          />
+        </LayersControl.BaseLayer>
+
+        {areaBorders && (
+          <LayersControl.Overlay checked name="Área de Estudio">
+            <GeoJSON
+              data={areaBorders}
+              style={() => ({
+                color: "black",
+                weight: 4,
+                fillOpacity: 0,
+              })}
+            />
+          </LayersControl.Overlay>
+        )}
+
+        {paisajeBorders && (
+          <LayersControl.Overlay checked name="Paisajes">
+            <GeoJSON
+              data={paisajeBorders}
+              style={() => ({
+                color: "black",
+                weight: 3,
+                fillOpacity: 0,
+              })}
+            />
+          </LayersControl.Overlay>
+        )}
+
+        {municipiosBorders && (
+          <LayersControl.Overlay checked name="Municipios">
+            <GeoJSON
+              data={municipiosBorders}
+              style={() => ({
+                color: "white",
+                weight: 2,
+                fillOpacity: 0,
+              })}
+            />
+          </LayersControl.Overlay>
+        )}
+      </LayersControl>
 
       {geojsonData && (
         <>
