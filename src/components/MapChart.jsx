@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { MapContainer, GeoJSON, TileLayer, LayersControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-mouse-position";
+import "leaflet-mouse-position/src/L.Control.MousePosition.css";
+import "leaflet-easyprint";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -39,10 +42,12 @@ const DELIMITATION_OPTIONS = [
   { value: "RM", label: "Región" },
   { value: "NOMGEO", label: "Municipio" },
 ];
+
 const capitalizeFirstLetter = (str) => {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
 function toRGBA(color, alpha = 1) {
   const ctx = document.createElement("canvas").getContext("2d");
   ctx.fillStyle = color;
@@ -65,7 +70,7 @@ const MapChart = ({
   showPaletteControl = true,
   showChart = true,
   showChartLabels = true,
-  mapTitle, // ✅ NUEVA PROP
+  mapTitle,
 }) => {
   const [geoData, setGeoData] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -75,6 +80,12 @@ const MapChart = ({
   const [highlightedAreas, setHighlightedAreas] = useState([]);
   const mapRef = useRef(null);
   const geoJsonLayerRef = useRef(null);
+  const [mapInstance, setMapInstance] = useState(null);
+  const controlsAddedRef = useRef({
+    mousePosition: false,
+    scale: false,
+    easyPrint: false,
+  });
 
   const selectedPalette = paletteOptions[selectedPaletteName];
 
@@ -91,17 +102,20 @@ const MapChart = ({
       .then((res) => res.json())
       .then((data) => {
         setGeoData(data);
-        if (mapRef.current) {
+        if (mapInstance) {
           const bounds = L.geoJSON(data).getBounds();
-          mapRef.current.fitBounds(bounds);
+          mapInstance.fitBounds(bounds);
         }
+      })
+      .catch((error) => {
+        console.error("Error loading GeoJSON:", error);
       });
-  }, [geoJsonUrl]);
+  }, [geoJsonUrl, mapInstance]);
 
   const layersConfig = [
     { key: "areaBorders", url: "AREA.geojson" },
     { key: "paisajeBorders", url: "PAISAJES.geojson" },
-    { key: "municipiosBorders", url: "MARGINACION.geojson" }, // o MUNICIPIOS.geojson si lo tienes
+    { key: "municipiosBorders", url: "MARGINACION.geojson" },
   ];
 
   const { areaBorders, paisajeBorders, municipiosBorders } =
@@ -126,7 +140,7 @@ const MapChart = ({
   }, [geoData, selectedDelimitation]);
 
   const getBaseStyle = () => ({
-    weight: 0.5,
+    weight: 0,
     opacity: 0.5,
     color: "red",
     fillOpacity: 0.5,
@@ -173,39 +187,214 @@ const MapChart = ({
       const clickedArea = clickedFeature.properties[selectedDelimitation];
       setSelectedArea(clickedArea);
 
-      if (groupedFeatures && groupedFeatures[clickedArea]) {
+      if (groupedFeatures && groupedFeatures[clickedArea] && mapInstance) {
         const bounds = L.geoJSON(groupedFeatures[clickedArea]).getBounds();
-        mapRef.current.fitBounds(bounds);
+        mapInstance.fitBounds(bounds);
       }
     }
   };
 
   const onEachFeature = (feature, layer) => {
-    if (selectedDelimitation !== "all") {
-      layer.on({
-        click: onFeatureClick,
-        mouseover: () => {
-          layer.setStyle({
-            weight: 3,
-            color: "#000",
-          });
-          layer.bringToFront();
-        },
-        mouseout: () => {
-          layer.setStyle(getFeatureStyle(feature));
-        },
-      });
-    }
+    const props = feature.properties;
+    let popupContent = `<b>${
+      selectedDelimitation !== "all" ? props[selectedDelimitation] : ""
+    }</b><br/>`;
+    popupContent += Object.entries(props)
+      .map(([k, v]) => `<b>${k}:</b> ${v}`)
+      .join("<br/>");
+    layer.bindPopup(popupContent);
+
+    // Tooltip personalizado: categoriaCol, municipio y hectáreasCol (dinámico)
+    const categoria = props[categoriaCol] ?? "Sin dato";
+    const municipio = props.NOMGEO ?? "Sin municipio";
+    const hectareas = props[hectareasCol]
+      ? Number(props[hectareasCol]).toLocaleString("es-MX", {
+          maximumFractionDigits: 2,
+        })
+      : "Sin dato";
+
+    layer.bindTooltip(
+      `<b>${categoriaCol}:</b> ${categoria}<br/><b>Municipio:</b> ${municipio}<br/><b>Hectáreas:</b> ${hectareas}`,
+      {
+        direction: "top",
+        sticky: true,
+        className: "mapchart-tooltip",
+      }
+    );
+
+    layer.on({
+      click: selectedDelimitation !== "all" ? onFeatureClick : undefined,
+      mouseover: () => {
+        layer.setStyle({
+          weight: 3,
+          color: "#000",
+        });
+        layer.bringToFront();
+      },
+      mouseout: () => {
+        layer.setStyle(getFeatureStyle(feature));
+      },
+    });
   };
 
   const resetView = () => {
     setSelectedArea(null);
     setHighlightedAreas([]);
-    if (geoData && mapRef.current) {
+    if (geoData && mapInstance) {
       const bounds = L.geoJSON(geoData).getBounds();
-      mapRef.current.fitBounds(bounds);
+      mapInstance.fitBounds(bounds);
     }
   };
+
+  // Función para inicializar los controles del mapa
+  const initializeMapControls = (map) => {
+    if (!map || !map._container) {
+      console.log("Mapa no disponible para agregar controles");
+      return;
+    }
+
+    console.log("Inicializando controles del mapa...");
+
+    try {
+      // Control de posición del mouse
+      if (!controlsAddedRef.current.mousePosition) {
+        console.log("Agregando control de posición del mouse...");
+        const mousePositionControl = L.control.mousePosition({
+          position: "bottomleft",
+          separator: " | ",
+          emptyString: "Mueve el cursor sobre el mapa",
+          lngFirst: false,
+          numDigits: 5,
+          lngFormatter: (lng) => `Lng: ${lng.toFixed(5)}°`,
+          latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
+        });
+
+        mousePositionControl.addTo(map);
+        controlsAddedRef.current.mousePosition = true;
+        console.log("✅ Control de posición del mouse agregado");
+      }
+
+      // Control de escala
+      if (!controlsAddedRef.current.scale) {
+        console.log("Agregando control de escala...");
+        const scaleControl = L.control.scale({
+          position: "bottomright",
+          metric: true,
+          imperial: false,
+          maxWidth: 150,
+        });
+
+        scaleControl.addTo(map);
+        controlsAddedRef.current.scale = true;
+        console.log("✅ Control de escala agregado");
+      }
+
+      // Control de impresión mejorado
+      if (
+        !controlsAddedRef.current.easyPrint &&
+        typeof L.easyPrint !== "undefined"
+      ) {
+        console.log("Agregando control de impresión...");
+        const printControl = L.easyPrint({
+          title: "Exportar Mapa",
+          position: "topleft",
+          exportOnly: true,
+          filename: "mapa_completo",
+          sizeModes: ["A4Landscape", "A4Portrait", "Current"],
+          defaultSizeTitles: {
+            Current: "Vista Actual",
+            A4Landscape: "A4 Horizontal",
+            A4Portrait: "A4 Vertical",
+          },
+          hideControlContainer: false,
+          tileWait: 500,
+          spinnerBgCOlor: "#0DC5C1",
+          customWindowTitle: "Exportando mapa...",
+          customSpinnerClass: "epLoader",
+          hideClasses: ["leaflet-control-zoom", "leaflet-control-layers"],
+          dpi: 96,
+          tileLayer: {
+            wait: 500,
+            crossOrigin: true,
+          },
+        });
+
+        printControl.addTo(map);
+        controlsAddedRef.current.easyPrint = true;
+        console.log("✅ Control de impresión agregado");
+      } else if (!L.easyPrint) {
+        console.warn("⚠️ L.easyPrint no está disponible");
+      }
+
+      // Forzar actualización de controles
+      setTimeout(() => {
+        map.invalidateSize();
+        console.log("Mapa redimensionado para mostrar controles");
+      }, 200);
+    } catch (error) {
+      console.error("❌ Error al inicializar controles del mapa:", error);
+    }
+  };
+
+  // Manejar cuando el mapa esté listo
+  const handleMapCreated = (map) => {
+    const exportMapAsImage = async () => {
+      if (!mapInstance) return;
+
+      try {
+        // Importar html2canvas dinámicamente
+        const html2canvas = await import("html2canvas");
+
+        const mapContainer = mapInstance.getContainer();
+
+        const canvas = await html2canvas.default(mapContainer, {
+          useCORS: true,
+          allowTaint: true,
+          scale: 2, // Mayor resolución
+          width: mapContainer.offsetWidth,
+          height: mapContainer.offsetHeight,
+          logging: false,
+          ignoreElements: (element) => {
+            // Ignorar controles de zoom y capas si no los quieres en la imagen
+            return (
+              element.classList.contains("leaflet-control-zoom") ||
+              element.classList.contains("leaflet-control-layers")
+            );
+          },
+        });
+
+        // Crear enlace de descarga
+        const link = document.createElement("a");
+        link.download = "mapa_completo.png";
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        console.log("Mapa exportado exitosamente");
+      } catch (error) {
+        console.error("Error al exportar el mapa:", error);
+        alert(
+          "Error al exportar el mapa. Intenta con el botón de exportación del mapa."
+        );
+      }
+    };
+    console.log("Mapa creado:", map);
+    setMapInstance(map);
+    mapRef.current = map;
+
+    // Esperar un poco para que el mapa esté completamente inicializado
+    setTimeout(() => {
+      initializeMapControls(map);
+    }, 100);
+  };
+
+  // Efecto para re-inicializar controles si el mapa cambia
+  useEffect(() => {
+    if (mapInstance && mapInstance._container) {
+      initializeMapControls(mapInstance);
+    }
+  }, [mapInstance]);
 
   const chartData = useMemo(() => {
     if (!geoData) return null;
@@ -262,7 +451,6 @@ const MapChart = ({
             const value = context.raw || 0;
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = Math.round((value / total) * 100);
-            // Redondear a cientos de miles y mostrar como "mil"
             const valueMiles = Math.round(value / 1000);
             return `${label}: ${valueMiles.toLocaleString()} mil ha (${percentage}%)`;
           },
@@ -281,7 +469,6 @@ const MapChart = ({
                 0
               );
               const percentage = Math.round((value / total) * 100);
-              // Redondear a cientos de miles y mostrar como "mil"
               const valueMiles = Math.round(value / 1000);
               return `${valueMiles.toLocaleString()} mil\n(${percentage}%)`;
             },
@@ -311,7 +498,7 @@ const MapChart = ({
             left: 600,
             zIndex: 1000,
             background: "rgba(255,248,230,0.95)",
-            padding: "auto auto",
+            padding: "8px 16px",
             borderRadius: 8,
             fontFamily: "Roboto",
             fontWeight: 800,
@@ -324,6 +511,7 @@ const MapChart = ({
           {mapTitle}
         </div>
       )}
+
       {(showDelimitationControl || showPaletteControl || selectedArea) && (
         <div className="mapchart-controls">
           {showDelimitationControl && (
@@ -382,23 +570,23 @@ const MapChart = ({
           center={[23.6345, -102.5528]}
           zoom={5}
           style={{ height: "100%", width: "100%" }}
-          ref={mapRef}
           zoomControl={false}
+          whenCreated={handleMapCreated}
+          ref={(mapRef) => {
+            if (mapRef) {
+              console.log("📍 MapContainer ref obtenido");
+              handleMapCreated(mapRef);
+            }
+          }}
         >
           <LayersControl position="topleft">
-            <LayersControl.BaseLayer checked name="OpenTopoMap">
-              <TileLayer
-                url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-                attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
-              />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="OpenStreetMap">
+            <LayersControl.BaseLayer checked name="OpenStreetMap">
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
             </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Satélite (Esri)">
+            <LayersControl.BaseLayer name="Satélite (ESRI)">
               <TileLayer
                 url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
@@ -468,7 +656,7 @@ const MapChart = ({
                 )} en ${selectedArea} (ha)`
               : `Distribución de ${capitalizeFirstLetter(
                   categoriaCol
-                )} en Área de Estudio (ha)`}
+                )} en Área de Estudio`}
           </h3>
           <div style={{ height: "300px" }}>
             <Pie data={chartData} options={chartOptions} />
