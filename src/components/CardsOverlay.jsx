@@ -59,15 +59,16 @@ const CardsOverlay = ({ cards, isCompleted, onAllCardsCompleted, onCardsHidden }
         transition={{ duration: 0.5 }}
         onClick={handleBackgroundClick}
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 10,
-          pointerEvents: "auto",
-          cursor: "pointer", // Indicar que es clickeable
-          background: "rgba(0, 0, 0, 0.1)", // Fondo muy sutil para indicar área clickeable
+          cursor: "pointer",
+          background: "rgba(0, 0, 0, 0.1)",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0",
+          minHeight: "calc(100vh - 88px)",
+          maxHeight: "calc(100vh - 88px)",
+          height: "calc(100vh - 88px)",
         }}
       >
         {/* Contenedor de scroll para las cards */}
@@ -82,18 +83,17 @@ const CardsOverlay = ({ cards, isCompleted, onAllCardsCompleted, onCardsHidden }
           }}
           transition={{ duration: 0.5 }}
           style={{
-            position: "absolute",
-            top: "20px",
-            left: "20px",
-            width: "400px",
-            maxHeight: "calc(100vh - 120px)",
+            width: "100%",
             overflowY: "auto",
             overflowX: "hidden",
-            padding: "0 10px 20px 0",
+            padding: "20px 10px 20px 10px",
             // Estilos del scrollbar
             scrollbarWidth: "thin",
             scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
-            cursor: "default", // Cambiar cursor para indicar que no es clickeable para cerrar
+            cursor: "default",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px"
           }}
           className="cards-scroll-container"
         >
@@ -110,96 +110,15 @@ const CardsOverlay = ({ cards, isCompleted, onAllCardsCompleted, onCardsHidden }
                 duration: 0.4, 
                 delay: isHiding ? index * 0.05 : index * 0.1 
               }}
-              style={{ marginBottom: "20px" }}
+              style={{ 
+                width: "100%",
+                maxWidth: "100%"
+              }}
             >
               <InfoCard data={card} isActive={true} />
             </motion.div>
           ))}
-          
-          {/* Indicador de que debe seguir haciendo scroll */}
-          {!hasScrolledToEnd && !isHiding && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={(e) => e.stopPropagation()} // Prevenir cierre del overlay
-              style={{
-                background: "rgba(52, 152, 219, 0.9)",
-                color: "white",
-                padding: "12px 16px",
-                borderRadius: "8px",
-                fontSize: "0.9rem",
-                textAlign: "center",
-                marginTop: "10px",
-                position: "sticky",
-                bottom: "10px",
-                cursor: "default"
-              }}
-            >
-              ↓ Continúa haciendo scroll para ver más información
-            </motion.div>
-          )}
         </motion.div>
-  
-        {/* Indicador de progreso basado en scroll */}
-        <motion.div 
-          initial={{ opacity: 1 }}
-          animate={{ opacity: isHiding ? 0 : 1 }}
-          transition={{ duration: 0.3 }}
-          onClick={(e) => e.stopPropagation()} // Prevenir cierre del overlay
-          style={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            width: "4px",
-            height: "calc(100vh - 120px)",
-            background: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "2px",
-            overflow: "hidden",
-            cursor: "default"
-          }}
-        >
-          <motion.div
-            style={{
-              width: "100%",
-              background: "linear-gradient(to bottom, #3498db, #27ae60)",
-              borderRadius: "2px",
-              transformOrigin: "top",
-            }}
-            initial={{ scaleY: 0 }}
-            animate={{ 
-              scaleY: hasScrolledToEnd ? 1 : 0,
-              transition: { duration: 0.3 }
-            }}
-          />
-        </motion.div>
-  
-        {/* Mensaje de finalización */}
-        {hasScrolledToEnd && !isHiding && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={(e) => e.stopPropagation()} // Prevenir cierre del overlay
-            style={{
-              position: "absolute",
-              bottom: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              background: "rgba(39, 174, 96, 0.95)",
-              color: "white",
-              padding: "12px 20px",
-              borderRadius: "25px",
-              fontSize: "1rem",
-              textAlign: "center",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-              border: "2px solid rgba(255, 255, 255, 0.2)",
-              cursor: "default"
-            }}
-          >
-            ✓ ¡Perfecto! Ahora puedes interactuar con el mapa
-          </motion.div>
-        )}
       </motion.div>
     );
   }

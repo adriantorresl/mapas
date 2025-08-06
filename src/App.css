@@ -407,29 +407,6 @@ html,
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Estilos para el contenedor de scroll */
-.cards-scroll-container {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
-}
-
-.cards-scroll-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.cards-scroll-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.cards-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 3px;
-}
-
-.cards-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.6);
-}
 
 .cards-overlay {
   backdrop-filter: blur(8px);
@@ -511,12 +488,6 @@ html,
 
 /* Responsive styles for cards */
 @media (max-width: 768px) {
-  .cards-scroll-container {
-    width: calc(100vw - 40px) !important;
-    max-width: 350px !important;
-    left: 10px !important;
-    right: 10px !important;
-  }
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 16px !important;
@@ -531,12 +502,6 @@ html,
 }
 
 @media (max-width: 480px) {
-  .cards-scroll-container {
-    width: calc(100vw - 20px) !important;
-    max-width: 320px !important;
-    left: 10px !important;
-    top: 10px !important;
-  }
   .cards-overlay .info-card {
     max-width: 100% !important;
     padding: 12px !important;
@@ -595,5 +560,128 @@ button {
     border-radius: 8px;
     max-height: none;
     padding: 10px;
+  }
+}
+
+/* === Navigation Tabs === */
+.navigation-tabs {
+  background: #1e3c20;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+.navigation-tabs .tabs-container {
+  max-width: 1200px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 20px 0 20px;
+}
+
+.nav-tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff8e6;
+}
+
+.nav-tab-button:hover {
+  background: #00552e;
+  color: #fff8e6;
+  transform: translateY(-2px);
+}
+
+.nav-tab-button.active {
+  background: linear-gradient(135deg, #00552e, #007a3d);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 85, 46, 0.3);
+}
+
+.nav-tab-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.nav-tab-label {
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nav-tab-indicator {
+  width: 24px;
+  height: 3px;
+  background: #00552e;
+  border-radius: 2px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+/* Responsive para navigation tabs */
+@media (max-width: 768px) {
+  .navigation-tabs {
+    padding: 12px 0;
+  }
+  
+  .navigation-tabs .tabs-container {
+    gap: 4px;
+    padding: 0 12px;
+  }
+  
+  .nav-tab-button {
+    min-width: 80px;
+    padding: 8px 12px;
+    gap: 4px;
+  }
+  
+  .nav-tab-icon {
+    font-size: 20px;
+  }
+  
+  .nav-tab-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navigation-tabs .tabs-container {
+    gap: 2px;
+    padding: 0 8px;
+  }
+  
+  .nav-tab-button {
+    min-width: 70px;
+    padding: 6px 8px;
+  }
+  
+  .nav-tab-icon {
+    font-size: 18px;
+  }
+  
+  .nav-tab-label {
+    font-size: 10px;
   }
 }
