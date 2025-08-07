@@ -51,65 +51,96 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
     }
   }, [cards.length]);
 
-  // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
-  const shouldShowCards =
-    cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
-  return (
-    <section
-      ref={ref}
-      id={id}
-      className="story-section"
-      style={{
-        minHeight: "100vh",
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        transition={{ duration: 0.8 }}
-        className="section-content"
+    // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
+    const shouldShowCards =
+      cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
+
+    return (
+      <section
+        ref={ref}
+        id={id}
+        className="story-section"
         style={{
-          maxWidth: "100%",
-          margin: "0 0",
-          position: "relative",
+          minHeight: "100vh",
         }}
       >
-        {title && (
-          <h1
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              color: "white",
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8 }}
+          className="section-content"
+          style={{
+            maxWidth: "100%",
+            margin: "0 0",
+            position: "relative",
+          }}
+        >
+          {title && (
+            <h1
+              style={{
+                fontFamily: "Roboto, sans-serif",
+                color: "white",
+              }}
+            >
+              {title}
+            </h1>
+          )}
+          {subtitle && (
+            <h2
+              style={{
+                fontFamily: "Roboto, sans-serif",
+                marginBottom: 24,
+                fontWeight: 400,
+                color: "white",
+              }}
+            >
+              {subtitle}
+            </h2>
+          )}
+          <div 
+            className="content-container" 
+            style={{ 
+              display: "flex", 
+              flexDirection: "row", 
+              width: "100%",
+              minHeight: "70vh",
+              height: "calc(100vh - 88px) !important",
             }}
           >
-            {title}
-          </h1>
-        )}
-        {subtitle && (
-          <h2
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              marginBottom: 24,
-              fontWeight: 400,
-              color: "white",
-            }}
-          >
-            {subtitle}
-          </h2>
-        )}
+            {/* Contenedor para CardsOverlay con ancho fijo responsivo */}
+            {shouldShowCards && (
+              <div 
+                style={{
+                  flexShrink: 0,
+                  zIndex: 10,
+                  height: "100%",
+                }}
+              >
+                <CardsOverlay
+                  cards={cards}
+                  isCompleted={cardsCompleted}
+                  onAllCardsCompleted={handleAllCardsCompleted}
+                  onCardsHidden={handleCardsHidden}
+                />
+              </div>
+            )}
+            
+            {/* Contenedor para el mapa que ocupa el resto del espacio */}
+            <div 
+              style={{
+                flex: 1,
+                height: "100%",
+                minWidth: 0, // Permite que el contenedor se encoja si es necesario
+              }}
+            >
+              {children}
+            </div>
+          </div>
 
-        <div style={{ zIndex: shouldShowCards ? 1 : 11 }}>{children}</div>
-        {shouldShowCards && (
-          <CardsOverlay
-            cards={cards}
-            isCompleted={cardsCompleted}
-            onAllCardsCompleted={handleAllCardsCompleted}
-            onCardsHidden={handleCardsHidden}
-          />
-        )}
-      </motion.div>
-    </section>
-  );
-}
+        </motion.div>
+      </section>
+    );
+  }
 
 function Header({ onNavigate }) {
   return (
@@ -376,44 +407,101 @@ function NutrientesSection() {
   );
 }
 
+function NavigationTabs({ activeSection, onSectionChange }) {
+  const sections = [
+    {
+      id: "erosion",
+      label: "Erosión",
+      icon: "🌊"
+    },
+    {
+      id: "nutrientes",
+      label: "Nutrientes", 
+      icon: "🌱"
+    },
+    {
+      id: "carbono",
+      label: "Carbono",
+      icon: "🌍"
+    },
+    {
+      id: "polinizadores",
+      label: "Polinizadores",
+      icon: "🦋"
+    }
+  ];
+
+  return (
+    <div className="navigation-tabs">
+      <div className="tabs-container">
+        {sections.map((section) => (
+          <button
+            key={section.id}
+            className={`nav-tab-button ${activeSection === section.id ? 'active' : ''}`}
+            onClick={() => onSectionChange(section.id)}
+          >
+            <span className="nav-tab-icon">{section.icon}</span>
+            <span className="nav-tab-label">{section.label}</span>
+            {activeSection === section.id && (
+              <div className="nav-tab-indicator" />
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function DegradacionSeccion() {
+  const [activeSection, setActiveSection] = useState("erosion");
+
   return (
     <>
-      <StoryMapSection id="erosion">
-        <RasterViewer
-          fileName="reprojected_USLE_Tendencia.tif"
-          colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
-          legendItems={[
-            { label: "Muy baja", color: "#004a13" },
-            { label: "Media", color: "#41b963" },
-            { label: "Alta", color: "#fff200" },
-            { label: "Muy Alta", color: "#dc0b00" },
-          ]}
-        />
-      </StoryMapSection>
+      <NavigationTabs activeSection={activeSection} onSectionChange={setActiveSection} />
+      
+      {activeSection === "erosion" && (
+        <StoryMapSection id="erosion">
+          <RasterViewer
+            fileName="reprojected_USLE_Tendencia.tif"
+            colorMap="0:#004a13,1:#41b963,2:#fff200,3:#dc0b00"
+            legendItems={[
+              { label: "Muy baja", color: "#004a13" },
+              { label: "Media", color: "#41b963" },
+              { label: "Alta", color: "#fff200" },
+              { label: "Muy Alta", color: "#dc0b00" },
+            ]}
+          />
+        </StoryMapSection>
+      )}
 
-      <NutrientesSection />
+      {activeSection === "nutrientes" && (
+        <NutrientesSection />
+      )}
 
-      <StoryMapSection id="carbono">
-        <RasterViewer
-          fileName="reprojected_tend_co2.tif"
-          colorMap="0:#004a13,1:#fff200,2:#dc0b00"
-          legendItems={[
-            { label: "Bajo", color: "#004a13" },
-            { label: "Medio", color: "#fff200" },
-            { label: "Alto", color: "#dc0b00" },
-          ]}
-        />
-      </StoryMapSection>
+      {activeSection === "carbono" && (
+        <StoryMapSection id="carbono">
+          <RasterViewer
+            fileName="reprojected_tend_co2.tif"
+            colorMap="0:#004a13,1:#fff200,2:#dc0b00"
+            legendItems={[
+              { label: "Bajo", color: "#004a13" },
+              { label: "Medio", color: "#fff200" },
+              { label: "Alto", color: "#dc0b00" },
+            ]}
+          />
+        </StoryMapSection>
+      )}
 
-      <StoryMapSection id="polinizadores">
-        <SideBySideRasters
-          leftFileName="reprojected_abundance_total_primavera.tif"
-          rightFileName="reprojected_abundance_total_verano.tif"
-          startColor="#ffffff"
-          endColor="#004a13"
-        />
-      </StoryMapSection>
+      {activeSection === "polinizadores" && (
+        <StoryMapSection id="polinizadores">
+          <SideBySideRasters
+            leftFileName="reprojected_abundance_total_primavera.tif"
+            rightFileName="reprojected_abundance_total_verano.tif"
+            startColor="#ffffff"
+            endColor="#004a13"
+          />
+        </StoryMapSection>
+      )}
     </>
   );
 }
