@@ -1,9 +1,36 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  LayersControl,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "../leaflet-tooltip-fix.css";
 import L from "leaflet";
 
 const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
+  // Descargar el archivo geojson
+  const downloadGeoJson = async () => {
+    try {
+      const response = await fetch(geoJsonUrl);
+      if (!response.ok) throw new Error("No se pudo descargar el archivo.");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const fileName = geoJsonUrl.split("/").pop() || "datos.geojson";
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Error al descargar el archivo GeoJSON.");
+      console.error(error);
+    }
+  };
   const [geoData, setGeoData] = useState(null);
   const [scale, setScale] = useState("area");
   const [selectedPaisaje, setSelectedPaisaje] = useState("");
@@ -230,48 +257,143 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
   };
   const totals = aggregateHectareasByCategory();
 
+  // --- Control de escala y coordenadas ---
+  function MapExtraControls() {
+    const map = useMap();
+    useEffect(() => {
+      // Control de escala
+      const scale = L.control.scale({
+        position: "bottomright",
+        metric: true,
+        imperial: false,
+      });
+      scale.addTo(map);
+
+      // Control de posición del mouse
+      if (L.control.mousePosition) {
+        const mousePosition = L.control.mousePosition({
+          position: "bottomleft",
+          separator: " | ",
+          emptyString: "Mueve el cursor sobre el mapa",
+          lngFirst: false,
+          numDigits: 5,
+          lngFormatter: (lng) => `Lon: ${lng.toFixed(5)}°`,
+          latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
+        });
+        mousePosition.addTo(map);
+        return () => {
+          scale.remove();
+          mousePosition.remove();
+        };
+      } else {
+        return () => {
+          scale.remove();
+        };
+      }
+    }, [map]);
+    return null;
+  }
+
   return (
     <div className="tsmv-container">
-      <main className="tsmv-maparea" style={{ flex: 1, height: "auto" }}>
+      <main
+        className="tsmv-maparea"
+        style={{ flex: 1, height: "auto", position: "relative" }}
+      >
         <MapContainer
           ref={mapRef}
           center={[23, -102]}
           zoom={5}
           style={{ height: "auto", width: "auto" }}
+          scrollWheelZoom={true}
+          zoomControl={false}
           whenCreated={(map) => {
             mapRef.current = map;
           }}
         >
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
-            attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
-          />
-          {geoData && (
-            <GeoJSON
-              key={`geojson-${scale}-${selectedPaisaje}-${selectedMunicipio}-${yearIndex}`}
-              data={{
-                type: "FeatureCollection",
-                features: getFeaturesToRender(),
-              }}
-              style={getFeatureStyle}
-              onEachFeature={(feature, layer) => {
-                layer.on({
-                  click: (e) => handleFeatureClick(feature, e),
-                  mouseover: (e) => {
-                    e.target.setStyle({
-                      weight: 1,
-                      color: "#666",
-                      fillOpacity: 0.9,
+          <MapExtraControls />
+          <LayersControl position="topleft" zIndex={900}>
+            <LayersControl.BaseLayer checked name="Hillshade (ESRI)">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
+                zIndex={800}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="OpenStreetMap">
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                zIndex={800}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satélite (Esri)">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                zIndex={800}
+              />
+            </LayersControl.BaseLayer>
+            {geoData && (
+              <LayersControl.Overlay checked name="Cambios de Uso de Suelo">
+                <GeoJSON
+                  key={`geojson-${scale}-${selectedPaisaje}-${selectedMunicipio}-${yearIndex}`}
+                  data={{
+                    type: "FeatureCollection",
+                    features: getFeaturesToRender(),
+                  }}
+                  style={getFeatureStyle}
+                  onEachFeature={(feature, layer) => {
+                    layer.on({
+                      click: (e) => handleFeatureClick(feature, e),
+                      mouseover: (e) => {
+                        e.target.setStyle({
+                          weight: 1,
+                          color: "#666",
+                          fillOpacity: 0.9,
+                        });
+                      },
+                      mouseout: (e) => {
+                        e.target.setStyle(getFeatureStyle(feature));
+                      },
                     });
-                  },
-                  mouseout: (e) => {
-                    e.target.setStyle(getFeatureStyle(feature));
-                  },
-                });
+                  }}
+                  ref={geoJsonLayerRef}
+                />
+              </LayersControl.Overlay>
+            )}
+          </LayersControl>
+          {/* Botón para descargar el GeoJSON */}
+          <div
+            style={{
+              position: "absolute",
+              top: 16,
+              left: 80,
+              zIndex: 999,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            <button
+              onClick={downloadGeoJson}
+              style={{
+                minWidth: 120,
+                padding: "6px 10px",
+                backgroundColor: "#388e3c",
+                color: "#fff",
+                border: "1px solid #bdbdbd",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: 500,
+                fontSize: "0.98em",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
               }}
-              ref={geoJsonLayerRef}
-            />
-          )}
+              title="Descargar archivo GeoJSON"
+            >
+              ⬇️ Descargar GeoJSON
+            </button>
+          </div>
         </MapContainer>
       </main>
       <aside

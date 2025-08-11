@@ -51,96 +51,95 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
     }
   }, [cards.length]);
 
-    // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
-    const shouldShowCards =
-      cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
+  // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
+  const shouldShowCards =
+    cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
 
-    return (
-      <section
-        ref={ref}
-        id={id}
-        className="story-section"
+  return (
+    <section
+      ref={ref}
+      id={id}
+      className="story-section"
+      style={{
+        minHeight: "100vh",
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 0.8 }}
+        className="section-content"
         style={{
-          minHeight: "100vh",
+          maxWidth: "100%",
+          margin: "0 0",
+          position: "relative",
         }}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8 }}
-          className="section-content"
-          style={{
-            maxWidth: "100%",
-            margin: "0 0",
-            position: "relative",
-          }}
-        >
-          {title && (
-            <h1
-              style={{
-                fontFamily: "Roboto, sans-serif",
-                color: "white",
-              }}
-            >
-              {title}
-            </h1>
-          )}
-          {subtitle && (
-            <h2
-              style={{
-                fontFamily: "Roboto, sans-serif",
-                marginBottom: 24,
-                fontWeight: 400,
-                color: "white",
-              }}
-            >
-              {subtitle}
-            </h2>
-          )}
-          <div 
-            className="content-container" 
-            style={{ 
-              display: "flex", 
-              flexDirection: "row", 
-              width: "100%",
-              minHeight: "70vh",
-              height: "calc(100vh - 88px) !important",
+        {title && (
+          <h1
+            style={{
+              fontFamily: "Roboto, sans-serif",
+              color: "white",
             }}
           >
-            {/* Contenedor para CardsOverlay con ancho fijo responsivo */}
-            {shouldShowCards && (
-              <div 
-                style={{
-                  flexShrink: 0,
-                  zIndex: 10,
-                  height: "100%",
-                }}
-              >
-                <CardsOverlay
-                  cards={cards}
-                  isCompleted={cardsCompleted}
-                  onAllCardsCompleted={handleAllCardsCompleted}
-                  onCardsHidden={handleCardsHidden}
-                />
-              </div>
-            )}
-            
-            {/* Contenedor para el mapa que ocupa el resto del espacio */}
-            <div 
+            {title}
+          </h1>
+        )}
+        {subtitle && (
+          <h2
+            style={{
+              fontFamily: "Roboto, sans-serif",
+              marginBottom: 24,
+              fontWeight: 400,
+              color: "white",
+            }}
+          >
+            {subtitle}
+          </h2>
+        )}
+        <div
+          className="content-container"
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            minHeight: "70vh",
+            height: "calc(100vh - 88px) !important",
+          }}
+        >
+          {/* Contenedor para CardsOverlay con ancho fijo responsivo */}
+          {shouldShowCards && (
+            <div
               style={{
-                flex: 1,
+                flexShrink: 0,
+                zIndex: 10,
                 height: "100%",
-                minWidth: 0, // Permite que el contenedor se encoja si es necesario
               }}
             >
-              {children}
+              <CardsOverlay
+                cards={cards}
+                isCompleted={cardsCompleted}
+                onAllCardsCompleted={handleAllCardsCompleted}
+                onCardsHidden={handleCardsHidden}
+              />
             </div>
-          </div>
+          )}
 
-        </motion.div>
-      </section>
-    );
-  }
+          {/* Contenedor para el mapa que ocupa el resto del espacio */}
+          <div
+            style={{
+              flex: 1,
+              height: "100%",
+              minWidth: 0, // Permite que el contenedor se encoja si es necesario
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
 
 function Header({ onNavigate }) {
   return (
@@ -412,23 +411,23 @@ function NavigationTabs({ activeSection, onSectionChange }) {
     {
       id: "erosion",
       label: "Erosión",
-      icon: "🌊"
+      icon: "🌊",
     },
     {
       id: "nutrientes",
-      label: "Nutrientes", 
-      icon: "🌱"
+      label: "Nutrientes",
+      icon: "🌱",
     },
     {
       id: "carbono",
       label: "Carbono",
-      icon: "🌍"
+      icon: "🌍",
     },
     {
       id: "polinizadores",
       label: "Polinizadores",
-      icon: "🦋"
-    }
+      icon: "🦋",
+    },
   ];
 
   return (
@@ -437,7 +436,9 @@ function NavigationTabs({ activeSection, onSectionChange }) {
         {sections.map((section) => (
           <button
             key={section.id}
-            className={`nav-tab-button ${activeSection === section.id ? 'active' : ''}`}
+            className={`nav-tab-button ${
+              activeSection === section.id ? "active" : ""
+            }`}
             onClick={() => onSectionChange(section.id)}
           >
             <span className="nav-tab-icon">{section.icon}</span>
@@ -457,8 +458,11 @@ function DegradacionSeccion() {
 
   return (
     <>
-      <NavigationTabs activeSection={activeSection} onSectionChange={setActiveSection} />
-      
+      <NavigationTabs
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
+
       {activeSection === "erosion" && (
         <StoryMapSection id="erosion">
           <RasterViewer
@@ -474,9 +478,7 @@ function DegradacionSeccion() {
         </StoryMapSection>
       )}
 
-      {activeSection === "nutrientes" && (
-        <NutrientesSection />
-      )}
+      {activeSection === "nutrientes" && <NutrientesSection />}
 
       {activeSection === "carbono" && (
         <StoryMapSection id="carbono">

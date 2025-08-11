@@ -1,0 +1,13 @@
+.leaflet-tooltip,
+.heatmap-tooltip {
+  z-index: 2000 !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #222 !important;
+  font-size: 15px !important;
+  border-radius: 6px !important;
+  border: 1px solid #888 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  padding: 6px 12px !important;
+}

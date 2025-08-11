@@ -40,14 +40,14 @@ const RasterComparison = ({ species }) => {
       const layer1 = new GeoRasterLayer({
         georaster: r1,
         pixelValuesToColorFn: ([val]) => getColorRamp(val),
-        resolution: 256,
+        resolution: 4096,
         opacity: 1,
       });
 
       const layer2 = new GeoRasterLayer({
         georaster: r2,
         pixelValuesToColorFn: ([val]) => getColorRamp(val),
-        resolution: 256,
+        resolution: 4096,
         opacity: 1,
       });
 

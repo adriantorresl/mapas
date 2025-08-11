@@ -1,19 +1,46 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  LayersControl,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-mouse-position";
+import "leaflet-mouse-position/src/L.Control.MousePosition.css";
+
+// Hook para cargar capas adicionales (igual que en MapChart)
+function useMapLayers(layersConfig) {
+  const [layers, setLayers] = useState({});
+  useEffect(() => {
+    layersConfig.forEach(({ key, url }) => {
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          setLayers((prev) => ({ ...prev, [key]: data }));
+        })
+        .catch(() => {
+          setLayers((prev) => ({ ...prev, [key]: null }));
+        });
+    });
+    // eslint-disable-next-line
+  }, []);
+  return layers;
+}
 
 const Heatmap = ({
   geojsonUrl,
   valueColumn,
-  colorRamp = null, // ✅ Rampa personalizada opcional
-  startColor = "#ffeda0", // ✅ Fallback si no se pasa colorRamp
+  colorRamp = null,
+  startColor = "#ffeda0",
   endColor = "#f03b20",
   style = { height: "100vh", width: "100%" },
   borderColor = "#333",
   borderWidth = 1,
-  legendTitle = "Población Total", // ✅ Título personalizable
-  valueUnit = "habitantes", // ✅ Unidad personalizable
+  legendTitle = "Población Total",
+  valueUnit = "habitantes",
 }) => {
   const [geojsonData, setGeojsonData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +121,7 @@ const Heatmap = ({
   useEffect(() => {
     if (geojsonData && mapRef.current && geojsonRef.current) {
       const bounds = geojsonRef.current.getBounds();
-      mapRef.current.fitBounds(bounds);
+      mapRef.current.fitBounds(bounds, { maxZoom: 12 });
     }
   }, [geojsonData]);
 
@@ -157,35 +184,273 @@ const Heatmap = ({
     );
   };
 
+  // Componente para agregar controles de escala y coordenadas
+  function MapExtraControls() {
+    const map = useMap();
+    useEffect(() => {
+      // Control de escala
+      const scale = L.control.scale({
+        position: "bottomright",
+        metric: true,
+        imperial: false,
+      });
+      scale.addTo(map);
+
+      // Control de posición del mouse
+      const mousePosition = L.control.mousePosition({
+        position: "bottomleft",
+        separator: " | ",
+        emptyString: "Mueve el cursor sobre el mapa",
+        lngFirst: false,
+        numDigits: 5,
+        lngFormatter: (lng) => `Lon: ${lng.toFixed(5)}°`,
+        latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
+      });
+      mousePosition.addTo(map);
+
+      return () => {
+        scale.remove();
+        mousePosition.remove();
+      };
+    }, [map]);
+    return null;
+  }
+
+  // Cargar capas adicionales
+  const layersConfig = [
+    { key: "areaBorders", url: "AREA.geojson" },
+    { key: "municipiosBorders", url: "MARGINACION.geojson" },
+  ];
+  const { areaBorders, municipiosBorders } = useMapLayers(layersConfig);
+
+  // --- BOTÓN: Exportar mapa como imagen ---
+  const exportMapAsImage = async () => {
+    if (!mapRef.current) {
+      alert("El mapa aún no está listo para exportar.");
+      return;
+    }
+    try {
+      const html2canvas = await import("html2canvas");
+      const mapContainer = mapRef.current.getContainer
+        ? mapRef.current.getContainer()
+        : mapRef.current._container;
+
+      // Oculta controles antes de exportar
+      const controls = mapContainer.querySelectorAll(
+        ".leaflet-control-container"
+      );
+      controls.forEach((el) => (el.style.visibility = "hidden"));
+
+      const canvas = await html2canvas.default(mapContainer, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,
+        width: mapContainer.offsetWidth,
+        height: mapContainer.offsetHeight,
+        logging: false,
+      });
+
+      // Restaura controles
+      controls.forEach((el) => (el.style.visibility = "visible"));
+
+      const link = document.createElement("a");
+      link.download = "mapa_heatmap.png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      console.log("Mapa exportado exitosamente");
+    } catch (error) {
+      console.error("Error al exportar el mapa:", error);
+      alert("Error al exportar el mapa. Intenta de nuevo.");
+    }
+  };
+
+  // --- BOTÓN: Descargar GeoJSON ---
+  const downloadGeoJson = async () => {
+    try {
+      const response = await fetch(geojsonUrl);
+      if (!response.ok) throw new Error("No se pudo descargar el archivo.");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const fileName = geojsonUrl.split("/").pop() || "datos.geojson";
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Error al descargar el archivo GeoJSON.");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="heatmap-container" style={{ position: "relative" }}>
       <MapContainer
         ref={mapRef}
-        center={[0, 0]}
-        zoom={2}
+        center={[23.6345, -102.5528]}
+        zoom={5}
         zoomControl={false}
         style={style}
         whenCreated={(map) => {
           mapRef.current = map;
         }}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        {renderHeatmap()}
-        {paisajesData && (
-          <GeoJSON
-            data={paisajesData}
+        <MapExtraControls />
+
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer checked name="OpenStreetMap">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Satélite (ESRI)">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+            />
+          </LayersControl.BaseLayer>
+
+          {/* Área de Estudio */}
+          {areaBorders && (
+            <LayersControl.Overlay checked name="Área de Estudio">
+              <GeoJSON
+                data={areaBorders}
+                style={() => ({
+                  color: "black",
+                  weight: 5,
+                  fillOpacity: 0,
+                })}
+              />
+            </LayersControl.Overlay>
+          )}
+
+          {/* Municipios */}
+          {municipiosBorders && (
+            <LayersControl.Overlay checked name="Municipios">
+              <GeoJSON
+                data={municipiosBorders}
+                style={() => ({
+                  color: "white",
+                  weight: 1,
+                  fillOpacity: 0,
+                })}
+              />
+            </LayersControl.Overlay>
+          )}
+
+          {/* Capa principal */}
+          {geojsonData && (
+            <LayersControl.Overlay checked name="Capa principal">
+              <GeoJSON
+                ref={geojsonRef}
+                data={geojsonData}
+                style={(feature) => ({
+                  fillColor: getColor(
+                    feature.properties[valueColumn],
+                    minValue,
+                    maxValue,
+                    ramp
+                  ),
+                  weight: borderWidth,
+                  opacity: 1,
+                  color: borderColor,
+                  dashArray: "3",
+                  fillOpacity: 0.7,
+                })}
+                onEachFeature={(feature, layer) => {
+                  layer.bindTooltip(
+                    `
+                    <div>
+                      <strong>${
+                        feature.properties.NOMGEO || "Municipio"
+                      }</strong><br/>
+                      ${feature.properties[valueColumn]} ${valueUnit}
+                    </div>
+                  `,
+                    {
+                      permanent: false,
+                      direction: "auto",
+                      className: "heatmap-tooltip",
+                    }
+                  );
+                }}
+              />
+            </LayersControl.Overlay>
+          )}
+
+          {/* Paisajes opcional */}
+          {paisajesData && (
+            <LayersControl.Overlay checked name="Paisajes">
+              <GeoJSON
+                data={paisajesData}
+                style={{
+                  color: "black",
+                  weight: 3,
+                  fillOpacity: 0,
+                  opacity: 1,
+                }}
+                interactive={false}
+              />
+            </LayersControl.Overlay>
+          )}
+        </LayersControl>
+
+        {/* Botones debajo del control de capas */}
+        <div
+          className="map-action-buttons"
+          style={{
+            position: "absolute",
+            top: 180, // <-- Aumenta este valor para que siempre estén debajo del menú expandido
+            left: 16,
+            zIndex: 1000,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          <button
+            onClick={downloadGeoJson}
             style={{
-              color: "black",
-              weight: 3,
-              fillOpacity: 0,
-              opacity: 1,
+              minWidth: 120,
+              padding: "6px 10px",
+              backgroundColor: "#388e3c",
+              color: "#fff",
+              border: "1px solid #bdbdbd",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: 500,
+              fontSize: "0.98em",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
             }}
-            interactive={false}
-          />
-        )}
+            title="Descargar archivo GeoJSON"
+          >
+            ⬇️ Descargar GeoJSON
+          </button>
+          <button
+            onClick={exportMapAsImage}
+            style={{
+              minWidth: 120,
+              padding: "6px 10px",
+              backgroundColor: "#1976d2",
+              color: "#fff",
+              border: "1px solid #bdbdbd",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: 500,
+              fontSize: "0.98em",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+            }}
+            title="Exportar mapa como imagen"
+          >
+            📷 Exportar mapa
+          </button>
+        </div>
       </MapContainer>
 
       {loading && (
@@ -204,13 +469,13 @@ const Heatmap = ({
         <div
           style={{
             position: "absolute",
-            bottom: 24,
+            top: 24,
             right: 24,
             background: "rgba(255,255,255,0.95)",
             borderRadius: 8,
             boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             padding: "12px 18px",
-            zIndex: 1000,
+            zIndex: 999,
             minWidth: 180,
             fontSize: 14,
           }}

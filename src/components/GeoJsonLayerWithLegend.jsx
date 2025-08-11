@@ -8,6 +8,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "../leaflet-tooltip-fix.css";
 import { useMapLayers } from "../hooks/useMapLayers";
 
 const layersConfig = [
@@ -20,7 +21,7 @@ const Legend = ({ colorMap, nombreCapa }) => (
   <div
     style={{
       position: "absolute",
-      bottom: 30,
+      top: 30,
       right: 30,
       background: "white",
       padding: 12,
@@ -73,6 +74,20 @@ const GeoJsonLayerWithLegend = ({
   const [geojsonData, setGeojsonData] = useState(null);
   const colorMap = JSON.parse(coloresPorValor);
 
+  // Crear un mapa de identificadores a nombres de municipio si existen municipiosBorders
+  const municipioNameLookup = React.useMemo(() => {
+    if (!municipiosBorders || !municipiosBorders.features) return {};
+    // Usar Cve_Mun o id o cualquier campo único, aquí se asume que hay un campo 'CVEGEO' o 'id'
+    const lookup = {};
+    municipiosBorders.features.forEach((feat) => {
+      // Intenta usar CVEGEO, id, o NOMGEO como clave
+      const key =
+        feat.properties.CVEGEO || feat.properties.id || feat.properties.NOMGEO;
+      lookup[key] = feat.properties.NOMGEO;
+    });
+    return lookup;
+  }, [municipiosBorders]);
+
   useEffect(() => {
     fetch(`${process.env.PUBLIC_URL}/${nombreArchivo}`)
       .then((res) => res.json())
@@ -104,32 +119,83 @@ const GeoJsonLayerWithLegend = ({
       fillColor: getColor(valor),
       weight: 1,
       color: "#333",
-      fillOpacity: 0.7,
+      fillOpacity: 0.7, // Aumenta la opacidad para facilitar el hover
     };
   };
 
   const onEachFeature = (feature, layer) => {
     const valor = feature.properties[atributoValor];
+    // Buscar nombre del municipio usando CVEGEO, id, o NOMGEO
+    let municipio = "Municipio";
+    // Intenta buscar por CVEGEO, id, o NOMGEO
+    const key =
+      feature.properties.CVEGEO ||
+      feature.properties.id ||
+      feature.properties.NOMGEO;
+    if (municipioNameLookup[key]) {
+      municipio = municipioNameLookup[key];
+    } else if (feature.properties.NOMGEO) {
+      municipio = feature.properties.NOMGEO;
+    }
+    layer.bindTooltip(`<strong>${municipio}</strong>`, {
+      permanent: false,
+      direction: "top",
+      sticky: true,
+      className: "heatmap-tooltip",
+    });
     layer.bindPopup(
       `<strong>${nombreCapa}</strong><br/>${atributoValor}: ${valor}`
     );
   };
 
+  // --- Control de escala y coordenadas ---
+  function MapExtraControls() {
+    const map = useMap();
+    useEffect(() => {
+      // Control de escala
+      const scale = L.control.scale({
+        position: "bottomright",
+        metric: true,
+        imperial: false,
+      });
+      scale.addTo(map);
+
+      // Control de posición del mouse
+      if (L.control.mousePosition) {
+        const mousePosition = L.control.mousePosition({
+          position: "bottomleft",
+          separator: " | ",
+          emptyString: "Mueve el cursor sobre el mapa",
+          lngFirst: false,
+          numDigits: 5,
+          lngFormatter: (lng) => `Lon: ${lng.toFixed(5)}°`,
+          latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
+        });
+        mousePosition.addTo(map);
+        return () => {
+          scale.remove();
+          mousePosition.remove();
+        };
+      } else {
+        return () => {
+          scale.remove();
+        };
+      }
+    }, [map]);
+    return null;
+  }
+
   return (
     <MapContainer
-      center={[23.6345, -102.5528]} // Centro temporal
-      zoom={5} // Zoom temporal
+      center={[23.6345, -102.5528]}
+      zoom={5}
       style={{ height: "100vh", width: "100%" }}
-      scrollWheelZoom={false}
+      scrollWheelZoom={true}
+      zoomControl={false}
     >
+      <MapExtraControls />
       <LayersControl position="topleft">
-        <LayersControl.BaseLayer checked name="OpenTopoMap">
-          <TileLayer
-            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-            attribution='Map data: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
-          />
-        </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="OpenStreetMap">
+        <LayersControl.BaseLayer checked name="OpenStreetMap">
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -151,6 +217,7 @@ const GeoJsonLayerWithLegend = ({
                 weight: 4,
                 fillOpacity: 0,
               })}
+              interactive={false}
             />
           </LayersControl.Overlay>
         )}
@@ -164,6 +231,7 @@ const GeoJsonLayerWithLegend = ({
                 weight: 3,
                 fillOpacity: 0,
               })}
+              interactive={false}
             />
           </LayersControl.Overlay>
         )}
@@ -177,18 +245,23 @@ const GeoJsonLayerWithLegend = ({
                 weight: 2,
                 fillOpacity: 0,
               })}
+              interactive={false}
+            />
+          </LayersControl.Overlay>
+        )}
+
+        {geojsonData && (
+          <LayersControl.Overlay checked name={nombreCapa || "Capa principal"}>
+            <GeoJSON
+              data={geojsonData}
+              style={style}
+              onEachFeature={onEachFeature}
             />
           </LayersControl.Overlay>
         )}
       </LayersControl>
-
       {geojsonData && (
         <>
-          <GeoJSON
-            data={geojsonData}
-            style={style}
-            onEachFeature={onEachFeature}
-          />
           <FitBounds data={geojsonData} />
           <Legend colorMap={colorMap} nombreCapa={nombreCapa} />
         </>

@@ -4,7 +4,6 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-mouse-position";
 import "leaflet-mouse-position/src/L.Control.MousePosition.css";
-import "leaflet-easyprint";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -265,7 +264,7 @@ const MapChart = ({
           emptyString: "Mueve el cursor sobre el mapa",
           lngFirst: false,
           numDigits: 5,
-          lngFormatter: (lng) => `Lng: ${lng.toFixed(5)}°`,
+          lngFormatter: (lng) => `Lon: ${lng.toFixed(5)}°`,
           latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
         });
 
@@ -288,49 +287,6 @@ const MapChart = ({
         controlsAddedRef.current.scale = true;
         console.log("✅ Control de escala agregado");
       }
-
-      // Control de impresión mejorado
-      if (
-        !controlsAddedRef.current.easyPrint &&
-        typeof L.easyPrint !== "undefined"
-      ) {
-        console.log("Agregando control de impresión...");
-        const printControl = L.easyPrint({
-          title: "Exportar Mapa",
-          position: "topleft",
-          exportOnly: true,
-          filename: "mapa_completo",
-          sizeModes: ["A4Landscape", "A4Portrait", "Current"],
-          defaultSizeTitles: {
-            Current: "Vista Actual",
-            A4Landscape: "A4 Horizontal",
-            A4Portrait: "A4 Vertical",
-          },
-          hideControlContainer: false,
-          tileWait: 500,
-          spinnerBgCOlor: "#0DC5C1",
-          customWindowTitle: "Exportando mapa...",
-          customSpinnerClass: "epLoader",
-          hideClasses: ["leaflet-control-zoom", "leaflet-control-layers"],
-          dpi: 96,
-          tileLayer: {
-            wait: 500,
-            crossOrigin: true,
-          },
-        });
-
-        printControl.addTo(map);
-        controlsAddedRef.current.easyPrint = true;
-        console.log("✅ Control de impresión agregado");
-      } else if (!L.easyPrint) {
-        console.warn("⚠️ L.easyPrint no está disponible");
-      }
-
-      // Forzar actualización de controles
-      setTimeout(() => {
-        map.invalidateSize();
-        console.log("Mapa redimensionado para mostrar controles");
-      }, 200);
     } catch (error) {
       console.error("❌ Error al inicializar controles del mapa:", error);
     }
@@ -338,47 +294,6 @@ const MapChart = ({
 
   // Manejar cuando el mapa esté listo
   const handleMapCreated = (map) => {
-    const exportMapAsImage = async () => {
-      if (!mapInstance) return;
-
-      try {
-        // Importar html2canvas dinámicamente
-        const html2canvas = await import("html2canvas");
-
-        const mapContainer = mapInstance.getContainer();
-
-        const canvas = await html2canvas.default(mapContainer, {
-          useCORS: true,
-          allowTaint: true,
-          scale: 2, // Mayor resolución
-          width: mapContainer.offsetWidth,
-          height: mapContainer.offsetHeight,
-          logging: false,
-          ignoreElements: (element) => {
-            // Ignorar controles de zoom y capas si no los quieres en la imagen
-            return (
-              element.classList.contains("leaflet-control-zoom") ||
-              element.classList.contains("leaflet-control-layers")
-            );
-          },
-        });
-
-        // Crear enlace de descarga
-        const link = document.createElement("a");
-        link.download = "mapa_completo.png";
-        link.href = canvas.toDataURL("image/png");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        console.log("Mapa exportado exitosamente");
-      } catch (error) {
-        console.error("Error al exportar el mapa:", error);
-        alert(
-          "Error al exportar el mapa. Intenta con el botón de exportación del mapa."
-        );
-      }
-    };
     console.log("Mapa creado:", map);
     setMapInstance(map);
     mapRef.current = map;
@@ -480,6 +395,70 @@ const MapChart = ({
     maintainAspectRatio: false,
   };
 
+  // 1. Agrega la función fuera del componente o dentro pero fuera de handleMapCreated
+  const exportMapAsImage = async (mapInstance) => {
+    if (!mapInstance) {
+      alert("El mapa aún no está listo para exportar.");
+      return;
+    }
+    try {
+      const html2canvas = await import("html2canvas");
+      const mapContainer = mapInstance.getContainer();
+
+      // Opcional: Oculta controles antes de exportar
+      const controls = mapContainer.querySelectorAll(
+        ".leaflet-control-container"
+      );
+      controls.forEach((el) => (el.style.visibility = "hidden"));
+
+      const canvas = await html2canvas.default(mapContainer, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,
+        width: mapContainer.offsetWidth,
+        height: mapContainer.offsetHeight,
+        logging: false,
+      });
+
+      // Restaura controles
+      controls.forEach((el) => (el.style.visibility = "visible"));
+
+      const link = document.createElement("a");
+      link.download = "mapa_completo.png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      console.log("Mapa exportado exitosamente");
+    } catch (error) {
+      console.error("Error al exportar el mapa:", error);
+      alert("Error al exportar el mapa. Intenta de nuevo.");
+    }
+  };
+
+  // Nueva función para descargar el geoJsonUrl
+  const downloadGeoJson = async () => {
+    try {
+      const response = await fetch(geoJsonUrl);
+      if (!response.ok) throw new Error("No se pudo descargar el archivo.");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      // Nombre sugerido: extrae el nombre del archivo de la url
+      const fileName = geoJsonUrl.split("/").pop() || "datos.geojson";
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Error al descargar el archivo GeoJSON.");
+      console.error(error);
+    }
+  };
+
   return (
     <div
       className="mapchart-responsive-container"
@@ -512,58 +491,85 @@ const MapChart = ({
         </div>
       )}
 
-      {(showDelimitationControl || showPaletteControl || selectedArea) && (
-        <div className="mapchart-controls">
-          {showDelimitationControl && (
-            <div>
-              <label htmlFor="delimitationSelect" style={styles.label}>
-                Delimitar por:
-              </label>
-              <select
-                id="delimitationSelect"
-                value={selectedDelimitation}
-                onChange={(e) => {
-                  setSelectedDelimitation(e.target.value);
-                  resetView();
-                }}
-                style={styles.select}
-              >
-                {DELIMITATION_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+      {/* Controles siempre visibles */}
+      <div className="mapchart-controls">
+        {showDelimitationControl && (
+          <div>
+            <label htmlFor="delimitationSelect" style={styles.label}>
+              Delimitar por:
+            </label>
+            <select
+              id="delimitationSelect"
+              value={selectedDelimitation}
+              onChange={(e) => {
+                setSelectedDelimitation(e.target.value);
+                resetView();
+              }}
+              style={styles.select}
+            >
+              {DELIMITATION_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-          {showPaletteControl && (
-            <div>
-              <label htmlFor="paletteSelect" style={styles.label}>
-                Paleta de colores:
-              </label>
-              <select
-                id="paletteSelect"
-                value={selectedPaletteName}
-                onChange={(e) => setSelectedPaletteName(e.target.value)}
-                style={styles.select}
-              >
-                {Object.keys(paletteOptions).map((name) => (
-                  <option key={name} value={name}>
-                    {name.replace("scheme", "")}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+        {showPaletteControl && (
+          <div>
+            <label htmlFor="paletteSelect" style={styles.label}>
+              Paleta de colores:
+            </label>
+            <select
+              id="paletteSelect"
+              value={selectedPaletteName}
+              onChange={(e) => setSelectedPaletteName(e.target.value)}
+              style={styles.select}
+            >
+              {Object.keys(paletteOptions).map((name) => (
+                <option key={name} value={name}>
+                  {name.replace("scheme", "")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-          {selectedArea && (
-            <button onClick={resetView} style={styles.button}>
-              Mostrar todo
-            </button>
-          )}
-        </div>
-      )}
+        {selectedArea && (
+          <button onClick={resetView} style={styles.button}>
+            Mostrar todo
+          </button>
+        )}
+
+        {/* Botón para exportar el GeoJSON */}
+        <button
+          onClick={downloadGeoJson}
+          style={{
+            ...styles.button,
+            backgroundColor: "#388e3c",
+            color: "#fff",
+            marginLeft: 8,
+          }}
+          title="Descargar archivo GeoJSON"
+        >
+          ⬇️ Descargar GeoJSON
+        </button>
+
+        {/* Botón para exportar imagen del mapa */}
+        <button
+          onClick={() => exportMapAsImage(mapInstance)}
+          style={{
+            ...styles.button,
+            backgroundColor: "#1976d2",
+            color: "#fff",
+            marginLeft: 8,
+          }}
+          title="Exportar mapa como imagen"
+        >
+          📷 Exportar mapa
+        </button>
+      </div>
 
       <div className="mapchart-maparea">
         <MapContainer

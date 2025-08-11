@@ -407,7 +407,6 @@ html,
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
-
 .cards-overlay {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -645,22 +644,22 @@ button {
   .navigation-tabs {
     padding: 12px 0;
   }
-  
+
   .navigation-tabs .tabs-container {
     gap: 4px;
     padding: 0 12px;
   }
-  
+
   .nav-tab-button {
     min-width: 80px;
     padding: 8px 12px;
     gap: 4px;
   }
-  
+
   .nav-tab-icon {
     font-size: 20px;
   }
-  
+
   .nav-tab-label {
     font-size: 11px;
   }
@@ -671,17 +670,21 @@ button {
     gap: 2px;
     padding: 0 8px;
   }
-  
+
   .nav-tab-button {
     min-width: 70px;
     padding: 6px 8px;
   }
-  
+
   .nav-tab-icon {
     font-size: 18px;
   }
-  
+
   .nav-tab-label {
     font-size: 10px;
   }
+}
+
+.leaflet-control-layers-expanded ~ .map-action-buttons {
+  top: 180px !important; /* o el valor que necesites */
 }
