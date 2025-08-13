@@ -6,54 +6,17 @@ import Heatmap from "./components/Heatmap";
 import TimeSeriesMapViewer from "./components/TimeSeriesMapViewer";
 import RasterSlideCompare from "./components/RasterSlideCompare";
 import GeoJsonLayerWithLegend from "./components/GeoJsonLayerWithLegend";
-import CardsOverlay from "./components/CardsOverlay";
+import TextOverlay from "./components/TextOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
+import logo from "./assets/logo.png";
 import "./App.css";
 
-function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
+function StoryMapSection({ children, title, content, id, tables, images, blocks }) {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: false,
   });
-
-  const [cardsCompleted, setCardsCompleted] = React.useState(false);
-  const [cardsHidden, setCardsHidden] = React.useState(false);
-
-  const handleAllCardsCompleted = React.useCallback(() => {
-    setCardsCompleted(true);
-  }, []);
-
-  const handleCardsHidden = React.useCallback(() => {
-    setCardsHidden(true);
-  }, []);
-
-  // Reset cuando la sección sale de vista o cuando cambia a una nueva sección con cards
-  React.useEffect(() => {
-    if (!inView && cards.length > 0) {
-      setCardsCompleted(false);
-      setCardsHidden(false); // Reset cuando sale de vista
-    }
-    // Cuando la sección entra en vista y tiene cards, asegurar que no estén marcadas como completadas
-    if (inView && cards.length > 0 && cardsCompleted) {
-      setCardsCompleted(false);
-      setCardsHidden(false); // Reset cuando vuelve a entrar
-    }
-  }, [inView, cards.length, cardsCompleted]);
-
-  // Si no hay cards, marcar como completado inmediatamente
-  React.useEffect(() => {
-    if (cards.length === 0) {
-      setCardsCompleted(true);
-    } else {
-      setCardsCompleted(false);
-      setCardsHidden(false);
-    }
-  }, [cards.length]);
-
-  // Condición para mostrar cards: tiene cards + en vista + no completadas + no ocultas
-  const shouldShowCards =
-    cards.length > 0 && inView && !cardsCompleted && !cardsHidden;
 
   return (
     <section
@@ -65,7 +28,7 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
       }}
     >
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
         transition={{ duration: 0.8 }}
         className="section-content"
@@ -75,28 +38,6 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
           position: "relative",
         }}
       >
-        {title && (
-          <h1
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              color: "white",
-            }}
-          >
-            {title}
-          </h1>
-        )}
-        {subtitle && (
-          <h2
-            style={{
-              fontFamily: "Roboto, sans-serif",
-              marginBottom: 24,
-              fontWeight: 400,
-              color: "white",
-            }}
-          >
-            {subtitle}
-          </h2>
-        )}
         <div
           className="content-container"
           style={{
@@ -108,7 +49,7 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
           }}
         >
           {/* Contenedor para CardsOverlay con ancho fijo responsivo */}
-          {shouldShowCards && (
+          {(tables?.length || content?.length || blocks?.length) > 0 && (
             <div
               style={{
                 flexShrink: 0,
@@ -116,11 +57,12 @@ function StoryMapSection({ children, title, subtitle, id, cards = [] }) {
                 height: "100%",
               }}
             >
-              <CardsOverlay
-                cards={cards}
-                isCompleted={cardsCompleted}
-                onAllCardsCompleted={handleAllCardsCompleted}
-                onCardsHidden={handleCardsHidden}
+              <TextOverlay
+                title={title}
+                content={content}
+                tables={tables}
+                images={images}
+                blocks={blocks}
               />
             </div>
           )}
@@ -146,7 +88,7 @@ function Header({ onNavigate }) {
     <header className="header-pronatura">
       <div className="header-container">
         <img
-          src="/logo.png"
+          src={logo}
           alt="Logo Tierra de Agaves"
           className="header-logo"
         />
@@ -183,67 +125,64 @@ function Header({ onNavigate }) {
   );
 }
 const contextoGeografico = [
-  {
-    title: "Caracterización del Área de Estudio",
-    description:
-      "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-    metrics: [{ value: "816,566.9", label: "hectáreas" }],
-  },
+  "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
 ];
-const cardsDistribucionPoblacional = [
+const tables = [
   {
-    title: "Contexto Demográfico",
-    description:
+    title: "Población por Región y Género",
+    header: ["Región", "Mujeres", "Hombres"],
+    body: [
+      ["Sierra de Yautepec", "19,908", "18,936"],
+      ["  Región 3", "11,475", "10,877"],
+      ["  Región 4", "8,433", "8,059"],
+      ["Valles centrales", "140,042", "127,363"],
+      ["  Región 1", "82,970", "74,634"],
+      ["  Región 2", "57,072", "52,729"],
+      ["Población Total", "159,950", "146,299"]
+    ]
+  }
+];
+const contextoDemografico = [
       "De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican",
-    metrics: [{ value: "306 142", label: "Habitantes" }],
-  },
-  {
-    title: "Patrones de Concentración",
-    metrics: [
-      { value: "146 249", label: "Hombres" },
-      { value: "159 893", label: "Mujeres" },
-    ],
-  },
+      "146 249 hombres",
+      "159 893 mujeres"
 ];
-const cardsPobreza = [
-  {
-    title: "Indicadores Socioeconómicos",
-    description:
-      "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
-    metrics: [
-      { value: "24.8%", label: "Pobreza Promedio" },
-      { value: "8.2%", label: "Pobreza Extrema" },
-    ],
-  },
-  {
-    title: "Correlación Territorial",
-    description:
-      "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
-    metrics: [
-      { value: "42%", label: "Municipios Rurales" },
-      { value: "85%", label: "Cobertura Forestal" },
-    ],
-  },
+const contextoPobreza = [
+  "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
+  "24.8% de pobreza promedio",
+  "8.2% de pobreza extrema",
+  "",
+  "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
+  "42% de los municipios son rurales",
+  "85% de la cobertura forestal se encuentra en áreas rurales",
 ];
-const cardsEdafologia = [
-  {
-    title: "Edafología del Sitio",
-    description:
+
+const contextoEdafologia = [
       "Oaxaca presenta una gran diversidad de suelos, resultado de su variada geografía, topografía y clima. Los suelos incluyen formaciones volcánicas, aluviales y sedimentarias distribuidas en el estado según sus características geográficas (INEGI, 2014).",
-  },
 ];
-const cardsHumedad = [
-  {
-    title: "Humedad de los Suelos",
-    description:
+
+const contextoHumedad = [
       "La húmedad de los suelos se representa por los meses en los que los suelos reciben lluvias. En la zona de estudio, la duración de la humedad en los suelos varía de dos a doce meses por año, predominando las zonas con seis meses de humedad en suelos.",
-  },
+];
+const contextoImagen = [
+  {
+    image: logo,
+  }
+];
+
+const blocks=[
+  { type: 'text', content: 'El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales' },
+  { type: 'image', src: logo, title: 'Logo', caption: 'Descripción' },
+  { type: 'heading', content: 'Subtítulo' },
+  { type: 'table', title: 'Población', header: ["Región", "Mujeres", "Hombres"], body: [["Sierra de Yautepec", "19,908", "18,936"], ["  Región 3", "11,475", "10,877"], ["  Región 4", "8,433", "8,059"], ["Valles centrales", "140,042", "127,363"], ["  Región 1", "82,970", "74,634"], ["  Región 2", "57,072", "52,729"], ["Población Total", "159,950", "146,299"]] },
+  { type: 'divider' },
+  { type: 'text', content: 'De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican 146 249 hombres y 159 893 mujeres' }
 ];
 
 function CaracterizacionSeccion() {
   return (
     <>
-      <StoryMapSection id="bioclimaticos" cards={contextoGeografico}>
+      <StoryMapSection id="bioclimaticos" title="Caracterización del Área de Estudio" blocks={blocks} images={contextoImagen}>
         <MapChart
           geoJsonUrl="/MARGINACION.geojson"
           categoriaCol="PAISAJE"
@@ -254,7 +193,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="poblacion" cards={cardsDistribucionPoblacional}>
+      <StoryMapSection id="poblacion" title="Contexto Demográfico y Patrones de Concentración" content={contextoDemografico}>
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -265,7 +204,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="pobreza" cards={cardsPobreza}>
+      <StoryMapSection id="pobreza" title="Indicadores Socioeconómicos y Correlación Territorial" content={contextoPobreza} cards={[]}>
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POBR20"
@@ -298,7 +237,7 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
-      <StoryMapSection id="suelos" cards={cardsEdafologia}>
+      <StoryMapSection id="suelos" title="Edafología del Sitio" content={contextoEdafologia} cards={[]}>
         <MapChart
           geoJsonUrl="/EDAFOLOGIA.geojson"
           categoriaCol="SUELO"
@@ -307,7 +246,7 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="humedad" cards={cardsHumedad}>
+      <StoryMapSection id="humedad" title="Humedad de los Suelos" content={contextoHumedad} cards={[]}>
         <MapChart
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"

@@ -57,7 +57,6 @@ const CardsOverlay = ({ cards, isCompleted, onAllCardsCompleted, onCardsHidden }
         initial={{ opacity: 1 }}
         animate={{ opacity: isHiding ? 0 : 1 }}
         transition={{ duration: 0.5 }}
-        onClick={handleBackgroundClick}
         style={{
           cursor: "pointer",
           background: "rgba(0, 0, 0, 0.1)",
