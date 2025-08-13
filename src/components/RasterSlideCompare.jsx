@@ -120,7 +120,7 @@ const RasterSlideCompare = () => {
           padding: "6px 16px",
           borderRadius: "8px",
           fontWeight: "bold",
-          zIndex: 1001,
+          zIndex: 999,
           pointerEvents: "none",
           gap: "16px",
         }}

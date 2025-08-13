@@ -115,7 +115,7 @@ function Header({ onNavigate }) {
             </li>
             <li>
               <a href="#" onClick={() => onNavigate("cambio-climatico")}>
-                Cambio Climático
+                Potencial Productivo
               </a>
             </li>
           </ul>
@@ -243,6 +243,7 @@ function CaracterizacionSeccion() {
           categoriaCol="SUELO"
           hectareasCol="HAS_SUELO"
           showChartLabels={false}
+          showPaletteControl={false}
         />
       </StoryMapSection>
 
@@ -252,6 +253,7 @@ function CaracterizacionSeccion() {
           categoriaCol="HUMEDAD"
           hectareasCol="HAS_SUELO"
           showChartLabels={false}
+          showPaletteControl={false}
         />
       </StoryMapSection>
 
@@ -261,6 +263,7 @@ function CaracterizacionSeccion() {
           categoriaCol="CLIMA"
           hectareasCol="HECTARES"
           showChartLabels={false}
+          showPaletteControl={false}
         />
       </StoryMapSection>
 
@@ -448,8 +451,87 @@ function DegradacionSeccion() {
 }
 
 function PotencialSection() {
+  // Definir un colorMap de escala de rojos para valores de 10 a 30
+  // Ejemplo: 10:#fff5f0, 15:#fcbba1, 20:#fc9272, 25:#de2d26, 30:#67000d
+  // Labels para la leyenda
+  // El colorMap asigna colores a los valores exactos 10, 15, 20, 25, 30.
+  // Para valores intermedios (11, 12, 13, etc.), la visualización interpolará colores entre los definidos.
+  // Si necesitas que cada valor tenga un color específico, deberías definir cada uno en el colorMap.
+  // Ejemplo para todos los valores de 10 a 30:
+  const colorMap = [
+    { value: 10, color: "#fff5f0" },
+    { value: 11, color: "#fde0dd" },
+    { value: 12, color: "#fcc5c0" },
+    { value: 13, color: "#fa9fb5" },
+    { value: 14, color: "#f768a1" },
+    { value: 15, color: "#fcbba1" },
+    { value: 16, color: "#fc9272" },
+    { value: 17, color: "#fb6a4a" },
+    { value: 18, color: "#ef3b2c" },
+    { value: 19, color: "#cb181d" },
+    { value: 20, color: "#fc9272" },
+    { value: 21, color: "#fb6a4a" },
+    { value: 22, color: "#ef3b2c" },
+    { value: 23, color: "#cb181d" },
+    { value: 24, color: "#a50f15" },
+    { value: 25, color: "#de2d26" },
+    { value: 26, color: "#a50f15" },
+    { value: 27, color: "#67000d" },
+    { value: 28, color: "#67000d" },
+    { value: 29, color: "#67000d" },
+    { value: 30, color: "#67000d" },
+  ]
+    .map(({ value, color }) => `${value}:${color}`)
+    .join(",");
+
+  const legendItems = [
+    { label: "10°C", color: "#fff5f0" },
+    { label: "15°C", color: "#fcbba1" },
+    { label: "20°C", color: "#fc9272" },
+    { label: "25°C", color: "#de2d26" },
+    { label: "30°C", color: "#67000d" },
+  ];
+  // Definir intervalos y colores para la rampa azul (claro a oscuro)
+  // Para modo continuo, solo se necesita un arreglo de colores
+  const colorblue = [
+    "#e3f0ff",
+    "#b3d8f6",
+    "#7bb6ea",
+    "#4292c6",
+    "#2171b5",
+    "#084594",
+    "#03254c",
+  ];
+
+  const legendblue = [
+    { label: "310 mm", color: "#e3f0ff" },
+    { label: "600 mm", color: "#b3d8f6" },
+    { label: "900 mm", color: "#7bb6ea" },
+    { label: "1200 mm", color: "#4292c6" },
+    { label: "1500 mm", color: "#2171b5" },
+    { label: "1800 mm", color: "#084594" },
+    { label: "2040 mm", color: "#03254c" },
+  ];
+
   return (
     <>
+      <StoryMapSection id="temp">
+        <RasterViewer
+          fileName="Temp_med_anual.tif"
+          colorMap={colorMap}
+          legendItems={legendItems}
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="prec">
+        <RasterViewer
+          fileName="Prec_tot_anual_4326.tif"
+          colorMap={colorblue}
+          legendItems={legendblue}
+          continuous={true}
+        />
+      </StoryMapSection>
+
       <StoryMapSection id="raster-compare">
         <RasterSlideCompare />
       </StoryMapSection>
