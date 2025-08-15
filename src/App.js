@@ -10,9 +10,19 @@ import TextOverlay from "./components/TextOverlay";
 import RasterViewer from "./components/RasterViewer";
 import SideBySideRasters from "./components/SideBySideRasters";
 import logo from "./assets/logo.png";
+import topografia from "./assets/Topografia.png";
+import humedad from "./assets/humedad.png";
 import "./App.css";
 
-function StoryMapSection({ children, title, content, id, tables, images, blocks }) {
+function StoryMapSection({
+  children,
+  title,
+  content,
+  id,
+  tables,
+  images,
+  blocks,
+}) {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: false,
@@ -87,11 +97,7 @@ function Header({ onNavigate }) {
   return (
     <header className="header-pronatura">
       <div className="header-container">
-        <img
-          src={logo}
-          alt="Logo Tierra de Agaves"
-          className="header-logo"
-        />
+        <img src={logo} alt="Logo Tierra de Agaves" className="header-logo" />
         <nav className="header-nav">
           <ul className="header-menu">
             <li>
@@ -124,76 +130,65 @@ function Header({ onNavigate }) {
     </header>
   );
 }
-const contextoGeografico = [
-  "El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales",
-];
-const tables = [
-  {
-    title: "Población por Región y Género",
-    header: ["Región", "Mujeres", "Hombres"],
-    body: [
-      ["Sierra de Yautepec", "19,908", "18,936"],
-      ["  Región 3", "11,475", "10,877"],
-      ["  Región 4", "8,433", "8,059"],
-      ["Valles centrales", "140,042", "127,363"],
-      ["  Región 1", "82,970", "74,634"],
-      ["  Región 2", "57,072", "52,729"],
-      ["Población Total", "159,950", "146,299"]
-    ]
-  }
-];
-const contextoDemografico = [
-      "De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican",
-      "146 249 hombres",
-      "159 893 mujeres"
-];
-const contextoPobreza = [
-  "El análisis de pobreza revela disparidades significativas entre municipios urbanos y rurales. Los indicadores muestran que las zonas con mayor biodiversidad coinciden frecuentemente con áreas de mayor vulnerabilidad social.",
-  "24.8% de pobreza promedio",
-  "8.2% de pobreza extrema",
-  "",
-  "Existe una correlación negativa entre acceso a servicios básicos y conservación del paisaje natural. Las comunidades rurales, aunque con menores ingresos, son custodias de los ecosistemas más diversos de la región.",
-  "42% de los municipios son rurales",
-  "85% de la cobertura forestal se encuentra en áreas rurales",
-];
-
-const contextoEdafologia = [
-      "Oaxaca presenta una gran diversidad de suelos, resultado de su variada geografía, topografía y clima. Los suelos incluyen formaciones volcánicas, aluviales y sedimentarias distribuidas en el estado según sus características geográficas (INEGI, 2014).",
-];
-
-const contextoHumedad = [
-      "La húmedad de los suelos se representa por los meses en los que los suelos reciben lluvias. En la zona de estudio, la duración de la humedad en los suelos varía de dos a doce meses por año, predominando las zonas con seis meses de humedad en suelos.",
-];
-const contextoImagen = [
-  {
-    image: logo,
-  }
-];
-
-const blocks=[
-  { type: 'text', content: 'El área de trabajo se integra por 59 municipios. 11 municipios de la Sierra de Yautepec. 48 municipios en Valles centrales' },
-  { type: 'image', src: logo, title: 'Logo', caption: 'Descripción' },
-  { type: 'heading', content: 'Subtítulo' },
-  { type: 'table', title: 'Población', header: ["Región", "Mujeres", "Hombres"], body: [["Sierra de Yautepec", "19,908", "18,936"], ["  Región 3", "11,475", "10,877"], ["  Región 4", "8,433", "8,059"], ["Valles centrales", "140,042", "127,363"], ["  Región 1", "82,970", "74,634"], ["  Región 2", "57,072", "52,729"], ["Población Total", "159,950", "146,299"]] },
-  { type: 'divider' },
-  { type: 'text', content: 'De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican 146 249 hombres y 159 893 mujeres' }
-];
 
 function CaracterizacionSeccion() {
   return (
     <>
-      <StoryMapSection id="bioclimaticos" title="Caracterización del Área de Estudio" blocks={blocks} images={contextoImagen}>
+      <StoryMapSection
+        id="bioclimaticos"
+        title="Paisajes Bioculturales"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "Los paisajes bioculturales son áreas geográficas que combinan elementos naturales y culturales, reflejando la interacción entre las comunidades humanas y su entorno. En Oaxaca, estos paisajes son fundamentales para la conservación de la biodiversidad y el patrimonio cultural.",
+          },
+          {
+            type: "table",
+            header: ["Paisaje", "Municipios", "Superficie"],
+            body: [
+              ["Sierra de Yautepec", "11", "401,208 has"],
+              ["Valles centrales", "48", "415,358 has"],
+              ["  TOTAL", "59", "816,566 has"],
+            ],
+          },
+        ]}
+      >
         <MapChart
-          geoJsonUrl="/MARGINACION.geojson"
-          categoriaCol="PAISAJE"
-          hectareasCol="HAS_POLY"
+          geoJsonUrl="/PAISAJES.geojson"
+          categoriaCol="paisaje"
+          hectareasCol="sup_ha"
+          showChart={true}
           showDelimitationControl={false}
           showPaletteControl={false}
           showChartLabels={true}
         />
       </StoryMapSection>
 
-      <StoryMapSection id="poblacion" title="Contexto Demográfico y Patrones de Concentración" content={contextoDemografico}>
+      <StoryMapSection
+        id="poblacion"
+        title="Contexto Demográfico"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "De acuerdo al censo de población y vivienda 2020, en la zona de estudio radican 345 664 habitantes",
+          },
+          {
+            type: "heading",
+            content: "Distribución Demográfica",
+          },
+          {
+            type: "table",
+            header: ["", "Mujeres", "Hombres"],
+            body: [
+              ["  Sierra de Yautepec", "19,908", "18,936"],
+              ["  Valles centrales", "140,042", "127,363"],
+              ["TOTAL", "159,950", "146,299"],
+            ],
+          },
+        ]}
+      >
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POB_TOT"
@@ -204,7 +199,33 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="pobreza" title="Indicadores Socioeconómicos y Correlación Territorial" content={contextoPobreza} cards={[]}>
+      <StoryMapSection
+        id="pobreza"
+        title="Índice de Pobreza"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "El índice de pobreza es un indicador que permite medir las carencias sociales y económicas de la población. En la zona de estudio, se han identificado diferentes niveles de pobreza que afectan a las comunidades.",
+          },
+          {
+            type: "divider",
+          },
+          {
+            type: "text",
+            content:
+              "En la zona de estudio, el 77% de la población presenta un nivel de pobreza, lo cual equivale a 245,611 personas",
+          },
+          {
+            type: "table",
+            header: ["", "Pobreza", "Pobreza Moderada", "Pobreza Extrema"],
+            body: [
+              ["  Sierra de Yautepec", "81%", "56%", "26%"],
+              ["  Valles centrales", "76%", "49%", "27%"],
+            ],
+          },
+        ]}
+      >
         <Heatmap
           geojsonUrl="/POBREZA.geojson"
           valueColumn="POBR20"
@@ -223,7 +244,33 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="marginacion">
+      <StoryMapSection
+        id="marginacion"
+        title="Índice de Marginación"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "El índice de marginación permite medir las condiciones de vida y carencias de la población, en cuanto a condiciones de la vivienda, el acceso a estudios de la población, la percepción de ingresos monetarios y la relacionada con la residencia en localidades pequeñas.",
+          },
+          {
+            type: "divider",
+          },
+          {
+            type: "table",
+            header: ["", "Valles Centrales", "Sierra de Yautepec"],
+            body: [
+              ["", "Habitantes", "Habitantes"],
+              ["Muy Baja", "14,154", "0"],
+              ["Baja", "32,463", "3,294"],
+              ["Media", "113,260", "14,785"],
+              ["Alta", "106,285", "18,559"],
+              ["Muy Alta", "30,834", "11,930"],
+              ["TOTAL", "296,996", "48,668"],
+            ],
+          },
+        ]}
+      >
         <GeoJsonLayerWithLegend
           nombreCapa="Grado de Marginación"
           atributoValor="GM_2020"
@@ -237,7 +284,21 @@ function CaracterizacionSeccion() {
           }`}
         />
       </StoryMapSection>
-      <StoryMapSection id="suelos" title="Edafología del Sitio" content={contextoEdafologia} cards={[]}>
+      <StoryMapSection
+        id="suelos"
+        title="Edafología del Sitio"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "Oaxaca presenta una gran diversidad de suelos, resultado de su variada geografía, topografía y clima. Los suelos incluyen formaciones volcánicas, aluviales y sedimentarias distribuidas en el estado según sus características geográficas (INEGI, 2014).",
+          },
+          {
+            type: "image",
+            src: topografia,
+          },
+        ]}
+      >
         <MapChart
           geoJsonUrl="/EDAFOLOGIA.geojson"
           categoriaCol="SUELO"
@@ -247,7 +308,21 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="humedad" title="Humedad de los Suelos" content={contextoHumedad} cards={[]}>
+      <StoryMapSection
+        id="humedad"
+        title="Humedad de los Suelos"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "La húmedad de los suelos se representa por los meses en los que los suelos reciben lluvias (sin considerar la cantidad de agua), esta variable se obtuvo a partir del mapa de precipitación total mensual, con el que se contabilizan el número de meses que se presentan lluvias en un año, y de igual forma cuáles son esos meses, lo que permite conocer los meses de lluvias y secas en las diferentes zonas de la región de estudio.",
+          },
+          {
+            type: "image",
+            src: humedad,
+          },
+        ]}
+      >
         <MapChart
           geoJsonUrl="/HUMEDAD.geojson"
           categoriaCol="HUMEDAD"
@@ -257,7 +332,17 @@ function CaracterizacionSeccion() {
         />
       </StoryMapSection>
 
-      <StoryMapSection id="climas">
+      <StoryMapSection
+        id="climas"
+        title="Climas"
+        blocks={[
+          {
+            type: "text",
+            content:
+              "Oaxaca al igual que México es reconocido por su biodiversidad, gracias a que en la entidad se presentan seis de los siete tipos de climas existentes en el país, faltándole solo el clima frio.",
+          },
+        ]}
+      >
         <MapChart
           geoJsonUrl="/CLIMA.geojson"
           categoriaCol="CLIMA"

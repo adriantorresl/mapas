@@ -553,7 +553,7 @@ const MapChart = ({
           }}
           title="Descargar archivo GeoJSON"
         >
-          ⬇️ Descargar GeoJSON
+          Descargar GeoJSON
         </button>
 
         {/* Botón para exportar imagen del mapa */}

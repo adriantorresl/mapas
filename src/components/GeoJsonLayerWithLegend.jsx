@@ -186,87 +186,147 @@ const GeoJsonLayerWithLegend = ({
   }
 
   return (
-    <MapContainer
-      center={[23.6345, -102.5528]}
-      zoom={5}
-      style={{ height: "100vh", width: "100%" }}
-      scrollWheelZoom={true}
-      zoomControl={false}
-    >
-      <MapExtraControls />
-      <LayersControl position="topleft">
-        <LayersControl.BaseLayer checked name="OpenStreetMap">
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-        </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="Satélite (Esri)">
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-          />
-        </LayersControl.BaseLayer>
-
-        {areaBorders && (
-          <LayersControl.Overlay checked name="Área de Estudio">
-            <GeoJSON
-              data={areaBorders}
-              style={() => ({
-                color: "black",
-                weight: 4,
-                fillOpacity: 0,
-              })}
-              interactive={false}
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      <div
+        className="geojson-controls"
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          zIndex: 1200,
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <button
+          onClick={() => {
+            // Descargar el geojson principal
+            const blob = new Blob([JSON.stringify(geojsonData)], {
+              type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = nombreArchivo || "datos.geojson";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }}
+          style={{
+            background: "#388e3c",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "6px 12px",
+            border: "none",
+            cursor: "pointer",
+          }}
+          title="Descargar archivo GeoJSON"
+        >
+          ⬇️ Descargar GeoJSON
+        </button>
+        <button
+          onClick={() => {
+            window.print();
+          }}
+          style={{
+            background: "#1976d2",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "6px 12px",
+            border: "none",
+            cursor: "pointer",
+          }}
+          title="Exportar mapa como imagen"
+        >
+          📷 Exportar mapa
+        </button>
+      </div>
+      <MapContainer
+        center={[23.6345, -102.5528]}
+        zoom={5}
+        style={{ height: "100vh", width: "100%" }}
+        scrollWheelZoom={true}
+        zoomControl={false}
+      >
+        <MapExtraControls />
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer checked name="OpenStreetMap">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-          </LayersControl.Overlay>
-        )}
-
-        {paisajeBorders && (
-          <LayersControl.Overlay checked name="Paisajes">
-            <GeoJSON
-              data={paisajeBorders}
-              style={() => ({
-                color: "black",
-                weight: 3,
-                fillOpacity: 0,
-              })}
-              interactive={false}
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Satélite (Esri)">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
             />
-          </LayersControl.Overlay>
-        )}
+          </LayersControl.BaseLayer>
 
-        {municipiosBorders && (
-          <LayersControl.Overlay checked name="Municipios">
-            <GeoJSON
-              data={municipiosBorders}
-              style={() => ({
-                color: "white",
-                weight: 2,
-                fillOpacity: 0,
-              })}
-              interactive={false}
-            />
-          </LayersControl.Overlay>
-        )}
+          {areaBorders && (
+            <LayersControl.Overlay checked name="Área de Estudio">
+              <GeoJSON
+                data={areaBorders}
+                style={() => ({
+                  color: "black",
+                  weight: 4,
+                  fillOpacity: 0,
+                })}
+                interactive={false}
+              />
+            </LayersControl.Overlay>
+          )}
 
+          {paisajeBorders && (
+            <LayersControl.Overlay checked name="Paisajes">
+              <GeoJSON
+                data={paisajeBorders}
+                style={() => ({
+                  color: "black",
+                  weight: 3,
+                  fillOpacity: 0,
+                })}
+                interactive={false}
+              />
+            </LayersControl.Overlay>
+          )}
+
+          {municipiosBorders && (
+            <LayersControl.Overlay checked name="Municipios">
+              <GeoJSON
+                data={municipiosBorders}
+                style={() => ({
+                  color: "white",
+                  weight: 2,
+                  fillOpacity: 0,
+                })}
+                interactive={false}
+              />
+            </LayersControl.Overlay>
+          )}
+
+          {geojsonData && (
+            <LayersControl.Overlay
+              checked
+              name={nombreCapa || "Capa principal"}
+            >
+              <GeoJSON
+                data={geojsonData}
+                style={style}
+                onEachFeature={onEachFeature}
+              />
+            </LayersControl.Overlay>
+          )}
+        </LayersControl>
         {geojsonData && (
-          <LayersControl.Overlay checked name={nombreCapa || "Capa principal"}>
-            <GeoJSON
-              data={geojsonData}
-              style={style}
-              onEachFeature={onEachFeature}
-            />
-          </LayersControl.Overlay>
+          <>
+            <FitBounds data={geojsonData} />
+            <Legend colorMap={colorMap} nombreCapa={nombreCapa} />
+          </>
         )}
-      </LayersControl>
-      {geojsonData && (
-        <>
-          <FitBounds data={geojsonData} />
-          <Legend colorMap={colorMap} nombreCapa={nombreCapa} />
-        </>
-      )}
-    </MapContainer>
+      </MapContainer>
+    </div>
   );
 };
 

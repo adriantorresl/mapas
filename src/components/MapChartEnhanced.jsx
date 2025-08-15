@@ -614,6 +614,7 @@ const MapChartEnhanced = ({
           display: "flex",
           flexWrap: "wrap",
           gap: "15px",
+          alignItems: "center",
         }}
       >
         {showDelimitationControl && (
@@ -693,6 +694,32 @@ const MapChartEnhanced = ({
             Mostrar todo
           </button>
         )}
+
+        {/* Botón para exportar el GeoJSON */}
+        <button
+          onClick={downloadGeoJson}
+          style={{
+            ...styles.button,
+            backgroundColor: "#388e3c",
+            color: "#fff",
+          }}
+          title="Descargar archivo GeoJSON"
+        >
+          ⬇️ Descargar GeoJSON
+        </button>
+
+        {/* Botón para exportar imagen del mapa */}
+        <button
+          onClick={() => exportMapAsImage(mapInstance)}
+          style={{
+            ...styles.button,
+            backgroundColor: "#1976d2",
+            color: "#fff",
+          }}
+          title="Exportar mapa como imagen"
+        >
+          📷 Exportar mapa
+        </button>
       </div>
 
       <div className="mapchart-maparea">

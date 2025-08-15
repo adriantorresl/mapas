@@ -376,6 +376,63 @@ const RasterViewer = ({
       className="raster-viewer-container"
       style={{ position: "relative", width: "100%" }}
     >
+      <div
+        className="raster-controls"
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          zIndex: 1200,
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <button
+          onClick={() => {
+            // Descargar raster como GeoJSON (si existe areaData)
+            if (areaData) {
+              const blob = new Blob([JSON.stringify(areaData)], {
+                type: "application/json",
+              });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "area_estudio.geojson";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }
+          }}
+          style={{
+            background: "#388e3c",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "6px 12px",
+            border: "none",
+            cursor: "pointer",
+          }}
+          title="Descargar área de estudio GeoJSON"
+        >
+          ⬇️ Descargar GeoJSON
+        </button>
+        <button
+          onClick={() => {
+            window.print();
+          }}
+          style={{
+            background: "#1976d2",
+            color: "#fff",
+            borderRadius: 6,
+            padding: "6px 12px",
+            border: "none",
+            cursor: "pointer",
+          }}
+          title="Exportar mapa como imagen"
+        >
+          📷 Exportar mapa
+        </button>
+      </div>
       {loading && (
         <div
           style={{
@@ -383,16 +440,14 @@ const RasterViewer = ({
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 998,
+            padding: "10px",
+            background: "#ffebee",
+            color: "#c62828",
+            zIndex: 1000,
+            textAlign: "center",
           }}
         >
-          Cargando raster...
+          Cargando capa raster...
         </div>
       )}
       {error && (
@@ -424,8 +479,7 @@ const RasterViewer = ({
           <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a>'
-              subdomains={["a", "b", "c"]}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Satélite (Esri)">
