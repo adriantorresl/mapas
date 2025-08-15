@@ -689,6 +689,12 @@ button {
   top: 180px !important; /* o el valor que necesites */
 }
 
+/* Asegura que el control de capas quede por encima de otros overlays personalizados */
+.leaflet-control-layers,
+.leaflet-top.leaflet-right {
+  z-index: 999 !important;
+}
+
 /* === Estilos para TextOverlay === */
 .text-overlay {
   font-family: "Roboto", sans-serif;
@@ -724,11 +730,11 @@ button {
     margin: 10px !important;
     padding: 20px !important;
   }
-  
+
   .text-overlay h2 {
     font-size: 1.2rem !important;
   }
-  
+
   .text-overlay p {
     font-size: 0.9rem !important;
   }

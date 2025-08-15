@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, LayersControl } from "react-leaflet";
+import RetractableMapControls from "./RetractableMapControls";
 import L from "leaflet";
 import * as GeoTIFF from "geotiff";
 import chroma from "chroma-js";
@@ -529,20 +530,52 @@ const SideBySideRasters = ({
           scrollWheelZoom={true}
           zoomControl={true}
         >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            maxZoom={18}
+          <RetractableMapControls
+            panelTitle="Herramientas"
+            position={{ bottom: 140, left: 14 }}
+            buttons={[
+              {
+                label: "Exportar Mapa",
+                icon: "📷",
+                bg: "#e3f2fd",
+                onClick: () => {
+                  window.print();
+                },
+              },
+            ]}
           />
-          {currentFileName && (
-            <RasterLayer
-              key={currentFileName}
-              fileName={currentFileName}
-              startColor={startColor}
-              endColor={endColor}
-              onStatsUpdate={handleStatsUpdate}
-            />
-          )}
+          <LayersControl position="topleft">
+            <LayersControl.BaseLayer checked name="OpenStreetMap">
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                maxZoom={18}
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satélite (Esri)">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Hillshade (Esri)">
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.Overlay checked name="Raster activo">
+              {currentFileName && (
+                <RasterLayer
+                  key={currentFileName}
+                  fileName={currentFileName}
+                  startColor={startColor}
+                  endColor={endColor}
+                  onStatsUpdate={handleStatsUpdate}
+                />
+              )}
+            </LayersControl.Overlay>
+          </LayersControl>
           {/* Leyenda dentro del mapa, esquina inferior derecha */}
           {stats && !stats.error && (
             <div

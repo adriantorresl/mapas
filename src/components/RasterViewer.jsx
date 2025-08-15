@@ -13,6 +13,7 @@ import {
   GeoJSON,
 } from "react-leaflet";
 import L from "leaflet";
+import RetractableMapControls from "./RetractableMapControls";
 import "../leaflet-tooltip-fix.css";
 import "leaflet/dist/leaflet.css";
 import * as GeoTIFF from "geotiff";
@@ -376,63 +377,7 @@ const RasterViewer = ({
       className="raster-viewer-container"
       style={{ position: "relative", width: "100%" }}
     >
-      <div
-        className="raster-controls"
-        style={{
-          position: "absolute",
-          top: 10,
-          left: 10,
-          zIndex: 1200,
-          display: "flex",
-          gap: "10px",
-        }}
-      >
-        <button
-          onClick={() => {
-            // Descargar raster como GeoJSON (si existe areaData)
-            if (areaData) {
-              const blob = new Blob([JSON.stringify(areaData)], {
-                type: "application/json",
-              });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "area_estudio.geojson";
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }
-          }}
-          style={{
-            background: "#388e3c",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "6px 12px",
-            border: "none",
-            cursor: "pointer",
-          }}
-          title="Descargar área de estudio GeoJSON"
-        >
-          ⬇️ Descargar GeoJSON
-        </button>
-        <button
-          onClick={() => {
-            window.print();
-          }}
-          style={{
-            background: "#1976d2",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "6px 12px",
-            border: "none",
-            cursor: "pointer",
-          }}
-          title="Exportar mapa como imagen"
-        >
-          📷 Exportar mapa
-        </button>
-      </div>
+      {/* Controles superiores removidos: ahora en panel retráctil */}
       {loading && (
         <div
           style={{
@@ -474,6 +419,20 @@ const RasterViewer = ({
         scrollWheelZoom={true}
         zoomControl={false}
       >
+        <RetractableMapControls
+          panelTitle="Herramientas"
+          position={{ bottom: 40, left: 14 }}
+          buttons={[
+            {
+              label: "Exportar Mapa",
+              icon: "📷",
+              bg: "#e3f2fd",
+              onClick: () => {
+                window.print();
+              },
+            },
+          ]}
+        />
         <MapExtraControls />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="OpenStreetMap">

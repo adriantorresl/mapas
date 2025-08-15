@@ -9,6 +9,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import "../leaflet-tooltip-fix.css";
 import L from "leaflet";
+import RetractableMapControls from "./RetractableMapControls";
 
 const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
   // Descargar el archivo geojson
@@ -32,6 +33,9 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
     }
   };
   const [geoData, setGeoData] = useState(null);
+  const [areaData, setAreaData] = useState(null);
+  const [paisajesData, setPaisajesData] = useState(null);
+  const [municipiosData, setMunicipiosData] = useState(null);
   const [scale, setScale] = useState("area");
   const [selectedPaisaje, setSelectedPaisaje] = useState("");
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
@@ -41,6 +45,33 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
 
   const mapRef = useRef();
   const geoJsonLayerRef = useRef();
+
+  // Exportar mapa como imagen (similar a otros componentes)
+  const exportMapAsImage = async () => {
+    if (!mapRef.current) return;
+    try {
+      const html2canvas = await import("html2canvas");
+      const mapEl = mapRef.current.getContainer();
+      const controls = mapEl.querySelectorAll(".leaflet-control-container");
+      controls.forEach((el) => (el.style.visibility = "hidden"));
+      const canvas = await html2canvas.default(mapEl, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,
+        logging: false,
+      });
+      controls.forEach((el) => (el.style.visibility = "visible"));
+      const link = document.createElement("a");
+      link.download = "mapa_cambios.png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error("Error exportando mapa, fallback print()", e);
+      window.print();
+    }
+  };
 
   // Alterna el menú abierto
   const toggleMenu = (menu) => {
@@ -96,6 +127,69 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
       })
       .catch((err) => console.error("Error cargando GeoJSON:", err));
   }, [geoJsonUrl]);
+
+  // Cargar Área de Estudio y Paisajes
+  useEffect(() => {
+    fetch("/AREA.geojson")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setAreaData(d))
+      .catch(() => {});
+    fetch("/PAISAJES.geojson")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setPaisajesData(d))
+      .catch(() => {});
+  }, []);
+
+  // Intentar cargar Municipios; si no existe archivo, derivar simple de geoData
+  useEffect(() => {
+    let aborted = false;
+    fetch("/MARGINACION.geojson")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!aborted && d) setMunicipiosData(d);
+        if (!d && geoData) {
+          // Fallback: derivar primer feature por municipio
+          const muniMap = new Map();
+          geoData.features.forEach((f) => {
+            const name = f.properties?.NOMGEO;
+            if (name && !muniMap.has(name)) {
+              muniMap.set(name, {
+                type: "Feature",
+                properties: { NOMGEO: name },
+                geometry: f.geometry,
+              });
+            }
+          });
+          const derived = {
+            type: "FeatureCollection",
+            features: Array.from(muniMap.values()),
+          };
+          if (!aborted) setMunicipiosData(derived);
+        }
+      })
+      .catch(() => {
+        if (geoData && !aborted) {
+          const muniMap = new Map();
+          geoData.features.forEach((f) => {
+            const name = f.properties?.NOMGEO;
+            if (name && !muniMap.has(name)) {
+              muniMap.set(name, {
+                type: "Feature",
+                properties: { NOMGEO: name },
+                geometry: f.geometry,
+              });
+            }
+          });
+          setMunicipiosData({
+            type: "FeatureCollection",
+            features: Array.from(muniMap.values()),
+          });
+        }
+      });
+    return () => {
+      aborted = true;
+    };
+  }, [geoData]);
 
   // Ajusta la vista del mapa cuando cambian los datos o selecciones
   useEffect(() => {
@@ -311,6 +405,24 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
             mapRef.current = map;
           }}
         >
+          <RetractableMapControls
+            panelTitle="Herramientas"
+            position={{ bottom: 40, left: 14 }}
+            buttons={[
+              {
+                label: "Descargar GeoJSON",
+                icon: "⬇️",
+                bg: "#e8f5e9",
+                onClick: downloadGeoJson,
+              },
+              {
+                label: "Exportar Mapa",
+                icon: "📷",
+                bg: "#e3f2fd",
+                onClick: exportMapAsImage,
+              },
+            ]}
+          />
           <MapExtraControls />
           <LayersControl position="topleft" zIndex={900}>
             <LayersControl.BaseLayer checked name="Hillshade (ESRI)">
@@ -334,6 +446,48 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
                 zIndex={800}
               />
             </LayersControl.BaseLayer>
+            {areaData && (
+              <LayersControl.Overlay checked name="Área de Estudio">
+                <GeoJSON
+                  data={areaData}
+                  style={{
+                    color: "#000",
+                    weight: 6,
+                    fillOpacity: 0,
+                    dashArray: "4 2",
+                  }}
+                />
+              </LayersControl.Overlay>
+            )}
+            {paisajesData && (
+              <LayersControl.Overlay name="Paisajes">
+                <GeoJSON
+                  data={paisajesData}
+                  style={(feat) => ({
+                    color: "black",
+                    weight: 4,
+                    fillOpacity: 0.0,
+                    fillColor: "#90caf9",
+                  })}
+                />
+              </LayersControl.Overlay>
+            )}
+            {municipiosData && (
+              <LayersControl.Overlay name="Municipios">
+                <GeoJSON
+                  data={municipiosData}
+                  style={{ color: "white", weight: 2, fillOpacity: 0 }}
+                  onEachFeature={(feature, layer) => {
+                    if (feature.properties?.NOMGEO) {
+                      layer.bindTooltip(feature.properties.NOMGEO, {
+                        direction: "center",
+                        permanent: false,
+                      });
+                    }
+                  }}
+                />
+              </LayersControl.Overlay>
+            )}
             {geoData && (
               <LayersControl.Overlay checked name="Cambios de Uso de Suelo">
                 <GeoJSON
@@ -363,37 +517,6 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
               </LayersControl.Overlay>
             )}
           </LayersControl>
-          {/* Botón para descargar el GeoJSON */}
-          <div
-            style={{
-              position: "absolute",
-              top: 16,
-              left: 80,
-              zIndex: 999,
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-            <button
-              onClick={downloadGeoJson}
-              style={{
-                minWidth: 120,
-                padding: "6px 10px",
-                backgroundColor: "#388e3c",
-                color: "#fff",
-                border: "1px solid #bdbdbd",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: 500,
-                fontSize: "0.98em",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-              }}
-              title="Descargar archivo GeoJSON"
-            >
-              ⬇️ Descargar GeoJSON
-            </button>
-          </div>
         </MapContainer>
       </main>
       <aside

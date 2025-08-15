@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import RetractableMapControls from "./RetractableMapControls";
+import { MapContainer, TileLayer, useMap, LayersControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-side-by-side";
@@ -193,11 +194,45 @@ const RasterSlideCompare = () => {
         style={{ height: "auto", width: "auto" }}
         zoomControl={false}
       >
-        <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-          attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+        <RetractableMapControls
+          panelTitle="Herramientas"
+          position={{ bottom: 140, left: 14 }}
+          buttons={[
+            {
+              label: "Exportar Mapa",
+              icon: "📷",
+              bg: "#e3f2fd",
+              onClick: () => {
+                window.print();
+              },
+            },
+          ]}
         />
-        <RasterComparison species={selectedSpecies} />
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer checked name="World Topo (Esri)">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="OpenStreetMap">
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Satélite (Esri)">
+            <TileLayer
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+            />
+          </LayersControl.BaseLayer>
+          {/* Nota: las dos capas raster se gestionan mediante el control side-by-side, por lo que se agrupan en un overlay lógico */}
+          <LayersControl.Overlay checked name="Rasters (Comparación)">
+            {/* El componente RasterComparison añade internamente las dos capas y el control side-by-side */}
+            <RasterComparison species={selectedSpecies} />
+          </LayersControl.Overlay>
+        </LayersControl>
       </MapContainer>
     </div>
   );

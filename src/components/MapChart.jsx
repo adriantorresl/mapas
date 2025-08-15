@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { MapContainer, GeoJSON, TileLayer, LayersControl } from "react-leaflet";
+import RetractableMapControls from "./RetractableMapControls";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-mouse-position";
@@ -542,36 +543,28 @@ const MapChart = ({
           </button>
         )}
 
-        {/* Botón para exportar el GeoJSON */}
-        <button
-          onClick={downloadGeoJson}
-          style={{
-            ...styles.button,
-            backgroundColor: "#388e3c",
-            color: "#fff",
-            marginLeft: 8,
-          }}
-          title="Descargar archivo GeoJSON"
-        >
-          Descargar GeoJSON
-        </button>
-
-        {/* Botón para exportar imagen del mapa */}
-        <button
-          onClick={() => exportMapAsImage(mapInstance)}
-          style={{
-            ...styles.button,
-            backgroundColor: "#1976d2",
-            color: "#fff",
-            marginLeft: 8,
-          }}
-          title="Exportar mapa como imagen"
-        >
-          📷 Exportar mapa
-        </button>
+        {/* Botones de descarga/exportación movidos al panel retráctil */}
       </div>
 
-      <div className="mapchart-maparea">
+      <div className="mapchart-maparea" style={{ position: "relative" }}>
+        <RetractableMapControls
+          panelTitle="Herramientas"
+          position={{ bottom: 40, left: 14 }}
+          buttons={[
+            {
+              label: "Descargar GeoJSON",
+              icon: "⬇️",
+              bg: "#e8f5e9",
+              onClick: downloadGeoJson,
+            },
+            {
+              label: "Exportar Mapa",
+              icon: "📷",
+              bg: "#e3f2fd",
+              onClick: () => exportMapAsImage(mapInstance),
+            },
+          ]}
+        />
         <MapContainer
           center={[23.6345, -102.5528]}
           zoom={5}

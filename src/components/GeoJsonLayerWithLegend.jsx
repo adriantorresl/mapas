@@ -10,6 +10,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../leaflet-tooltip-fix.css";
 import { useMapLayers } from "../hooks/useMapLayers";
+import RetractableMapControls from "./RetractableMapControls";
 
 const layersConfig = [
   { key: "areaBorders", url: "AREA.geojson" },
@@ -30,6 +31,7 @@ const Legend = ({ colorMap, nombreCapa }) => (
       zIndex: 999,
       minWidth: 120,
       fontSize: 14,
+      textAlign: "left",
     }}
   >
     <strong>{nombreCapa}</strong>
@@ -41,6 +43,7 @@ const Legend = ({ colorMap, nombreCapa }) => (
             display: "flex",
             alignItems: "center",
             marginBottom: 4,
+            textAlign: "left",
           }}
         >
           <span
@@ -72,7 +75,17 @@ const GeoJsonLayerWithLegend = ({
     useMapLayers(layersConfig);
 
   const [geojsonData, setGeojsonData] = useState(null);
-  const colorMap = JSON.parse(coloresPorValor);
+  // Permitir que 'coloresPorValor' sea ya un objeto o un string JSON; manejar errores silenciosamente
+  let colorMap = {};
+  try {
+    colorMap =
+      typeof coloresPorValor === "string"
+        ? JSON.parse(coloresPorValor)
+        : coloresPorValor || {};
+  } catch (e) {
+    console.error("Error parsing coloresPorValor JSON:", e, coloresPorValor);
+    colorMap = {};
+  }
 
   // Crear un mapa de identificadores a nombres de municipio si existen municipiosBorders
   const municipioNameLookup = React.useMemo(() => {
@@ -187,61 +200,58 @@ const GeoJsonLayerWithLegend = ({
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      <div
-        className="geojson-controls"
-        style={{
-          position: "absolute",
-          top: 10,
-          left: 10,
-          zIndex: 1200,
-          display: "flex",
-          gap: "10px",
-        }}
-      >
-        <button
-          onClick={() => {
-            // Descargar el geojson principal
-            const blob = new Blob([JSON.stringify(geojsonData)], {
-              type: "application/json",
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = nombreArchivo || "datos.geojson";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }}
-          style={{
-            background: "#388e3c",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "6px 12px",
-            border: "none",
-            cursor: "pointer",
-          }}
-          title="Descargar archivo GeoJSON"
-        >
-          ⬇️ Descargar GeoJSON
-        </button>
-        <button
-          onClick={() => {
-            window.print();
-          }}
-          style={{
-            background: "#1976d2",
-            color: "#fff",
-            borderRadius: 6,
-            padding: "6px 12px",
-            border: "none",
-            cursor: "pointer",
-          }}
-          title="Exportar mapa como imagen"
-        >
-          📷 Exportar mapa
-        </button>
-      </div>
+      <RetractableMapControls
+        panelTitle="Herramientas"
+        position={{ bottom: 120, left: 14 }}
+        buttons={[
+          {
+            label: "Descargar GeoJSON",
+            icon: "⬇️",
+            bg: "#e8f5e9",
+            onClick: () => {
+              if (!geojsonData) return;
+              const blob = new Blob([JSON.stringify(geojsonData)], {
+                type: "application/json",
+              });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = nombreArchivo || "datos.geojson";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            },
+          },
+          {
+            label: "Exportar Mapa",
+            icon: "📷",
+            bg: "#e3f2fd",
+            onClick: async () => {
+              // Exportación básica usando print como fallback
+              try {
+                const mapEl = document.querySelector(".leaflet-container");
+                if (!mapEl) return window.print();
+                const html2canvas = await import("html2canvas");
+                const canvas = await html2canvas.default(mapEl, {
+                  useCORS: true,
+                  allowTaint: true,
+                  scale: 2,
+                });
+                const link = document.createElement("a");
+                link.download = "mapa.png";
+                link.href = canvas.toDataURL("image/png");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              } catch (e) {
+                console.error("Error exportando mapa, usando print()", e);
+                window.print();
+              }
+            },
+          },
+        ]}
+      />
       <MapContainer
         center={[23.6345, -102.5528]}
         zoom={5}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import RetractableMapControls from "./RetractableMapControls";
 import {
   MapContainer,
   TileLayer,
@@ -290,6 +291,24 @@ const Heatmap = ({
 
   return (
     <div className="heatmap-container" style={{ position: "relative" }}>
+      <RetractableMapControls
+        panelTitle="Herramientas"
+        position={{ bottom: 40, left: 14 }}
+        buttons={[
+          {
+            label: "Descargar GeoJSON",
+            icon: "⬇️",
+            bg: "#e8f5e9",
+            onClick: downloadGeoJson,
+          },
+          {
+            label: "Exportar Mapa",
+            icon: "📷",
+            bg: "#e3f2fd",
+            onClick: exportMapAsImage,
+          },
+        ]}
+      />
       <MapContainer
         ref={mapRef}
         center={[23.6345, -102.5528]}
@@ -400,57 +419,6 @@ const Heatmap = ({
             </LayersControl.Overlay>
           )}
         </LayersControl>
-
-        {/* Botones debajo del control de capas */}
-        <div
-          className="map-action-buttons"
-          style={{
-            position: "absolute",
-            top: 180, // <-- Aumenta este valor para que siempre estén debajo del menú expandido
-            left: 16,
-            zIndex: 1000,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-          }}
-        >
-          <button
-            onClick={downloadGeoJson}
-            style={{
-              minWidth: 120,
-              padding: "6px 10px",
-              backgroundColor: "#388e3c",
-              color: "#fff",
-              border: "1px solid #bdbdbd",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.98em",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-            }}
-            title="Descargar archivo GeoJSON"
-          >
-            ⬇️ Descargar GeoJSON
-          </button>
-          <button
-            onClick={exportMapAsImage}
-            style={{
-              minWidth: 120,
-              padding: "6px 10px",
-              backgroundColor: "#1976d2",
-              color: "#fff",
-              border: "1px solid #bdbdbd",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 500,
-              fontSize: "0.98em",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-            }}
-            title="Exportar mapa como imagen"
-          >
-            📷 Exportar mapa
-          </button>
-        </div>
       </MapContainer>
 
       {loading && (

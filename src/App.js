@@ -102,15 +102,6 @@ function Header({ onNavigate }) {
           <ul className="header-menu">
             <li>
               <a href="#" onClick={() => onNavigate("caracterizacion")}>
-                <span className="menu-stack">
-                  Tierra de Agaves
-                  <br />
-                  Monitoreo
-                </span>
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={() => onNavigate("caracterizacion")}>
                 Caracterización del área de estudio
               </a>
             </li>
@@ -122,6 +113,11 @@ function Header({ onNavigate }) {
             <li>
               <a href="#" onClick={() => onNavigate("cambio-climatico")}>
                 Potencial Productivo
+              </a>
+            </li>
+            <li>
+              <a href="#" onClick={() => onNavigate("monitoreo")}>
+                Monitoreo
               </a>
             </li>
           </ul>
@@ -356,6 +352,19 @@ function CaracterizacionSeccion() {
         <TimeSeriesMapViewer
           initialCenter={[23.6345, -102.5528]}
           initialZoom={6}
+        />
+      </StoryMapSection>
+
+      <StoryMapSection id="anp">
+        <GeoJsonLayerWithLegend
+          nombreCapa="Áreas Naturales Protegidas"
+          atributoValor="CAT_MANEJO"
+          nombreArchivo="anp.geojson"
+          coloresPorValor={`{
+            "Monumento Nacional": "blue",
+            "ADVC": "gray",
+            "Parque Estatal": "brown"
+          }`}
         />
       </StoryMapSection>
     </>
