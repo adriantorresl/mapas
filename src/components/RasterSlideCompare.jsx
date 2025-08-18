@@ -7,50 +7,100 @@ import "leaflet-side-by-side";
 import parseGeoraster from "georaster";
 import GeoRasterLayer from "georaster-layer-for-leaflet";
 
-const getColorRamp = (value) => {
-  if (value === null || value === undefined || isNaN(value) || value < 0)
-    return "rgba(0,0,0,0)";
-  if (value >= 0 && value <= 10) return "#aaaaaa";
-  if (value >= 11 && value <= 21) return "#ffff00";
-  if (value >= 22 && value <= 53) return "#00cc00";
-  if (value >= 54 && value <= 75) return "#006400";
-  return "rgba(0,0,0,0)";
+// Fallback estático (si no se pudieron calcular stats)
+const fallbackColorRamp = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return "rgba(0,0,0,0)";
+  if (value <= 10) return "#aaaaaa";
+  if (value <= 21) return "#ffff00";
+  if (value <= 53) return "#00cc00";
+  return "#006400"; // incluye >75
 };
 
 const RasterComparison = ({ species }) => {
   const map = useMap();
   const sideBySideRef = useRef(null);
   const layersRef = useRef([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadRasters = async () => {
+      setLoading(true);
+      setError(null);
       layersRef.current.forEach((layer) => {
         if (map.hasLayer(layer)) map.removeLayer(layer);
       });
 
       const [buffer1, buffer2] = await Promise.all([
-        fetch(`/${species}_4326.tif`).then((res) => res.arrayBuffer()),
-        fetch(`/${species}_CC_4326.tif`).then((res) => res.arrayBuffer()),
+        fetch(`/${species}_4326.tif`).then((res) => {
+          if (!res.ok) throw new Error("No se pudo cargar raster base");
+          return res.arrayBuffer();
+        }),
+        fetch(`/${species}_CC_4326.tif`).then((res) => {
+          if (!res.ok) throw new Error("No se pudo cargar raster CC");
+          return res.arrayBuffer();
+        }),
       ]);
 
-      const [r1, r2] = await Promise.all([
-        parseGeoraster(buffer1),
-        parseGeoraster(buffer2),
-      ]);
+      let r1, r2;
+      try {
+        [r1, r2] = await Promise.all([
+          parseGeoraster(buffer1),
+          parseGeoraster(buffer2),
+        ]);
+      } catch (e) {
+        console.error("Error parseando GeoTIFF:", e);
+        setError("Error parseando GeoTIFF");
+        setLoading(false);
+        return;
+      }
 
-      const layer1 = new GeoRasterLayer({
-        georaster: r1,
-        pixelValuesToColorFn: ([val]) => getColorRamp(val),
-        resolution: 4096,
-        opacity: 1,
-      });
+      // Obtener stats (mins/maxs) seguras
+      const getBounds = (gr) => {
+        const min = gr.mins ? gr.mins[0] : gr.min ?? 0;
+        const max = gr.maxs ? gr.maxs[0] : gr.max ?? 0;
+        // si min==max tratar de expandir un poco
+        if (min === max) return [min, min + 1];
+        return [min, max];
+      };
+      const [min1, max1] = getBounds(r1);
+      const [min2, max2] = getBounds(r2);
+      const globalMin = Math.min(min1, min2);
+      const globalMax = Math.max(max1, max2);
+      const range = globalMax - globalMin || 1;
+      const t1 = globalMin + range * 0.25;
+      const t2 = globalMin + range * 0.5;
+      const t3 = globalMin + range * 0.75;
 
-      const layer2 = new GeoRasterLayer({
-        georaster: r2,
-        pixelValuesToColorFn: ([val]) => getColorRamp(val),
-        resolution: 4096,
-        opacity: 1,
-      });
+      const dynamicRamp = (value) => {
+        if (value === null || value === undefined || isNaN(value)) return "rgba(0,0,0,0)";
+        if (value === r1.noDataValue || value === r2.noDataValue) return "rgba(0,0,0,0)";
+        if (value <= t1) return "#aaaaaa";
+        if (value <= t2) return "#ffff00";
+        if (value <= t3) return "#00cc00";
+        return "#006400";
+      };
+
+      console.log("Stats raster", { globalMin, globalMax, thresholds: [t1, t2, t3] });
+
+      // Crear pane para asegurar visibilidad
+      if (!map.getPane("rasterPane")) {
+        map.createPane("rasterPane");
+        map.getPane("rasterPane").style.zIndex = 450;
+      }
+
+      const makeLayer = (gr) =>
+        new GeoRasterLayer({
+          georaster: gr,
+          pixelValuesToColorFn: ([val]) =>
+            (globalMax ? dynamicRamp(val) : fallbackColorRamp(val)),
+          resolution: 256, // reducir para performance y asegurarse de mostrar
+          opacity: 1,
+          pane: "rasterPane",
+        });
+
+      const layer1 = makeLayer(r1);
+      const layer2 = makeLayer(r2);
 
       layersRef.current = [layer1, layer2];
 
@@ -62,7 +112,12 @@ const RasterComparison = ({ species }) => {
         new Promise((res) => layer2.on("load", res)),
       ]);
 
-      map.fitBounds(layer1.getBounds());
+      try {
+        const b = layer1.getBounds();
+        if (b && b.isValid()) map.fitBounds(b);
+      } catch (e) {
+        console.warn("No se pudo ajustar bounds del raster", e);
+      }
 
       if (sideBySideRef.current) sideBySideRef.current.remove();
       sideBySideRef.current = L.control.sideBySide(layer1, layer2).addTo(map);
@@ -72,12 +127,56 @@ const RasterComparison = ({ species }) => {
           .querySelectorAll(".leaflet-sbs-range")
           .forEach((el) => (el.style.pointerEvents = "auto"));
       }, 500);
+
+      setLoading(false);
     };
 
-    loadRasters();
+    loadRasters().catch((e) => {
+      console.error("Error general cargando rasters", e);
+      setError("Error cargando rasters");
+      setLoading(false);
+    });
   }, [map, species]);
 
-  return null;
+  return (
+    <>
+      {loading && (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 1200,
+            background: "rgba(255,255,255,0.9)",
+            padding: "6px 10px",
+            borderRadius: 6,
+            fontSize: 12,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          }}
+        >
+          Cargando rasters...
+        </div>
+      )}
+      {error && (
+        <div
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 10,
+            zIndex: 1200,
+            background: "rgba(255,230,230,0.95)",
+            padding: "6px 10px",
+            borderRadius: 6,
+            fontSize: 12,
+            color: "#b71c1c",
+            maxWidth: 180,
+          }}
+        >
+          {error}
+        </div>
+      )}
+    </>
+  );
 };
 
 const LegendItem = ({ color, label }) => (
@@ -209,19 +308,19 @@ const RasterSlideCompare = () => {
           ]}
         />
         <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="World Topo (Esri)">
+          <LayersControl.BaseLayer name="World Topo (ESRI)">
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
               attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
             />
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="OpenStreetMap">
+          <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Satélite (Esri)">
+          <LayersControl.BaseLayer name="Satélite (ESRI)">
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
               attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"

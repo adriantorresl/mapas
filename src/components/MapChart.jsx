@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { MapContainer, GeoJSON, TileLayer, LayersControl } from "react-leaflet";
+import {
+  MapContainer,
+  GeoJSON,
+  TileLayer,
+  LayersControl,
+  Rectangle,
+} from "react-leaflet";
 import RetractableMapControls from "./RetractableMapControls";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -70,6 +76,11 @@ const MapChart = ({
   showPaletteControl = true,
   showChart = true,
   showChartLabels = true,
+  showCategoryLabels = false,
+  showFullExtent = false,
+  fullExtentSource = "auto", // 'geo' | 'area' | 'auto'
+  fullExtentIncludeCountry = false, // si true, expande a límites país (México)
+  fullExtentPaddingRatio = 0.2, // expande los bounds para mostrar alrededores
   mapTitle,
 }) => {
   const [geoData, setGeoData] = useState(null);
@@ -79,47 +90,101 @@ const MapChart = ({
     useState("schemeCategory10");
   const [highlightedAreas, setHighlightedAreas] = useState([]);
   const mapRef = useRef(null);
-  const geoJsonLayerRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
+  const geoJsonLayerRef = useRef(null);
   const controlsAddedRef = useRef({
     mousePosition: false,
     scale: false,
     easyPrint: false,
   });
+  const [mainBounds, setMainBounds] = useState(null);
+  const [fullExtentBounds, setFullExtentBounds] = useState(null);
 
-  const selectedPalette = paletteOptions[selectedPaletteName];
-
-  const colorScale = useMemo(() => {
-    if (!geoData) return scaleOrdinal(selectedPalette);
-    const categoriasUnicas = [
-      ...new Set(geoData.features.map((feat) => feat.properties[categoriaCol])),
-    ];
-    return scaleOrdinal(selectedPalette).domain(categoriasUnicas);
-  }, [geoData, categoriaCol, selectedPalette]);
-
-  useEffect(() => {
-    fetch(geoJsonUrl)
-      .then((res) => res.json())
-      .then((data) => {
-        setGeoData(data);
-        if (mapInstance) {
-          const bounds = L.geoJSON(data).getBounds();
-          mapInstance.fitBounds(bounds);
-        }
-      })
-      .catch((error) => {
-        console.error("Error loading GeoJSON:", error);
-      });
-  }, [geoJsonUrl, mapInstance]);
-
+  // Capas auxiliares
   const layersConfig = [
     { key: "areaBorders", url: "AREA.geojson" },
     { key: "paisajeBorders", url: "PAISAJES.geojson" },
     { key: "municipiosBorders", url: "MARGINACION.geojson" },
   ];
+  const { areaBorders, paisajeBorders, municipiosBorders } = useMapLayers(layersConfig);
+  const selectedPalette = paletteOptions[selectedPaletteName];
 
-  const { areaBorders, paisajeBorders, municipiosBorders } =
-    useMapLayers(layersConfig);
+  // Escala de colores por categoría
+  const colorScale = useMemo(() => {
+    if (!geoData) return scaleOrdinal(selectedPalette);
+    const categoriasUnicas = [
+      ...new Set(geoData.features.map((f) => f.properties[categoriaCol]))
+    ];
+    return scaleOrdinal(selectedPalette).domain(categoriasUnicas);
+  }, [geoData, categoriaCol, selectedPalette]);
+
+  // Carga de datos principal
+  useEffect(() => {
+    if (!geoJsonUrl) return;
+    fetch(geoJsonUrl)
+      .then((r) => r.json())
+      .then((data) => {
+        setGeoData(data);
+        if (mapInstance) {
+          try {
+            const b = L.geoJSON(data).getBounds();
+            if (b.isValid()) mapInstance.fitBounds(b);
+          } catch {}
+        }
+      })
+      .catch((e) => console.error("Error cargando GeoJSON principal:", e));
+  }, [geoJsonUrl, mapInstance]);
+
+  // Actualizar bounds del mapa principal en cada movimiento
+  useEffect(() => {
+    if (!mapInstance) return;
+    const update = () => {
+      const b = mapInstance.getBounds();
+      setMainBounds([
+        [b.getSouthWest().lat, b.getSouthWest().lng],
+        [b.getNorthEast().lat, b.getNorthEast().lng],
+      ]);
+    };
+    update();
+    mapInstance.on("moveend", update);
+    return () => {
+      mapInstance.off("moveend", update);
+    };
+  }, [mapInstance]);
+
+  // (layersConfig y useMapLayers movidos arriba)
+
+  // Calcular bounds para mini-mapa (solo área + padding)
+  useEffect(() => {
+    if (!showFullExtent) return;
+    if (!geoData && !areaBorders) return;
+    let primaryBounds = null;
+    try {
+      if (areaBorders) {
+        const ab = L.geoJSON(areaBorders).getBounds();
+        if (ab.isValid()) primaryBounds = ab;
+      }
+      if (!primaryBounds && geoData) {
+        const gb = L.geoJSON(geoData).getBounds();
+        if (gb.isValid()) primaryBounds = gb;
+      }
+    } catch {}
+    if (!primaryBounds) return;
+    const sw = primaryBounds.getSouthWest();
+    const ne = primaryBounds.getNorthEast();
+    const dLat = ne.lat - sw.lat;
+    const dLng = ne.lng - sw.lng;
+    const padLat = dLat * fullExtentPaddingRatio;
+    const padLng = dLng * fullExtentPaddingRatio;
+    const padded = L.latLngBounds(
+      [sw.lat - padLat, sw.lng - padLng],
+      [ne.lat + padLat, ne.lng + padLng]
+    );
+    setFullExtentBounds([
+      [padded.getSouthWest().lat, padded.getSouthWest().lng],
+      [padded.getNorthEast().lat, padded.getNorthEast().lng],
+    ]);
+  }, [showFullExtent, geoData, areaBorders, fullExtentPaddingRatio]);
 
   const groupedFeatures = useMemo(() => {
     if (!geoData || selectedDelimitation === "all") return null;
@@ -212,15 +277,24 @@ const MapChart = ({
           maximumFractionDigits: 2,
         })
       : "Sin dato";
-
-    layer.bindTooltip(
-      `<b>${categoriaCol}:</b> ${categoria}<br/><b>Municipio:</b> ${municipio}<br/><b>Hectáreas:</b> ${hectareas}`,
-      {
-        direction: "top",
-        sticky: true,
-        className: "mapchart-tooltip",
-      }
-    );
+    if (showCategoryLabels) {
+      // Etiqueta permanente solo con el valor de la categoría
+      layer.bindTooltip(`${categoria || ""}`.trim(), {
+        permanent: true,
+        direction: "center",
+        className: "mapchart-cat-label",
+        opacity: 0.9,
+      });
+    } else {
+      layer.bindTooltip(
+        `<b>${categoriaCol}:</b> ${categoria}<br/><b>Municipio:</b> ${municipio}<br/><b>Hectáreas:</b> ${hectareas}`,
+        {
+          direction: "top",
+          sticky: true,
+          className: "mapchart-tooltip",
+        }
+      );
+    }
 
     layer.on({
       click: selectedDelimitation !== "all" ? onFeatureClick : undefined,
@@ -547,6 +621,78 @@ const MapChart = ({
       </div>
 
       <div className="mapchart-maparea" style={{ position: "relative" }}>
+        {showFullExtent && fullExtentBounds && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 100, // arriba de la escala (bottomright)
+              right: 16,
+              width: 180,
+              height: 140,
+              zIndex: 1100,
+              border: "1px solid #999",
+              background: "#fff",
+              borderRadius: 6,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              overflow: "hidden",
+            }}
+          >
+            <MapContainer
+              style={{ width: "100%", height: "100%" }}
+              bounds={fullExtentBounds}
+              zoomControl={false}
+              attributionControl={false}
+              dragging={false}
+              doubleClickZoom={false}
+              scrollWheelZoom={false}
+              boxZoom={false}
+              keyboard={false}
+              preferCanvas
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution=""
+              />
+              {areaBorders && (
+                <GeoJSON
+                  data={areaBorders}
+                  style={{
+                    color: "#000",
+                    weight: 2,
+                    fillOpacity: 0,
+                    dashArray: "4 2",
+                  }}
+                />
+              )}
+              {geoData && (
+                <GeoJSON
+                  data={geoData}
+                  style={{ color: "#1565c0", weight: 1, fillOpacity: 0 }}
+                />
+              )}
+              {mainBounds && (
+                <Rectangle
+                  bounds={mainBounds}
+                  pathOptions={{ color: "#ff5722", weight: 2, fillOpacity: 0 }}
+                />
+              )}
+            </MapContainer>
+            <div
+              style={{
+                position: "absolute",
+                top: 2,
+                left: 4,
+                fontSize: 10,
+                background: "rgba(255,255,255,0.7)",
+                padding: "1px 4px",
+                borderRadius: 4,
+                fontWeight: 600,
+              }}
+            >
+              Extensión
+            </div>
+          </div>
+        )}
         <RetractableMapControls
           panelTitle="Herramientas"
           position={{ bottom: 40, left: 14 }}

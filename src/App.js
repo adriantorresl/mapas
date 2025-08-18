@@ -154,7 +154,10 @@ function CaracterizacionSeccion() {
           geoJsonUrl="/PAISAJES.geojson"
           categoriaCol="paisaje"
           hectareasCol="sup_ha"
-          showChart={true}
+          showChart={false}
+          showFullExtent={true}
+          fullExtentIncludeCountry={true}
+          showCategoryLabels={true}
           showDelimitationControl={false}
           showPaletteControl={false}
           showChartLabels={true}
