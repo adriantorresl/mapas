@@ -116,7 +116,7 @@ const TimeSeriesMapViewer = ({ geoJsonUrl = "/CUS_cambios.geojson" }) => {
   };
 
   const years = ["S0_S1", "S1_S2", "S2_S3", "S3_S4", "S4_S5", "S5_S6", "S6_S7"];
-  const labels = [1980, 1990, 2000, 2004, 2007, 2011, 2018];
+  const labels = [1980, 1993, 2002, 2007, 2011, 2014, 2018];
 
   // Carga los datos GeoJSON
   useEffect(() => {
