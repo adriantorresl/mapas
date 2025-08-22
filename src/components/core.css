@@ -1,0 +1,62 @@
+.core-template {
+    height: 100vh;
+    width: 100%;
+}
+
+.core-template-header {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    
+    .content-left-sidebar {
+        width: 32%;
+        background: #1e3c20;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        
+        .content-header-sticky {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+        
+        .core-template-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+    }
+    
+    .core-template-map {
+        width: 68%;
+        height: 100%;
+    }
+}
+
+/* Estilos para el scroll del text-overlay */
+.text-overlay {
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.text-overlay::-webkit-scrollbar {
+    width: 8px;
+}
+
+.text-overlay::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.text-overlay::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.text-overlay::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}

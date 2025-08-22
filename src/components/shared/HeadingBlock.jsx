@@ -5,13 +5,13 @@ const HeadingBlock = ({ content }) => {
     <div style={{ marginTop: "20px", marginBottom: "16px" }}>
       <h3
         style={{
-          fontSize: "1.1rem",
-          fontWeight: "600",
-          color: "#FFC107",
+          fontSize: "36px",
+          fontWeight: "700",
+          color: "#FFF2CC",
           margin: "0",
-          lineHeight: "1.3",
-          borderBottom: "2px solid #3498db",
-          paddingBottom: "8px"
+          lineHeight: "42px",
+          textAlign: "center",
+          fontFamily: "Roboto Serif",
         }}
       >
         {content}
