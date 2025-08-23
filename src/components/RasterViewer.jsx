@@ -72,7 +72,7 @@ const hexToRgba = (hex) => {
 
 // 🔹 Carga el raster y lo monta como imagen sobre Leaflet
 
-const RasterOverlay = ({
+export const RasterOverlay = ({
   fileName,
   colorMap,
   baseUrl,
@@ -80,6 +80,7 @@ const RasterOverlay = ({
   setLoading,
   continuous = false,
   onPixelValue,
+  overlayOpacity = 0.8,
 }) => {
   const map = useMap();
   const overlayRef = useRef(null);
@@ -127,6 +128,10 @@ const RasterOverlay = ({
         const imgData = ctx.createImageData(width, height);
 
         let scale;
+        // hoist nodata/min/max para que estén disponibles fuera del bloque
+        let nodata = null;
+        let min = Infinity;
+        let max = -Infinity;
         if (continuous) {
           // Diagnóstico: log tipo y tamaño de data
           console.log(
@@ -135,17 +140,30 @@ const RasterOverlay = ({
             "length:",
             data.length
           );
-          // Calcular min y max ignorando NaN
-          let min = Infinity;
-          let max = -Infinity;
-          // Limitar el rango útil a 313-2040 (ignorar valores de relleno como 65535)
-          const VALID_MIN = 313;
-          const VALID_MAX = 2040;
-          min = Infinity;
-          max = -Infinity;
+
+          // Intentar obtener nodata del TIFF (si está disponible)
+          try {
+            if (typeof image.getGDALNoData === "function") {
+              const nd = image.getGDALNoData();
+              if (nd != null) nodata = Number(nd);
+            }
+            if (nodata == null && typeof image.getNoDataValue === "function") {
+              const nd2 = image.getNoDataValue();
+              if (nd2 != null) nodata = Number(nd2);
+            }
+          } catch (e) {
+            // ignore
+          }
+
+          // Calcular min y max ignorando NaN y valores nodata o extremadamente grandes
           for (let i = 0; i < data.length; i++) {
             const v = data[i];
-            if (isNaN(v) || v < VALID_MIN || v > VALID_MAX) continue;
+            if (v === null || v === undefined) continue;
+            if (Number.isNaN(v)) continue;
+            // ignorar valores idénticos a nodata
+            if (nodata != null && v === nodata) continue;
+            // ignorar valores absurdos (posible relleno)
+            if (!isFinite(v) || Math.abs(v) > 1e9) continue;
             if (v < min) min = v;
             if (v > max) max = v;
           }
@@ -153,7 +171,9 @@ const RasterOverlay = ({
             ? parsedColorMap
             : Object.values(parsedColorMap);
           console.log("[RasterViewer] colors:", colors);
-          console.log(`[RasterViewer] min: ${min}, max: ${max}`);
+          console.log(
+            `[RasterViewer] min: ${min}, max: ${max}, nodata: ${nodata}`
+          );
           if (!colors || colors.length < 2) {
             setError("colorMap debe tener al menos dos colores");
             setLoading(false);
@@ -176,22 +196,38 @@ const RasterOverlay = ({
 
         for (let i = 0; i < data.length; i++) {
           const value = data[i];
-          let color;
-          // Si el valor está fuera del rango útil, píntalo transparente
+          let color = "#00000000"; // default transparent
+
           if (continuous) {
-            if (value < 313 || value > 2040 || isNaN(value)) {
+            // Excluir nodata / invalid
+            if (value == null || Number.isNaN(value)) {
+              color = "#00000000";
+            } else if (
+              typeof nodata !== "undefined" &&
+              nodata !== null &&
+              value === nodata
+            ) {
+              color = "#00000000";
+            } else if (!isFinite(value)) {
               color = "#00000000";
             } else {
-              color = scale(value).hex();
+              // Clamp to domain to avoid chroma errors
+              const v = Math.max(min, Math.min(max, value));
+              try {
+                color = scale(v).hex();
+              } catch (e) {
+                color = "#00000000";
+              }
             }
           } else {
             if (Array.isArray(parsedColorMap)) {
               const index = Math.round(value);
               color = parsedColorMap[index] || "#00000000";
-            } else {
+            } else if (parsedColorMap && typeof parsedColorMap === "object") {
               color = parsedColorMap[Math.round(value)] || "#00000000";
             }
           }
+
           const [r, g, b, a = 255] = hexToRgba(color);
           imgData.data[i * 4] = r;
           imgData.data[i * 4 + 1] = g;
@@ -201,8 +237,13 @@ const RasterOverlay = ({
 
         if (!isMounted) return;
 
-        ctx.putImageData(imgData, 0, 0);
+        try {
+          ctx.putImageData(imgData, 0, 0);
+        } catch (e) {
+          console.error("[RasterViewer] putImageData failed:", e);
+        }
         const imageUrl = canvas.toDataURL();
+        console.log("[RasterViewer] imageUrl length:", imageUrl.length);
 
         const southWest = L.latLng(bounds[1], bounds[0]);
         const northEast = L.latLng(bounds[3], bounds[2]);
@@ -219,10 +260,33 @@ const RasterOverlay = ({
           map.removeLayer(overlayRef.current);
         }
 
-        const overlay = L.imageOverlay(imageUrl, rasterBounds, {
-          opacity: 0.8,
-        });
-        overlay.addTo(map);
+        let overlay;
+        try {
+          overlay = L.imageOverlay(imageUrl, rasterBounds, {
+            opacity: overlayOpacity,
+          });
+          overlay.addTo(map);
+          // Asegurar visibilidad y zIndex
+          try {
+            if (typeof overlay.setOpacity === "function")
+              overlay.setOpacity(overlayOpacity);
+            if (typeof overlay.setZIndex === "function")
+              overlay.setZIndex(9999);
+            if (typeof overlay.bringToFront === "function")
+              overlay.bringToFront();
+          } catch (err) {
+            /* ignore */
+          }
+          console.log("[RasterViewer] overlay addedTo map:", !!overlay);
+        } catch (e) {
+          console.error("[RasterViewer] Failed to create/add overlay:", e);
+        }
+        // Asegurar que la imagen esté por encima de otros overlays
+        try {
+          if (typeof overlay.setZIndex === "function") overlay.setZIndex(600);
+        } catch (e) {
+          /* ignore */
+        }
         overlayRef.current = overlay;
         imageRef.current = image;
 
@@ -360,7 +424,7 @@ const RasterViewer = ({
     fetch("/PAISAJES.geojson")
       .then((r) => r.json())
       .then(setPaisajeData);
-    fetch("/MARGINACION.geojson")
+    fetch("/MUNICIPIOS.geojson")
       .then((r) => r.json())
       .then(setMunicipioData);
   }, []);

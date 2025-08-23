@@ -9,6 +9,7 @@ const RetractableMapControls = ({
   position = { bottom: 140, left: 14 }, // un poco arriba del control de coordenadas (bottomleft)
   collapsedLabel = "⚙️",
   panelTitle = "Herramientas",
+  children = null,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -77,40 +78,45 @@ const RetractableMapControls = ({
             {panelTitle}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {buttons.map((btn) => (
-              <button
-                key={btn.label}
-                onClick={btn.onClick}
-                title={btn.title || btn.label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: btn.bg || "#fff8e6",
-                  color: "#222",
-                  border: "1px solid #d7c9b5",
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                  transition: "background 0.2s, transform 0.2s",
-                }}
-                onMouseDown={(e) =>
-                  (e.currentTarget.style.transform = "scale(0.96)")
-                }
-                onMouseUp={(e) =>
-                  (e.currentTarget.style.transform = "scale(1)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.transform = "scale(1)")
-                }
-              >
-                {btn.icon && <span style={{ fontSize: 18 }}>{btn.icon}</span>}
-                <span>{btn.label}</span>
-              </button>
-            ))}
+            {/* If children provided, render them; otherwise render buttons (backwards compatible) */}
+            {children
+              ? children
+              : buttons.map((btn) => (
+                  <button
+                    key={btn.label}
+                    onClick={btn.onClick}
+                    title={btn.title || btn.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      background: btn.bg || "#fff8e6",
+                      color: "#222",
+                      border: "1px solid #d7c9b5",
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                      transition: "background 0.2s, transform 0.2s",
+                    }}
+                    onMouseDown={(e) =>
+                      (e.currentTarget.style.transform = "scale(0.96)")
+                    }
+                    onMouseUp={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  >
+                    {btn.icon && (
+                      <span style={{ fontSize: 18 }}>{btn.icon}</span>
+                    )}
+                    <span>{btn.label}</span>
+                  </button>
+                ))}
           </div>
         </div>
       )}
