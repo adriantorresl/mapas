@@ -1305,65 +1305,67 @@ const MapChart = (props) => {
         </div>
       )}
 
-      {/* Controles siempre visibles */}
-      <div
-        className="mapchart-controls"
-        style={{ marginTop: 48 /* ajustar px según necesites */ }}
-      >
-        {showDelimitationControl && (
-          <div>
-            <label htmlFor="delimitationSelect" style={styles.label}>
-              Delimitar por:
-            </label>
-            <select
-              id="delimitationSelect"
-              value={selectedDelimitation}
-              onChange={(e) => {
-                setSelectedDelimitation(e.target.value);
-                resetView();
-              }}
-              style={styles.select}
-            >
-              {DELIMITATION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+      {/* Controles siempre visibles: renderiza solo si hay al menos un control visible */}
+      {(showDelimitationControl || showPaletteControl || selectedArea) && (
+        <div
+          className="mapchart-controls"
+          style={{ marginTop: 48 /* ajustar px según necesites */ }}
+        >
+          {showDelimitationControl && (
+            <div>
+              <label htmlFor="delimitationSelect" style={styles.label}>
+                Delimitar por:
+              </label>
+              <select
+                id="delimitationSelect"
+                value={selectedDelimitation}
+                onChange={(e) => {
+                  setSelectedDelimitation(e.target.value);
+                  resetView();
+                }}
+                style={styles.select}
+              >
+                {DELIMITATION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        {showPaletteControl && (
-          <div>
-            <label htmlFor="paletteSelect" style={styles.label}>
-              Paleta de colores:
-            </label>
-            <select
-              id="paletteSelect"
-              value={selectedPaletteName}
-              onChange={(e) => setSelectedPaletteName(e.target.value)}
-              style={styles.select}
-            >
-              {Object.keys(paletteOptions).map((name) => (
-                <option key={name} value={name}>
-                  {name.replace("scheme", "")}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+          {showPaletteControl && (
+            <div>
+              <label htmlFor="paletteSelect" style={styles.label}>
+                Paleta de colores:
+              </label>
+              <select
+                id="paletteSelect"
+                value={selectedPaletteName}
+                onChange={(e) => setSelectedPaletteName(e.target.value)}
+                style={styles.select}
+              >
+                {Object.keys(paletteOptions).map((name) => (
+                  <option key={name} value={name}>
+                    {name.replace("scheme", "")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-        {selectedArea && (
-          <button onClick={resetView} style={styles.button}>
-            Mostrar todo
-          </button>
-        )}
+          {selectedArea && (
+            <button onClick={resetView} style={styles.button}>
+              Mostrar todo
+            </button>
+          )}
 
-        {/* NOTE: Opacidad movida dentro del panel retráctil (children) */}
-      </div>
+          {/* NOTE: Opacidad movida dentro del panel retráctil (children) */}
+        </div>
+      )}
 
       <div className="mapchart-maparea" style={{ position: "relative" }}>
-        {!showLegend && (
+        {!showChart && !showLegend && (
           <button
             onClick={() => setShowLegend(true)}
             style={{
@@ -1381,46 +1383,48 @@ const MapChart = (props) => {
             Leyenda
           </button>
         )}
-        {/* Compact legend (small, always visible) */}
-        <div
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            zIndex: 1400,
-            background: "rgba(255,255,255,0.95)",
-            borderRadius: 6,
-            padding: "6px 8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-            maxHeight: 160,
-            overflow: "auto",
-            minWidth: 140,
-            fontSize: 12,
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>
-            {capitalizeFirstLetter(categoriaCol)}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {getLegendItems(activeChartLayerKey).map((it) => (
-              <div
-                key={it.label}
-                style={{ display: "flex", gap: 8, alignItems: "center" }}
-              >
+        {/* Compact legend (small, always visible) - hidden when showChart is true */}
+        {!showChart && (
+          <div
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              zIndex: 1400,
+              background: "rgba(255,255,255,0.95)",
+              borderRadius: 6,
+              padding: "6px 8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              maxHeight: 160,
+              overflow: "auto",
+              minWidth: 140,
+              fontSize: 12,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>
+              {capitalizeFirstLetter(categoriaCol)}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {getLegendItems(activeChartLayerKey).map((it) => (
                 <div
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 2,
-                    background: it.color,
-                    border: "1px solid #ccc",
-                  }}
-                />
-                <div style={{ fontSize: 11 }}>{it.label}</div>
-              </div>
-            ))}
+                  key={it.label}
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                >
+                  <div
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 2,
+                      background: it.color,
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                  <div style={{ fontSize: 11 }}>{it.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         {showFullExtent && fullExtentBounds && (
           <div
             style={{

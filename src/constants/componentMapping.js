@@ -44,16 +44,6 @@ export const componentMapping = {
       title: "Tipos de Suelo",
       showLegend: true,
       mainLayerLabel: "Tipos de Suelo",
-      extraLayers: [
-        {
-          key: "humedad",
-          url: "HUMEDAD.geojson",
-          label: "Humedad",
-          categoriaCol: "HUMEDAD",
-          hectareasCol: "HAS_SUELO",
-          chartable: true,
-        },
-      ],
     },
   },
 
