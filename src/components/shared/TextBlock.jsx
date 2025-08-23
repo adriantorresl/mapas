@@ -1,8 +1,7 @@
-import React from 'react';
 
 const TextBlock = ({ content }) => {
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div style={{ marginBottom: "16px", padding: "0 10px" }}>
       <p
         style={{
           fontSize: "0.95rem",

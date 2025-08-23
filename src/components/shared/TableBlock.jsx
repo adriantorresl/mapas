@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TableBlock = ({ title, header, body }) => {
   return (
@@ -10,21 +9,22 @@ const TableBlock = ({ title, header, body }) => {
             alignItems: "center",
             marginBottom: "12px",
             padding: "8px 12px",
-            backgroundColor: "rgba(255, 193, 7, 0.1)",
+            // backgroundColor: "rgba(255, 193, 7, 0.1)",
             borderRadius: "6px",
-            border: "1px solid rgba(255, 193, 7, 0.3)"
+            // border: "1px solid rgba(255, 193, 7, 0.3)"
           }}
         >
-          <div
-            style={{
-              width: "12px",
-              height: "12px",
-              backgroundColor: "#6EC1E4",
-              borderRadius: "20px",
-              marginRight: "10px"
-            }}
-          />
-          <span style={{ fontSize: "0.9rem", color: "#6EC1E4" }}>
+          <span style={{ 
+            fontSize: "20px", 
+            color: "#FFF2CC", 
+            fontWeight: "400", 
+            fontFamily: "Roboto Serif", 
+            lineHeight: "23px", 
+            textAlign: "center", 
+            letterSpacing: "1px",
+            margin: "0",
+            padding: "0"
+          }}>
             {title}
           </span>
         </div>
@@ -35,7 +35,8 @@ const TableBlock = ({ title, header, body }) => {
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           borderRadius: "8px",
           overflow: "hidden",
-          border: "1px solid rgba(0, 0, 0, 0.1)"
+          border: "1px solid rgba(0, 0, 0, 0.1)",
+          marginLeft: "2px"
         }}
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -47,12 +48,12 @@ const TableBlock = ({ title, header, body }) => {
                     key={headerIndex}
                     style={{
                       padding: "12px 8px",
-                      backgroundColor: "#f8f9fa",
+                      backgroundColor: "#196b24",
                       borderBottom: "2px solid #dee2e6",
                       textAlign: "center",
                       fontWeight: "600",
-                      fontSize: "0.85rem",
-                      color: headerIndex === 0 ? "#000" : headerIndex === 1 ? "#dc3545" : "#007bff"
+                      fontSize: "0.8rem",
+                      color: "#FFFF"
                     }}
                   >
                     {headerCell}
@@ -68,7 +69,7 @@ const TableBlock = ({ title, header, body }) => {
                 <tr
                   key={rowIndex}
                   style={{
-                    backgroundColor: rowIndex % 2 === 0 ? "rgba(255, 255, 255, 0.8)" : "rgba(248, 249, 250, 0.8)"
+                    backgroundColor: rowIndex % 2 === 0 ? "#c1f0c8" : "#ffffff"
                   }}
                 >
                   {row.map((cell, cellIndex) => (
@@ -78,9 +79,9 @@ const TableBlock = ({ title, header, body }) => {
                         padding: "10px 8px",
                         borderBottom: "1px solid #dee2e6",
                         textAlign: cellIndex === 0 ? "left" : "center",
-                        fontSize: "0.8rem",
-                        fontWeight: cellIndex === 0 ? "600" : "normal",
-                        color: cellIndex === 0 ? "#495057" : "#6c757d"
+                        fontSize: "0.7rem",
+                        fontWeight: "normal",
+                        color: "#000000"
                       }}
                     >
                       {cell}

@@ -57,20 +57,17 @@ const TextOverlay = ({ title, content, tables, images, blocks }) => {
         borderRadius: "12px",
         padding: "0",
         color: "#000",
-        maxWidth: "400px",
-        position: "relative",
+        maxWidth: "100%",
         backdropFilter: "blur(10px)",
-        margin: "20px",
-        height: "calc(100vh - 130px)",
+        margin: "10px 5px 2px",
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
       }}
     >
       {/* Título fijo en la parte superior */}
-      <div
+      {/* <div
         style={{
           padding: "5px 30px 20px 30px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
           flexShrink: 0
         }}
       >
@@ -87,30 +84,31 @@ const TextOverlay = ({ title, content, tables, images, blocks }) => {
         >
           {title}
         </h2>
-      </div>
+      </div> */}
 
       {/* Contenido dinámico con scroll */}
       <div 
         style={{
           flex: 1,
-          overflowY: "auto",
-          padding: "20px 30px 30px 30px"
         }}
       >
         {/* Si se usan bloques dinámicos, renderizar esos */}
-        {blocks && blocks.length > 0 ? (
-          blocks.map((block, index) => renderBlock(block, index))
+        {blocks && blocks?.length > 0 ? (
+          blocks?.map((block, index) => renderBlock(block, index))
         ) : (
           /* Mantener compatibilidad con el sistema anterior */
           <>
             <div style={{ lineHeight: "1.6" }}>
-              {content && content.map((paragraph, index) => (
+              {content && Array.isArray(content) && content.map((paragraph, index) => (
                 <TextBlock key={index} content={paragraph} />
               ))}
+              {content && !Array.isArray(content) && (
+                <TextBlock content={content} />
+              )}
             </div>
 
             {/* Tablas dinámicas (sistema anterior) */}
-            {tables && tables.map((table, tableIndex) => (
+            {tables && Array.isArray(tables) && tables.map((table, tableIndex) => (
               <TableBlock
                 key={tableIndex}
                 title={table.title}
@@ -120,7 +118,7 @@ const TextOverlay = ({ title, content, tables, images, blocks }) => {
             ))}
 
             {/* Imágenes dinámicas (sistema anterior) */}
-            {images && images.map((image, imageIndex) => (
+            {images && Array.isArray(images) && images.map((image, imageIndex) => (
               <ImageBlock
                 key={imageIndex}
                 src={image.src}

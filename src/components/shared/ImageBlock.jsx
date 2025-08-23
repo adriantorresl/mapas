@@ -14,7 +14,7 @@ const ImageBlock = ({ src, title, alt, caption }) => {
             style={{
               fontSize: "1rem",
               fontWeight: "600",
-              color: "#495057",
+              color: "#FFF2CC",
               margin: "0 0 12px 0",
               textAlign: "center"
             }}
@@ -36,7 +36,7 @@ const ImageBlock = ({ src, title, alt, caption }) => {
           <p
             style={{
               fontSize: "0.8rem",
-              color: "#6c757d",
+              color: "#FFF2CC",
               margin: "8px 0 0 0",
               textAlign: "center",
               fontStyle: "italic"
