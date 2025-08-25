@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, LayersControl, GeoJSON } from "react-leaflet";
 import RetractableMapControls from "./RetractableMapControls";
 import L from "leaflet";
 import { useMap } from "react-leaflet";
-import { RasterOverlay } from "./RasterViewer";
+import { RasterOverlay, GeoRasterLeaflet } from "./RasterViewer";
 import chroma from "chroma-js";
 
 const VECTOR_FILES = [

@@ -644,3 +644,6 @@ RasterViewer.defaultProps = {
 };
 
 export default RasterViewer;
+
+// Compatibilidad: exportar RasterOverlay también como GeoRasterLeaflet
+export const GeoRasterLeaflet = RasterOverlay;

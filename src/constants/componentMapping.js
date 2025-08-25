@@ -12,6 +12,7 @@ import GeoLayerCompare from "../components/GeoLayerCompare";
 import DefaultVisualization from "../components/DefaultVisualization";
 import GeoMapViewer from "../components/GeoMapViewer";
 import Topografia from "../components/Topografia";
+import Clima from "../components/Clima";
 import { color } from "framer-motion";
 
 // Mapeo de ID de sección/subsección a componente de visualización
@@ -86,6 +87,7 @@ export const componentMapping = {
       showChartLabels: false,
       title: "Tipos de Clima",
       showLegend: true,
+      mainLayerLabel: "Tipos de Clima",
     },
   },
 
