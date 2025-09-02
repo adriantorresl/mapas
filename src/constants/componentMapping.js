@@ -6,12 +6,12 @@ import SideBySideRasters from "../components/SideBySideRasters";
 import RasterSlideCompare from "../components/RasterSlideCompare";
 import TimeSeriesMapViewer from "../components/TimeSeriesMapViewer";
 import Heatmap from "../components/Heatmap";
-import Contour3DViewer from "../components/Contour3DViewer";
 import SlideTifCompare from "../components/SlideTifCompare";
 import GeoLayerCompare from "../components/GeoLayerCompare";
 import DefaultVisualization from "../components/DefaultVisualization";
 import GeoMapViewer from "../components/GeoMapViewer";
 import Topografia from "../components/Topografia";
+import Localizacion from "../components/Localizacion";
 import Clima from "../components/Clima";
 import { color } from "framer-motion";
 
@@ -19,18 +19,8 @@ import { color } from "framer-motion";
 export const componentMapping = {
   // Página de inicio - Localización
   0: {
-    component: MapChart,
-    props: {
-      geoJsonUrl: "/MUNICIPIOS.geojson",
-      categoriaCol: "PAISAJE",
-      hectareasCol: "HAS_MUN",
-      showChart: false,
-      showDelimitationControl: false,
-      showPaletteControl: false,
-      showChartLabels: true,
-      showMiniMap: true,
-      mainLayerLabel: "Paisajes Bioculturales",
-    },
+    component: Localizacion,
+    props: {},
   },
 
   // 1.1.1 - Edafología

@@ -1,4 +1,3 @@
-
 const TableBlock = ({ title, header, body }) => {
   return (
     <div style={{ marginTop: "25px", marginBottom: "25px" }}>
@@ -14,29 +13,31 @@ const TableBlock = ({ title, header, body }) => {
             // border: "1px solid rgba(255, 193, 7, 0.3)"
           }}
         >
-          <span style={{ 
-            fontSize: "20px", 
-            color: "#FFF2CC", 
-            fontWeight: "400", 
-            fontFamily: "Roboto Serif", 
-            lineHeight: "23px", 
-            textAlign: "center", 
-            letterSpacing: "1px",
-            margin: "0",
-            padding: "0"
-          }}>
+          <span
+            style={{
+              fontSize: "20px",
+              color: "#FFF2CC",
+              fontWeight: "400",
+              fontFamily: "sans-serif",
+              lineHeight: "23px",
+              textAlign: "center",
+              letterSpacing: "1px",
+              margin: "0",
+              padding: "0",
+            }}
+          >
             {title}
           </span>
         </div>
       )}
-      
+
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           borderRadius: "8px",
           overflow: "hidden",
           border: "1px solid rgba(0, 0, 0, 0.1)",
-          marginLeft: "2px"
+          marginLeft: "2px",
         }}
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -53,7 +54,7 @@ const TableBlock = ({ title, header, body }) => {
                       textAlign: "center",
                       fontWeight: "600",
                       fontSize: "0.8rem",
-                      color: "#FFFF"
+                      color: "#FFFF",
                     }}
                   >
                     {headerCell}
@@ -62,14 +63,14 @@ const TableBlock = ({ title, header, body }) => {
               </tr>
             </thead>
           )}
-          
+
           {body && (
             <tbody>
               {body.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
                   style={{
-                    backgroundColor: rowIndex % 2 === 0 ? "#c1f0c8" : "#ffffff"
+                    backgroundColor: rowIndex % 2 === 0 ? "#c1f0c8" : "#ffffff",
                   }}
                 >
                   {row.map((cell, cellIndex) => (
@@ -81,7 +82,7 @@ const TableBlock = ({ title, header, body }) => {
                         textAlign: cellIndex === 0 ? "left" : "center",
                         fontSize: "0.7rem",
                         fontWeight: "normal",
-                        color: "#000000"
+                        color: "#000000",
                       }}
                     >
                       {cell}

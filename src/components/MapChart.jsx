@@ -8,6 +8,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 // leaflet-minimap plugin (creates a minimap control linked to a main map)
+import "leaflet-groupedlayercontrol";
 import "leaflet-minimap/dist/Control.MiniMap.min.css";
 import "leaflet-minimap";
 import "leaflet/dist/leaflet.css";
@@ -494,11 +495,11 @@ const MapChart = (props) => {
         );
         // eslint-disable-next-line no-undef
         const mini = new L.Control.MiniMap(miniTile, {
-          position: "bottomright",
+          position: "bottomleft",
           toggleDisplay: false,
           minimized: false,
-          width: 180,
-          height: 120,
+          width: 30,
+          height: 30,
           aimingRectOptions: { color: "#ff5722", weight: 1 },
         });
         mini.addTo(mapInstance);
@@ -1370,7 +1371,7 @@ const MapChart = (props) => {
             onClick={() => setShowLegend(true)}
             style={{
               position: "absolute",
-              top: 16,
+              bottom: 40,
               right: 16,
               zIndex: 1400,
               padding: "6px 8px",
@@ -1388,7 +1389,7 @@ const MapChart = (props) => {
           <div
             style={{
               position: "absolute",
-              top: 16,
+              bottom: 40,
               right: 16,
               zIndex: 1400,
               background: "rgba(255,255,255,0.95)",
@@ -1499,7 +1500,7 @@ const MapChart = (props) => {
         )}
         <RetractableMapControls
           panelTitle="Herramientas"
-          position={{ bottom: 40, left: 14 }}
+          position={{ top: 40, left: 14 }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", gap: 8 }}>
@@ -1671,7 +1672,7 @@ const MapChart = (props) => {
             }
           }}
         >
-          <LayersControl position="topleft">
+          <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="OpenStreetMap">
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -1787,7 +1788,7 @@ const MapChart = (props) => {
           <RetractableMapControls
             collapsedLabel="🗺️"
             panelTitle="Mini mapa"
-            position={{ bottom: 40, right: 16 }}
+            position={{ bottom: 40, left: 14 }}
           >
             <div
               style={{

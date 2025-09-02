@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const HeadingBlock = ({ content }) => {
   return (
@@ -11,7 +11,7 @@ const HeadingBlock = ({ content }) => {
           margin: "0",
           lineHeight: "42px",
           textAlign: "center",
-          fontFamily: "Roboto Serif",
+          fontFamily: "sans-serif",
         }}
       >
         {content}
