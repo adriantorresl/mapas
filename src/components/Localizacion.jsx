@@ -241,7 +241,7 @@ const GroupedLayerControl = ({
     municipios: true,
     paisajesBio: true,
   });
-  const [activeBaseLayer, setActiveBaseLayer] = useState("OpenStreetMap");
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
   const [opacity, setOpacity] = useState({
     area: 1,
     paisajes: 1,
@@ -255,7 +255,7 @@ const GroupedLayerControl = ({
 
     // Capas base
     const baseLayers = {
-      OpenStreetMap: L.tileLayer(
+      "Topográfico (OSM)": L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
@@ -474,39 +474,50 @@ const GroupedLayerControl = ({
       }}
     >
       <div
-        style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "8px",
+          gap: "8px",
+        }}
       >
         <input
           type="checkbox"
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{title}</span>
+        <span style={{ fontWeight: "normal", flex: 1 }}>{title}</span>
         {showDownload && data && (
           <button
             style={{
-              backgroundColor: "gray",
-              color: "white",
+              backgroundColor: "transparent",
               border: "none",
-              padding: "4px 4px",
-              borderRadius: "0px",
+              padding: "2px 0px",
+              borderRadius: "3px",
               cursor: "pointer",
-              fontSize: "12px",
-              marginLeft: "20px",
+              marginLeft: "4px",
+              width: "32px",
+              height: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
+            title={`Descargar ${title}`}
             onClick={() => downloadGeoJSON(data, title)}
           >
-            ⬇
+            <img
+              src={require("../assets/descarga.webp")}
+              alt="Descargar"
+              style={{ width: "20px", height: "20px" }}
+            />
           </button>
         )}
       </div>
-
       {showOpacity && (
         <>
           <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
-
           <input
             type="range"
             min="0"
