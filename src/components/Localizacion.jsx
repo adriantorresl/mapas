@@ -6,6 +6,8 @@ import "leaflet-minimap/dist/Control.MiniMap.min.css";
 import "leaflet-minimap";
 import "leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css";
 import "leaflet-groupedlayercontrol";
+import { CloudDownloadOutlined } from "@ant-design/icons";
+import { Download } from "lucide-react";
 
 // Función para generar colores únicos basados en valores
 const generateColorPalette = (values) => {
@@ -467,17 +469,27 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "15px",
-        padding: "10px",
-        backgroundColor: "#f9f9f9",
+        marginBottom: "5px",
+        padding: " 2px 10px",
+        backgroundColor: "transparent",
         borderRadius: "4px",
+        hover: {
+          backgroundColor: "#f9f9f9",
+        },
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#f9f9f9";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "4px",
           gap: "8px",
         }}
       >
@@ -486,29 +498,24 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1 }}>{title}</span>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>{title}</span>
         {showDownload && data && (
           <button
             style={{
               backgroundColor: "transparent",
               border: "none",
-              padding: "2px 0px",
               borderRadius: "3px",
               cursor: "pointer",
               marginLeft: "4px",
               width: "32px",
               height: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
             }}
             title={`Descargar ${title}`}
             onClick={() => downloadGeoJSON(data, title)}
           >
-            <img
-              src={require("../assets/descarga.webp")}
-              alt="Descargar"
+            <Download
               style={{ width: "20px", height: "20px" }}
+              color="#000"
             />
           </button>
         )}
@@ -570,6 +577,8 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "14px",
+                fontWeight: "600",
               }}
             >
               Capas Base
@@ -584,7 +593,7 @@ const GroupedLayerControl = ({
                       checked={activeBaseLayer === baseLayerName}
                       onChange={() => changeBaseLayer(baseLayerName)}
                     />
-                    <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                    <span style={{ marginLeft: "8px", fontSize: "12px" }}>
                       {baseLayerName}
                     </span>
                   </div>
@@ -599,6 +608,8 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "14px",
+                fontWeight: "600",
               }}
             >
               Límites{" "}
@@ -606,7 +617,7 @@ const GroupedLayerControl = ({
             {area && (
               <LayerItem
                 layerKey="area"
-                title="Área de Estudio"
+                title="Área de estudio"
                 data={area}
                 showOpacity={false}
               />
@@ -614,7 +625,7 @@ const GroupedLayerControl = ({
             {paisajes && (
               <LayerItem
                 layerKey="paisajes"
-                title="Paisajes Bioculturales"
+                title="Paisajes bioculturales"
                 data={paisajes}
                 showOpacity={false}
               />
@@ -636,6 +647,8 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "14px",
+                fontWeight: "600",
               }}
             >
               Capas de Interés
@@ -643,7 +656,7 @@ const GroupedLayerControl = ({
             {municipios && (
               <LayerItem
                 layerKey="paisajesBio"
-                title="Paisajes Bioculturales"
+                title="Paisajes bioculturales"
                 data={municipios}
                 showOpacity={true}
               />
