@@ -333,7 +333,8 @@ const GroupedLayerControl = ({
                 layer.bindTooltip(
                   `
                   <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}
+                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+                  <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
                 `,
                   {
                     permanent: false,
@@ -349,7 +350,8 @@ const GroupedLayerControl = ({
             // Configurar popup al hacer clic (siempre disponible)
             layer.bindPopup(`
               <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
-              <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}
+              <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+              <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
             `);
 
             // Configurar tooltip inicial
@@ -457,7 +459,8 @@ const GroupedLayerControl = ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    borderBottom: "1px solid #e0e0e0",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -571,7 +574,13 @@ const GroupedLayerControl = ({
       {!isCollapsed && (
         <div style={{ padding: "15px" }}>
           {/* Capas Base */}
-          <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
             <strong
               style={{
                 color: "#2c3e50",
@@ -593,7 +602,13 @@ const GroupedLayerControl = ({
                       checked={activeBaseLayer === baseLayerName}
                       onChange={() => changeBaseLayer(baseLayerName)}
                     />
-                    <span style={{ marginLeft: "8px", fontSize: "12px" }}>
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        fontWeight: "normal",
+                      }}
+                    >
                       {baseLayerName}
                     </span>
                   </div>
@@ -602,13 +617,19 @@ const GroupedLayerControl = ({
           </div>
 
           {/* Zona de Estudio */}
-          <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
             <strong
               style={{
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
-                fontSize: "14px",
+                fontSize: "16px",
                 fontWeight: "600",
               }}
             >
@@ -647,7 +668,7 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
-                fontSize: "14px",
+                fontSize: "16px",
                 fontWeight: "600",
               }}
             >
