@@ -331,7 +331,8 @@ const GroupedLayerControl = ({
                 layer.bindTooltip(
                   `
                   <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}
+                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+                  <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
                 `,
                   {
                     permanent: false,
@@ -347,7 +348,8 @@ const GroupedLayerControl = ({
             // Configurar popup al hacer clic (siempre disponible)
             layer.bindPopup(`
               <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
-              <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}
+              <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+              <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
             `);
 
             // Configurar tooltip inicial
@@ -455,7 +457,8 @@ const GroupedLayerControl = ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    borderBottom: "1px solid #e0e0e0",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -467,10 +470,10 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "15px",
-        padding: "10px",
-        backgroundColor: "#f9f9f9",
-        borderRadius: "4px",
+        marginBottom: "6px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
       }}
     >
       <div
@@ -486,32 +489,43 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1 }}>{title}</span>
-        {showDownload && data && (
-          <button
-            style={{
-              backgroundColor: "transparent",
-              border: "none",
-              padding: "2px 0px",
-              borderRadius: "3px",
-              cursor: "pointer",
-              marginLeft: "4px",
-              width: "32px",
-              height: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            title={`Descargar ${title}`}
-            onClick={() => downloadGeoJSON(data, title)}
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            padding: "0px",
+            borderRadius: "3px",
+            cursor: "pointer",
+            marginLeft: "2px",
+            width: "18px",
+            height: "18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title={`Descargar ${title}`}
+          onClick={() => downloadGeoJSON(data, title)}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <img
-              src={require("../assets/descarga.webp")}
-              alt="Descargar"
-              style={{ width: "20px", height: "20px" }}
+            <path
+              d="M8 2v8m0 0l-3-3m3 3l3-3"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </button>
-        )}
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+          </svg>
+        </button>
       </div>
       {showOpacity && (
         <>
@@ -564,12 +578,19 @@ const GroupedLayerControl = ({
       {!isCollapsed && (
         <div style={{ padding: "15px" }}>
           {/* Capas Base */}
-          <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
             <strong
               style={{
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "16px",
               }}
             >
               Capas Base
@@ -584,7 +605,13 @@ const GroupedLayerControl = ({
                       checked={activeBaseLayer === baseLayerName}
                       onChange={() => changeBaseLayer(baseLayerName)}
                     />
-                    <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        fontWeight: "normal",
+                      }}
+                    >
                       {baseLayerName}
                     </span>
                   </div>
@@ -593,12 +620,19 @@ const GroupedLayerControl = ({
           </div>
 
           {/* Zona de Estudio */}
-          <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
             <strong
               style={{
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "16px",
               }}
             >
               Límites{" "}
@@ -636,6 +670,7 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
+                fontSize: "16px",
               }}
             >
               Capas de Interés
