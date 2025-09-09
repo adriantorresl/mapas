@@ -6,6 +6,8 @@ import "leaflet-minimap/dist/Control.MiniMap.min.css";
 import "leaflet-minimap";
 import "leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css";
 import "leaflet-groupedlayercontrol";
+import { CloudDownloadOutlined } from "@ant-design/icons";
+import { Download } from "lucide-react";
 
 // Función para generar colores únicos basados en valores
 const generateColorPalette = (values) => {
@@ -470,17 +472,27 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "5px",
+        padding: " 2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
+        hover: {
+          backgroundColor: "#f9f9f9",
+        },
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#f9f9f9";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "4px",
           gap: "8px",
         }}
       >
@@ -489,43 +501,27 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
-          {title}
-        </span>
-        <button
-          style={{
-            backgroundColor: "transparent",
-            border: "none",
-            padding: "0px",
-            borderRadius: "3px",
-            cursor: "pointer",
-            marginLeft: "2px",
-            width: "18px",
-            height: "18px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          title={`Descargar ${title}`}
-          onClick={() => downloadGeoJSON(data, title)}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>{title}</span>
+        {showDownload && data && (
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              borderRadius: "3px",
+              cursor: "pointer",
+              marginLeft: "4px",
+              width: "32px",
+              height: "24px",
+            }}
+            title={`Descargar ${title}`}
+            onClick={() => downloadGeoJSON(data, title)}
           >
-            <path
-              d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#333"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <Download
+              style={{ width: "20px", height: "20px" }}
+              color="#000"
             />
-            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
-          </svg>
-        </button>
+          </button>
+        )}
       </div>
       {showOpacity && (
         <>
@@ -590,7 +586,8 @@ const GroupedLayerControl = ({
                 color: "#2c3e50",
                 marginBottom: "10px",
                 display: "block",
-                fontSize: "16px",
+                fontSize: "14px",
+                fontWeight: "600",
               }}
             >
               Capas Base
@@ -633,6 +630,7 @@ const GroupedLayerControl = ({
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
+                fontWeight: "600",
               }}
             >
               Límites{" "}
@@ -640,7 +638,7 @@ const GroupedLayerControl = ({
             {area && (
               <LayerItem
                 layerKey="area"
-                title="Área de Estudio"
+                title="Área de estudio"
                 data={area}
                 showOpacity={false}
               />
@@ -648,7 +646,7 @@ const GroupedLayerControl = ({
             {paisajes && (
               <LayerItem
                 layerKey="paisajes"
-                title="Paisajes Bioculturales"
+                title="Paisajes bioculturales"
                 data={paisajes}
                 showOpacity={false}
               />
@@ -671,6 +669,7 @@ const GroupedLayerControl = ({
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
+                fontWeight: "600",
               }}
             >
               Capas de Interés
@@ -678,7 +677,7 @@ const GroupedLayerControl = ({
             {municipios && (
               <LayerItem
                 layerKey="paisajesBio"
-                title="Paisajes Bioculturales"
+                title="Paisajes bioculturales"
                 data={municipios}
                 showOpacity={true}
               />
