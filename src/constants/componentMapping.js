@@ -12,6 +12,7 @@ import DefaultVisualization from "../components/DefaultVisualization";
 import GeoMapViewer from "../components/GeoMapViewer";
 import Topografia from "../components/Topografia";
 import Localizacion from "../components/Localizacion";
+import Edafologia from "../components/Edafologia";
 import Clima from "../components/Clima";
 import { color } from "framer-motion";
 
@@ -25,17 +26,8 @@ export const componentMapping = {
 
   // 1.1.1 - Edafología
   "1.1.1": {
-    component: MapChart,
-    props: {
-      geoJsonUrl: "/EDAFOLOGIA.geojson",
-      categoriaCol: "SUELO",
-      hectareasCol: "HAS_SUELO",
-      showPaletteControl: false,
-      showChartLabels: false,
-      title: "Tipos de Suelo",
-      showLegend: true,
-      mainLayerLabel: "Tipos de Suelo",
-    },
+    component: Edafologia,
+    props: {},
   },
 
   // 1.1.2 - Topografía
