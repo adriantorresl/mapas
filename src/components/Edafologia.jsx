@@ -496,6 +496,9 @@ const GroupedLayerControl = ({
               if (tooltipsEnabled) {
                 layer.bindTooltip(
                   `
+                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+                  <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
                   <strong>Humedad:</strong> ${props.HUMEDAD || "N/A"}
                 `,
                   {
@@ -511,6 +514,9 @@ const GroupedLayerControl = ({
 
             // Configurar popup al hacer clic (siempre disponible)
             layer.bindPopup(`
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+              <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
               <strong>Humedad:</strong> ${props.HUMEDAD || "N/A"}
             `);
 
@@ -863,7 +869,7 @@ const GroupedLayerControl = ({
             {area && (
               <LayerItem
                 layerKey="area"
-                title="Área de Estudio"
+                title="Área de estudio"
                 data={area}
                 showOpacity={false}
               />
@@ -871,7 +877,7 @@ const GroupedLayerControl = ({
             {paisajes && (
               <LayerItem
                 layerKey="paisajes"
-                title="Paisajes Bioculturales"
+                title="Paisajes bioculturales"
                 data={paisajes}
                 showOpacity={false}
               />
