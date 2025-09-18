@@ -1,0 +1,993 @@
+import React, { useEffect, useState } from "react";
+import { MapContainer, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { RasterOverlay } from "./RasterViewer";
+
+// Función para generar colores específicos para categorías de manejo de ANP
+const generateANPColorPalette = (values) => {
+  const colorMap = {
+    "Área de Protección de Flora y Fauna": "#4CAF50", // Verde
+    "Área de Protección de Recursos Naturales": "#8BC34A", // Verde claro
+    "Monumento Nacional": "#FF9800", // Naranja
+    "Parque Nacional": "#2196F3", // Azul
+    "Reserva de la Biosfera": "#9C27B0", // Púrpura
+    ADVC: "#FFD700", // Dorado
+    "Parque estatal": "#795548", // Marrón
+    "Otra Categoría": "#607D8B", // Gris azulado
+  };
+
+  // Crear mapa solo con los valores que existen en los datos
+  const uniqueValues = [...new Set(values)];
+  const result = {};
+  uniqueValues.forEach((value) => {
+    if (colorMap[value]) {
+      result[value] = colorMap[value];
+    } else {
+      // Fallback color si no está en la guía
+      result[value] = "#CCCCCC";
+    }
+  });
+
+  return result;
+};
+
+// Función para descargar GeoJSON
+const downloadGeoJSON = (data, filename) => {
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.geojson`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+// Función para descargar archivos raster
+const downloadRaster = async (filename, displayName) => {
+  try {
+    const url = `/${filename}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("No se pudo descargar el archivo");
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Error descargando archivo raster:", error);
+    alert(`Error al descargar ${displayName}`);
+  }
+};
+
+// Componente de leyenda retráctil en esquina inferior derecha
+const ColorLegend = ({ colorMap, isVisible }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
+    return null;
+  }
+
+  const legendStyle = {
+    position: "absolute",
+    bottom: "50px",
+    right: "10px",
+    backgroundColor: "white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    border: "2px solid rgba(0,0,0,0.2)",
+  };
+
+  const headerStyle = {
+    padding: "8px 12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#f8f9fa",
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Leyenda</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          {Object.entries(colorMap).map(([value, color]) => (
+            <div
+              key={value}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "5px",
+              }}
+            >
+              <div
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  backgroundColor: color,
+                  marginRight: "8px",
+                  border: "1px solid #ccc",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: "11px" }}>{value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Control de coordenadas
+const CoordinateControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "2px 6px";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.borderRadius = "3px";
+    coordinateDiv.style.border = "1px solid #ccc";
+    coordinateDiv.style.fontFamily = "monospace";
+    coordinateDiv.style.zIndex = "1000";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lng: 0.00000";
+
+    // Agregar al contenedor del mapa
+    const mapContainer = map.getContainer();
+    mapContainer.appendChild(coordinateDiv);
+
+    // Función para actualizar coordenadas
+    const updateCoordinates = (e) => {
+      const { lat, lng } = e.latlng;
+      coordinateDiv.innerHTML = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(
+        5
+      )}`;
+    };
+
+    // Agregar listener de mouse move
+    map.on("mousemove", updateCoordinates);
+
+    // Cleanup
+    return () => {
+      map.off("mousemove", updateCoordinates);
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Control de escala
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
+
+    scaleControl.addTo(map);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "80px", // Bajado más abajo del botón de zoom
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
+  };
+
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
+  };
+
+  return (
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
+
+// Control de capas agrupado para áreas de protección
+const GroupedLayerControl = ({
+  anpData,
+  area,
+  paisajes,
+  municipios,
+  activeLayers,
+  setActiveLayers,
+  opacity,
+  setOpacity,
+  tooltipsEnabled,
+  onColorMapChange,
+}) => {
+  const map = useMap();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [layers, setLayers] = useState({});
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+
+  // Capas base
+  const baseLayers = {
+    Satelital: L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution:
+          "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS",
+        maxZoom: 18,
+      }
+    ),
+    "Topográfico (OSM)": L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }
+    ),
+  };
+
+  // Configurar capas base
+  useEffect(() => {
+    const baseLayer = baseLayers[activeBaseLayer];
+    if (baseLayer && !map.hasLayer(baseLayer)) {
+      // Limpiar capa base anterior
+      Object.values(baseLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+      baseLayer.addTo(map);
+    }
+  }, [map, activeBaseLayer]);
+
+  // Manejar capas vectoriales y raster
+  useEffect(() => {
+    if (!map) return;
+
+    // Limpiar capas existentes (excepto base)
+    Object.keys(layers).forEach((key) => {
+      if (layers[key] && key !== "base") {
+        map.removeLayer(layers[key]);
+      }
+    });
+
+    const newLayers = {};
+
+    // Agregar área de estudio
+    if (area && activeLayers.area) {
+      newLayers.area = L.geoJSON(area, {
+        style: {
+          color: "black",
+          weight: 6,
+          fillOpacity: 0,
+          opacity: opacity.area,
+        },
+      }).addTo(map);
+    }
+
+    // Agregar paisajes
+    if (paisajes && activeLayers.paisajes) {
+      newLayers.paisajes = L.geoJSON(paisajes, {
+        style: {
+          color: "white",
+          weight: 3,
+          fillOpacity: 0,
+          opacity: opacity.paisajes,
+        },
+      }).addTo(map);
+    }
+
+    // Agregar municipios
+    if (municipios && activeLayers.municipios) {
+      newLayers.municipios = L.geoJSON(municipios, {
+        style: {
+          color: "black",
+          weight: 1,
+          fillOpacity: 0,
+          opacity: opacity.municipios,
+        },
+      }).addTo(map);
+    }
+
+    // Agregar ANP con etiquetas
+    if (anpData && activeLayers.anp) {
+      const values = anpData.features
+        .map((f) => f.properties.CAT_MANEJO)
+        .filter((v) => v);
+
+      const colorMap = generateANPColorPalette(values);
+      onColorMapChange(colorMap);
+
+      const anpLayer = L.geoJSON(anpData, {
+        style: (feature) => {
+          const category = feature.properties.CAT_MANEJO;
+          const color = colorMap[category] || "#CCCCCC";
+          return {
+            fillColor: color,
+            weight: 2,
+            opacity: 1,
+            color: "white",
+            fillOpacity: opacity.anp,
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          // Agregar tooltip
+          if (tooltipsEnabled && feature.properties) {
+            layer.bindTooltip(
+              `<strong>Nombre:</strong> ${
+                feature.properties.NOMBRE || "N/A"
+              }<br>
+               <strong>Categoría:</strong> ${
+                 feature.properties.CAT_MANEJO || "N/A"
+               }`,
+              { permanent: false, direction: "auto" }
+            );
+          }
+        },
+      }).addTo(map);
+
+      newLayers.anp = anpLayer;
+    }
+
+    setLayers(newLayers);
+
+    // Zoom inicial basado en el área (solo una vez)
+    if (area && area.features && area.features.length > 0 && !layers.area) {
+      const areaLayer = L.geoJSON(area);
+      map.fitBounds(areaLayer.getBounds());
+    }
+
+    // Cleanup
+    return () => {
+      Object.values(newLayers).forEach((layer) => {
+        if (layer && map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+    };
+  }, [
+    map,
+    anpData,
+    area,
+    paisajes,
+    municipios,
+    activeLayers,
+    opacity,
+    tooltipsEnabled,
+    onColorMapChange,
+  ]);
+
+  // Cambiar capa base
+  const changeBaseLayer = (newBaseLayerName) => {
+    setActiveBaseLayer(newBaseLayerName);
+  };
+
+  // Función para toggle de capas
+  const toggleLayer = (layerKey) => {
+    setActiveLayers((prev) => ({
+      ...prev,
+      [layerKey]: !prev[layerKey],
+    }));
+  };
+
+  // Función para cambiar opacidad
+  const handleOpacityChange = (layerKey, newOpacity) => {
+    setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+  };
+
+  const LayerItem = ({
+    layerKey,
+    title,
+    data,
+    showDownload = true,
+    showOpacity = true,
+  }) => (
+    <div
+      style={{
+        marginBottom: "6px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "8px",
+          gap: "8px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
+        {showDownload && data && (
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              padding: "0px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              marginLeft: "2px",
+              width: "18px",
+              height: "18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={`Descargar ${title}`}
+            onClick={() =>
+              downloadGeoJSON(data, title.toLowerCase().replace(/\s+/g, "_"))
+            }
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v8m0 0l-3-3m3 3l3-3"
+                stroke="#333"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="3"
+                y="13"
+                width="10"
+                height="1.5"
+                rx="0.75"
+                fill="#333"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+      {showOpacity && (
+        <>
+          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={opacity[layerKey]}
+            onChange={(e) =>
+              handleOpacityChange(layerKey, parseFloat(e.target.value))
+            }
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+            }}
+            onMouseUp={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+            }}
+            onMouseLeave={() => {
+              map.dragging.enable();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+            }}
+            style={{ width: "100%" }}
+          />
+        </>
+      )}
+    </div>
+  );
+
+  const RasterLayerItem = ({ filename, title }) => (
+    <div
+      style={{
+        marginBottom: "6px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "8px",
+          gap: "8px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[filename] || false}
+          onChange={() => toggleLayer(filename)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            padding: "0px",
+            borderRadius: "3px",
+            cursor: "pointer",
+            marginLeft: "2px",
+            width: "18px",
+            height: "18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title={`Descargar ${title}`}
+          onClick={() => downloadRaster(filename, title)}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 2v8m0 0l-3-3m3 3l3-3"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+          </svg>
+        </button>
+      </div>
+      <>
+        <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          Opacidad: {Math.round((opacity[filename] || 0.7) * 100)}%
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={opacity[filename] || 0.7}
+          onChange={(e) =>
+            handleOpacityChange(filename, parseFloat(e.target.value))
+          }
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            map.dragging.disable();
+          }}
+          onMouseUp={(e) => {
+            e.stopPropagation();
+            map.dragging.enable();
+          }}
+          onMouseLeave={() => {
+            map.dragging.enable();
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            map.dragging.disable();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            map.dragging.enable();
+          }}
+          style={{ width: "100%" }}
+        />
+      </>
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        backgroundColor: "white",
+        border: "2px solid rgba(0,0,0,0.2)",
+        borderRadius: "0px",
+        boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+        zIndex: 1000,
+        fontFamily: "Arial, sans-serif",
+        fontSize: "12px",
+        maxWidth: "300px",
+      }}
+    >
+      <div
+        style={{
+          padding: "10px 15px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: isCollapsed ? "none" : "1px solid #eee",
+        }}
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <span>Capas</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "15px" }}>
+          {/* Capas Base */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {Object.keys(baseLayers).map((baseLayerName) => (
+                <div key={baseLayerName} style={{ marginBottom: "5px" }}>
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === baseLayerName}
+                    onChange={() => changeBaseLayer(baseLayerName)}
+                  />
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {baseLayerName}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Límites */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Límites
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {area && (
+                <LayerItem
+                  layerKey="area"
+                  title="Área de estudio"
+                  data={area}
+                  showOpacity={false}
+                />
+              )}
+              {paisajes && (
+                <LayerItem
+                  layerKey="paisajes"
+                  title="Paisajes bioculturales"
+                  data={paisajes}
+                  showOpacity={false}
+                />
+              )}
+              {municipios && (
+                <LayerItem
+                  layerKey="municipios"
+                  title="Municipios"
+                  data={municipios}
+                  showOpacity={false}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Áreas de Protección */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Áreas de Protección
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              <LayerItem
+                layerKey="anp"
+                title="Áreas Naturales Protegidas"
+                data={anpData}
+                showOpacity={true}
+              />
+              <RasterLayerItem
+                filename="ZONA_CONFLICTO.tif"
+                title="Zona de Conflicto"
+              />
+              <RasterLayerItem
+                filename="IMPORTANCIA_ECOLOGICA.tif"
+                title="Importancia Ecológica"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente principal
+const AreaProteccion = () => {
+  const [anpData, setAnpData] = useState(null);
+  const [area, setArea] = useState(null);
+  const [paisajes, setPaisajes] = useState(null);
+  const [municipios, setMunicipios] = useState(null);
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [colorMap, setColorMap] = useState({});
+  const [activeLayers, setActiveLayers] = useState({
+    anp: true,
+    area: true,
+    paisajes: false,
+    municipios: false,
+    "ZONA_CONFLICTO.tif": false,
+    "IMPORTANCIA_ECOLOGICA.tif": false,
+  });
+  const [opacity, setOpacity] = useState({
+    anp: 0.7,
+    area: 1.0,
+    paisajes: 1.0,
+    municipios: 1.0,
+    "ZONA_CONFLICTO.tif": 0.7,
+    "IMPORTANCIA_ECOLOGICA.tif": 0.7,
+  });
+
+  // Función para obtener el mapa de colores del raster activo
+  const getRasterColorMap = () => {
+    if (activeLayers["ZONA_CONFLICTO.tif"]) {
+      return {
+        "1 - Muy Bajo": "#FFCCCC",
+        "2 - Bajo": "#FF9999",
+        "3 - Medio": "#FF6666",
+        "4 - Alto": "#FF3333",
+        "5 - Muy Alto": "#FF0000",
+      };
+    } else if (activeLayers["IMPORTANCIA_ECOLOGICA.tif"]) {
+      return {
+        "0 - Sin datos": "#FFFFFF",
+        "1 - Muy Baja": "#E6FFE6",
+        "2 - Baja": "#66CC66",
+        "3 - Baja-Media": "#99FF99",
+        "4 - Media": "#66CCCC",
+        "5 - Media-Alta": "#6699CC",
+        "6 - Alta": "#9999FF",
+        "7 - Muy Alta": "#6666CC",
+      };
+    }
+    return null;
+  };
+
+  // Cargar datos una sola vez
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const responses = await Promise.all([
+          fetch("/anp.geojson"),
+          fetch("/AREA.geojson"),
+          fetch("/PAISAJES.geojson"),
+          fetch("/MUNICIPIOS.geojson"),
+        ]);
+
+        const [
+          anpResponse,
+          areaResponse,
+          paisajesResponse,
+          municipiosResponse,
+        ] = responses;
+
+        const [anpData, areaData, paisajesData, municipiosData] =
+          await Promise.all([
+            anpResponse.json(),
+            areaResponse.json(),
+            paisajesResponse.json(),
+            municipiosResponse.json(),
+          ]);
+
+        setAnpData(anpData);
+        setArea(areaData);
+        setPaisajes(paisajesData);
+        setMunicipios(municipiosData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+        }}
+      >
+        Cargando mapa de áreas de protección...
+      </div>
+    );
+  }
+
+  return (
+    <MapContainer
+      center={[19.5, -99.1]}
+      zoom={8}
+      style={{ height: "100vh", width: "100%" }}
+    >
+      <GroupedLayerControl
+        anpData={anpData}
+        area={area}
+        paisajes={paisajes}
+        municipios={municipios}
+        activeLayers={activeLayers}
+        setActiveLayers={setActiveLayers}
+        opacity={opacity}
+        setOpacity={setOpacity}
+        tooltipsEnabled={tooltipsEnabled}
+        onColorMapChange={setColorMap}
+      />
+
+      <InfoControl
+        onToggleTooltips={() => setTooltipsEnabled(!tooltipsEnabled)}
+        tooltipsEnabled={tooltipsEnabled}
+      />
+
+      {/* Capas raster con configuración específica de valores y colores */}
+      {activeLayers["ZONA_CONFLICTO.tif"] && (
+        <RasterOverlay
+          fileName="ZONA_CONFLICTO.tif"
+          colorMap={["#FFCCCC", "#FF9999", "#FF6666", "#FF3333", "#FF0000"]}
+          baseUrl="/"
+          continuous={false}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={() => {}}
+          overlayOpacity={opacity["ZONA_CONFLICTO.tif"] || 0.7}
+        />
+      )}
+
+      {activeLayers["IMPORTANCIA_ECOLOGICA.tif"] && (
+        <RasterOverlay
+          fileName="IMPORTANCIA_ECOLOGICA.tif"
+          colorMap={[
+            "#FFFFFF",
+            "#E6FFE6",
+            "#66CC66",
+            "#99FF99",
+            "#66CCCC",
+            "#6699CC",
+            "#9999FF",
+            "#6666CC",
+          ]}
+          baseUrl="/"
+          continuous={false}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={() => {}}
+          overlayOpacity={opacity["IMPORTANCIA_ECOLOGICA.tif"] || 0.7}
+        />
+      )}
+
+      <CoordinateControl />
+      <ScaleControl />
+      <ColorLegend
+        colorMap={getRasterColorMap() || colorMap}
+        isVisible={Object.keys(getRasterColorMap() || colorMap).length > 0}
+      />
+    </MapContainer>
+  );
+};
+
+export default AreaProteccion;

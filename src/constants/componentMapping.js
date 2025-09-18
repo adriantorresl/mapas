@@ -14,6 +14,7 @@ import Topografia from "../components/Topografia";
 import Localizacion from "../components/Localizacion";
 import Edafologia from "../components/Edafologia";
 import Clima from "../components/Clima";
+import AreaProteccion from "../components/AreaProteccion";
 import { color } from "framer-motion";
 
 // Mapeo de ID de sección/subsección a componente de visualización
@@ -72,7 +73,7 @@ export const componentMapping = {
 
   // 1.1.5 - Áreas de protección
   "1.1.5": {
-    component: GeoJsonLayerWithLegend,
+    component: AreaProteccion,
     props: {
       geoJsonUrl: "/anp.geojson",
       categoriaCol: "categoria",
