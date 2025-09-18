@@ -39,28 +39,28 @@ const generateHumedadColorPalette = (values) => {
 // Función para generar colores específicos para tipos de suelo
 const generateEdafologiaColorPalette = (values) => {
   const colorMap = {
-    "Acrisol - Fina": "#F8BBE4",
-    "Acrisol - Media": "#E555A1",
-    "Cambisol - Fina": "#8E44AD",
-    "Cambisol - Media": "#AED6F1",
-    "Cambisol - Gruesa": "#5DADE2",
-    "Calcisol - Media": "#7FB3D3",
-    "Fluvisol - Media": "#A3E4D7",
-    "Fluvisol - Gruesa": "#5DCCCC",
-    "Kastanozem - Media": "#A0877C",
-    "Leptosol - Fina": "#E8F5E8",
-    "Leptosol - Media": "#A9DFBF",
-    "Leptosol - Gruesa": "#76C776",
+    "Acrisol - Fina": "#eeb156ff",
+    "Acrisol - Media": "#e28800ff",
+    "Cambisol - Fina": "#9eb5f381",
+    "Cambisol - Media": "#5d65da62",
+    "Cambisol - Gruesa": "#000dca85",
+    "Calcisol - Media": "#fffb00ff",
+    "Fluvisol - Media": "#aeeb9fff",
+    "Fluvisol - Gruesa": "#5ef365ff",
+    "Kastanozem - Media": "#a1664dff",
+    "Leptosol - Fina": "#4dce4dff",
+    "Leptosol - Media": "#1a8b47ff",
+    "Leptosol - Gruesa": "#025202ff",
     "Luvisol - Fina": "#FFF2CC",
     "Luvisol - Media": "#F7DC6F",
     "Luvisol - Gruesa": "#B7950B",
-    "Phaeozem - Fina": "#F9E79F",
-    "Phaeozem - Media": "#F39C12",
-    "Phaeozem - Gruesa": "#B7950B",
-    "Regosol - Media": "#F1C0C0",
-    "Regosol - Gruesa": "#EC7063",
-    "Umbrisol - Fina": "#8D6E63",
-    "Vertisol - Fina": "#85C1E9",
+    "Phaeozem - Fina": "#7e75caff",
+    "Phaeozem - Media": "#494aa7ff",
+    "Phaeozem - Gruesa": "#05013ad8",
+    "Regosol - Media": "#eba8a8ff",
+    "Regosol - Gruesa": "#ec6363ff",
+    "Umbrisol - Fina": "#a7877cff",
+    "Vertisol - Fina": "#e2bfdfff",
   };
 
   // Crear mapa solo con los valores que existen en los datos
@@ -174,13 +174,52 @@ const ColorLegend = ({ colorMap, isVisible }) => {
         >
           {Object.entries(colorMap)
             .sort(([a], [b]) => {
+              // Orden específico para tipos de suelo
+              const edafologiaOrder = [
+                "Acrisol - Fina",
+                "Acrisol - Media",
+                "Cambisol - Fina",
+                "Cambisol - Media",
+                "Cambisol - Gruesa",
+                "Calcisol - Media",
+                "Fluvisol - Media",
+                "Fluvisol - Gruesa",
+                "Kastanozem - Media",
+                "Leptosol - Fina",
+                "Leptosol - Media",
+                "Leptosol - Gruesa",
+                "Luvisol - Fina",
+                "Luvisol - Media",
+                "Luvisol - Gruesa",
+                "Phaeozem - Fina",
+                "Phaeozem - Media",
+                "Phaeozem - Gruesa",
+                "Regosol - Media",
+                "Regosol - Gruesa",
+                "Umbrisol - Fina",
+                "Vertisol - Fina",
+              ];
+
               // Si contiene "meses", ordenar numéricamente por el número de meses
               if (a.includes("meses") && b.includes("meses")) {
                 const numA = parseInt(a.split(" ")[0]);
                 const numB = parseInt(b.split(" ")[0]);
                 return numA - numB;
               }
-              // Si no son meses, ordenar alfabéticamente
+
+              // Si ambos están en el orden de edafología, usar ese orden
+              const indexA = edafologiaOrder.indexOf(a);
+              const indexB = edafologiaOrder.indexOf(b);
+
+              if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+              }
+
+              // Si solo uno está en el orden específico, priorizarlo
+              if (indexA !== -1) return -1;
+              if (indexB !== -1) return 1;
+
+              // Si ninguno está en órdenes específicos, ordenar alfabéticamente
               return a.localeCompare(b);
             })
             .map(([edafo, color]) => (
@@ -190,7 +229,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
                   display: "flex",
                   alignItems: "center",
                   marginBottom: "6px",
-                  fontSize: "10px",
+                  fontSize: "12px",
                 }}
               >
                 <div

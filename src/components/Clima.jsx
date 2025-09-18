@@ -1,582 +1,1557 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  LayersControl,
-  GeoJSON,
-  useMap,
-} from "react-leaflet";
-import { createLayerComponent } from "@react-leaflet/core";
+import React, { useEffect, useState } from "react";
+import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet-mouse-position";
-import "leaflet-mouse-position/src/L.Control.MousePosition.css";
-import RetractableMapControls from "./RetractableMapControls";
-import parseGeoraster from "georaster";
-import GeoRasterLayer from "georaster-layer-for-leaflet";
-import chroma from "chroma-js";
+import { RasterOverlay } from "./RasterViewer";
 
-// Nota: asumo que el archivo geojson disponible es `CLIMA.geojson` (en el repo está como CLIMA.geojson).
-// Si realmente existe `CLIMAS.geojson` cambie las rutas por la versión exacta.
+// Función para generar colores específicos para tipos de clima
+const generateClimaColorPalette = (values) => {
+  const colorMap = {
+    "Calido-Arido": "#fef4de", // beige
+    "Calido-semiarido": "#eae1ce", // arena
+    "Calido-Humedo": "#f4f281", // verde lima
+    "Semicalido-semiarido": "#d3d37f", // tostado
+    "Semicalido-Subhumedo": "#81f2d4", // verde pálido
+    "Semicalido-Humedo": "#7fbaa6", // verde lima medio
+    "Templado-Semiarido": "#b9d9fe", // azul cielo
+    "Templado-Subhumedo": "#7faef3", // azul cielo claro
+    "Templado-Humedo": "#a2b1c4", // gris pizarra claro
+    "Semifrio--Subhumedo": "#d5b2e6", // ciruela
+    "Semifrio--Humedo": "#c4a1b1", // rosa viejo
+  };
 
-function MapExtraControls() {
+  // Crear mapa solo con los valores que existen en los datos
+  const uniqueValues = [...new Set(values)];
+  const result = {};
+  uniqueValues.forEach((value) => {
+    if (colorMap[value]) {
+      result[value] = colorMap[value];
+    } else {
+      // Fallback color si no está en la guía
+      result[value] = "#CCCCCC";
+    }
+  });
+
+  return result;
+};
+
+// Función para descargar GeoJSON
+const downloadGeoJSON = (data, filename) => {
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.geojson`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+// Función para descargar archivos raster
+const downloadRaster = async (filename, displayName) => {
+  try {
+    const url = `/${filename}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("No se pudo descargar el archivo");
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Error descargando archivo raster:", error);
+    alert(`Error al descargar ${displayName}`);
+  }
+};
+
+// Componente de leyenda retráctil en esquina inferior derecha
+const ColorLegend = ({ colorMap, isVisible }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
+    return null;
+  }
+
+  const legendStyle = {
+    position: "absolute",
+    bottom: "50px",
+    right: "10px",
+    backgroundColor: "white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    border: "2px solid rgba(0,0,0,0.2)",
+  };
+
+  const headerStyle = {
+    padding: "8px 12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#f8f9fa",
+  };
+
+  // Orden específico para tipos de clima según la imagen
+  const climaOrder = [
+    "Calido-Arido",
+    "Calido-semiarido",
+    "Calido-Humedo",
+    "Semicalido-semiarido",
+    "Semicalido-Subhumedo",
+    "Semicalido-Humedo",
+    "Templado-Semiarido",
+    "Templado-Subhumedo",
+    "Templado-Humedo",
+    "Semifrio--Subhumedo",
+    "Semifrio--Humedo",
+  ];
+
+  const sortedEntries = Object.entries(colorMap).sort(([a], [b]) => {
+    const indexA = climaOrder.indexOf(a);
+    const indexB = climaOrder.indexOf(b);
+
+    // Si ambos están en el orden, usar ese orden
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    // Si solo uno está en el orden, ponerlo primero
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    // Si ninguno está en el orden, orden alfabético
+    return a.localeCompare(b);
+  });
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Leyenda</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "8px",
+            maxHeight: "500px",
+            overflowY: "auto",
+            border: "1px solid #ddd",
+            backgroundColor: "#fafafa",
+            scrollbarWidth: "thin",
+          }}
+        >
+          {sortedEntries.map(([item, color]) => (
+            <div
+              key={item}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "6px",
+                fontSize: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  backgroundColor: color,
+                  marginRight: "8px",
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+              ></div>
+              <span style={{ lineHeight: "1.2" }}>{item}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CoordinateControl = () => {
   const map = useMap();
   useEffect(() => {
-    const scale = L.control.scale({
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
+    };
+
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
+  }, [map]);
+
+  return null;
+};
+
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
       position: "bottomright",
       metric: true,
       imperial: false,
     });
-    scale.addTo(map);
 
-    const mousePosition = L.control.mousePosition({
-      position: "bottomleft",
-      separator: " | ",
-      emptyString: "Mueve el cursor sobre el mapa",
-      lngFirst: false,
-      numDigits: 5,
-      lngFormatter: (lng) => `Lon: ${lng.toFixed(5)}°`,
-      latFormatter: (lat) => `Lat: ${lat.toFixed(5)}°`,
-    });
-    mousePosition.addTo(map);
+    map.addControl(scaleControl);
 
     return () => {
-      scale.remove();
-      mousePosition.remove();
+      map.removeControl(scaleControl);
     };
   }, [map]);
+
   return null;
-}
+};
 
-// GeoRaster integrado con LayersControl mediante createLayerComponent
-const GeoRasterLeaflet = createLayerComponent(
-  (props, context) => {
-    const {
-      url,
-      opacity = 0.8,
-      name,
-      onAdd = () => {},
-      onRemove = () => {},
-    } = props;
-    const group = L.layerGroup();
-
-    (async () => {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`No se pudo cargar raster ${url}`);
-        const buffer = await res.arrayBuffer();
-        const georaster = await parseGeoraster(buffer);
-
-        // calcular percentiles (muestreo)
-        let p2 = null;
-        let p98 = null;
-        try {
-          const values = georaster.values && georaster.values[0];
-          let arr = [];
-          if (values && values.length) {
-            const total = values.length;
-            const maxSample = 100000;
-            const stride = Math.max(1, Math.floor(total / maxSample));
-            for (let i = 0; i < total; i += stride) {
-              const v = values[i];
-              if (
-                v === georaster.noDataValue ||
-                v === null ||
-                v === undefined ||
-                isNaN(v)
-              )
-                continue;
-              arr.push(v);
-            }
-          }
-          if (arr.length) {
-            arr.sort((a, b) => a - b);
-            const q = (a, q) => {
-              const pos = (a.length - 1) * q;
-              const base = Math.floor(pos);
-              const rest = pos - base;
-              if (a[base + 1] !== undefined)
-                return a[base] + rest * (a[base + 1] - a[base]);
-              return a[base];
-            };
-            p2 = q(arr, 0.02);
-            p98 = q(arr, 0.98);
-          } else {
-            p2 = georaster.min ?? 0;
-            p98 = georaster.max ?? p2 + 1;
-          }
-        } catch (e) {
-          p2 = georaster.min ?? 0;
-          p98 = georaster.max ?? p2 + 1;
-        }
-
-        if (!context.map.getPane("rasterPane")) {
-          context.map.createPane("rasterPane");
-          context.map.getPane("rasterPane").style.zIndex = 450;
-        }
-
-        const isTemp = /TEMP|temp/i.test(name);
-        const isPrec = /PREC|prec|PRECIP/i.test(name);
-
-        const colorFn = (v) => {
-          if (v === null || v === undefined || isNaN(v)) return "rgba(0,0,0,0)";
-          const min = p2;
-          const max = p98;
-          const t = (v - min) / (max - min || 1);
-          const clamped = Math.min(1, Math.max(0, t));
-          if (isTemp)
-            return chroma
-              .scale(["#fff5f0", "#fcae91", "#fb6a4a", "#de2d26", "#99000d"])
-              .mode("lch")(clamped)
-              .hex();
-          if (isPrec)
-            return chroma
-              .scale(["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"])
-              .mode("lch")(clamped)
-              .hex();
-          return chroma
-            .scale(["#ffffcc", "#ffeda0", "#feb24c", "#fc4e2a", "#b10026"])
-            .mode("lch")(clamped)
-            .hex();
-        };
-
-        const gr = new GeoRasterLayer({
-          georaster,
-          pixelValuesToColorFn: (values) => colorFn(values && values[0]),
-          resolution: 128,
-          opacity,
-          pane: "rasterPane",
-        });
-        group.addLayer(gr);
-        onAdd({
-          name,
-          min: p2,
-          max: p98,
-          type: isTemp ? "temp" : isPrec ? "prec" : "other",
-        });
-
-        group.on("remove", () => {
-          try {
-            group.clearLayers();
-            onRemove(name);
-          } catch (e) {}
-        });
-      } catch (e) {
-        console.error("Error creando georaster layer", name, e);
-      }
-    })();
-
-    return group;
-  },
-  (layer, props, prevProps) => {
-    try {
-      layer.eachLayer((l) => {
-        if (
-          l &&
-          typeof l.setOpacity === "function" &&
-          props.opacity !== prevProps.opacity
-        ) {
-          l.setOpacity(props.opacity);
-        }
-      });
-    } catch (e) {}
-  }
-);
-
-const Clima = ({ style = { height: "80vh", width: "100%" } }) => {
-  const mapRef = useRef(null);
-  const [climaData, setClimaData] = useState(null);
-  const [areaData, setAreaData] = useState(null);
-  const [climaCategories, setClimaCategories] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [rasterOpacity, setRasterOpacity] = useState(0.8);
-  const [legendMap, setLegendMap] = useState({}); // { name: {min,max,type} }
-
-  useEffect(() => {
-    let mounted = true;
-    const fetchGeo = async () => {
-      setLoading(true);
-      try {
-        const [cR, aR] = await Promise.all([
-          fetch("/CLIMA.geojson"),
-          fetch("/AREA.geojson"),
-        ]);
-        if (!cR.ok) throw new Error("No se pudo cargar CLIMA.geojson");
-        if (!aR.ok) throw new Error("No se pudo cargar AREA.geojson");
-        const cJson = await cR.json();
-        const aJson = await aR.json();
-        if (mounted) {
-          setClimaData(cJson);
-          setAreaData(aJson);
-
-          // generar categorías y paleta dinámica basada en la propiedad CLIMA
-          try {
-            const cats = Array.from(
-              new Set(
-                cJson.features
-                  .map((f) => f.properties && f.properties.CLIMA)
-                  .filter((v) => v !== undefined && v !== null)
-              )
-            );
-            if (cats.length) {
-              // generar colores con chroma
-              const palette = chroma
-                .scale("Spectral")
-                .mode("lch")
-                .colors(cats.length);
-              const mapping = {};
-              cats.forEach((c, i) => (mapping[c] = palette[i]));
-              setClimaCategories({ cats, mapping });
-            }
-          } catch (e) {
-            console.warn("No se pudo generar paleta para CLIMA", e);
-          }
-        }
-      } catch (e) {
-        console.error("Error cargando geojsons:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGeo();
-    return () => (mounted = false);
-  }, []);
-
-  // Descarga genérica
-  const downloadFile = async (path) => {
-    try {
-      const res = await fetch(path);
-      if (!res.ok) throw new Error("No se pudo descargar");
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = path.split("/").pop();
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error("Error descargando:", path, e);
-      alert("Error al descargar el archivo: " + path);
-    }
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "80px", // Bajado más abajo del botón de zoom
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
   };
 
-  const exportMapAsImage = async () => {
-    if (!mapRef.current) return alert("Mapa no listo");
-    try {
-      const html2canvas = await import("html2canvas");
-      const container = mapRef.current.getContainer
-        ? mapRef.current.getContainer()
-        : mapRef.current._container;
-      const controls = container.querySelectorAll(".leaflet-control-container");
-      controls.forEach((el) => (el.style.visibility = "hidden"));
-      const canvas = await html2canvas.default(container, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 2,
-      });
-      controls.forEach((el) => (el.style.visibility = "visible"));
-      const link = document.createElement("a");
-      link.download = "mapa_climas.png";
-      link.href = canvas.toDataURL("image/png");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (e) {
-      console.error(e);
-      alert("Error exportando mapa");
-    }
-  };
-
-  // handlers para registrar leyendas cuando RasterOverlay se monta/desmonta
-  const handleRasterAdd = ({ name, min, max, type }) => {
-    setLegendMap((m) => ({ ...m, [name]: { min, max, type } }));
-  };
-  const handleRasterRemove = (name) => {
-    setLegendMap((m) => {
-      const copy = { ...m };
-      delete copy[name];
-      return copy;
-    });
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      <RetractableMapControls
-        panelTitle="Herramientas"
-        position={{ bottom: 40, left: 14 }}
-        buttons={[
-          {
-            label: "Descargar CLIMA.geojson",
-            icon: "⬇️",
-            bg: "#fff3e0",
-            onClick: () => downloadFile("/CLIMA.geojson"),
-          },
-          {
-            label: "Descargar AREA.geojson",
-            icon: "⬇️",
-            bg: "#f1f8e9",
-            onClick: () => downloadFile("/AREA.geojson"),
-          },
-          {
-            label: "Descargar PREC_TOTAL_ANUAL.tif",
-            icon: "⬇️",
-            bg: "#e8f5e9",
-            onClick: () => downloadFile("/PREC_TOTAL_ANUAL.tif"),
-          },
-          {
-            label: "Descargar TEMP_MIN_ANUAL.tif",
-            icon: "⬇️",
-            bg: "#e8f5e9",
-            onClick: () => downloadFile("/TEMP_MIN_ANUAL.tif"),
-          },
-          {
-            label: "Descargar TEMP_MED_ANUAL.tif",
-            icon: "⬇️",
-            bg: "#e8f5e9",
-            onClick: () => downloadFile("/TEMP_MED_ANUAL.tif"),
-          },
-          {
-            label: "Descargar TEMP_MAX_ANUAL.tif",
-            icon: "⬇️",
-            bg: "#e8f5e9",
-            onClick: () => downloadFile("/TEMP_MAX_ANUAL.tif"),
-          },
-          {
-            label: "Exportar Mapa",
-            icon: "📷",
-            bg: "#e3f2fd",
-            onClick: exportMapAsImage,
-          },
-        ]}
-      />
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
 
-      {/* Slider de opacidad para rasters en el panel de herramientas (Retractable) */}
+// Componente para el control de capas agrupadas con funcionalidad extendida
+const GroupedLayerControl = ({
+  area,
+  paisajes,
+  municipios,
+  clima,
+  onColorMapChange,
+  onLegendVisibilityChange,
+  tooltipsEnabled,
+  activeLayers,
+  setActiveLayers,
+  opacity,
+  setOpacity,
+}) => {
+  const map = useMap();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [layers, setLayers] = useState({});
+  const [activeBaseLayer, setActiveBaseLayer] = useState(
+    "Topográfico (OpenTopoMap)"
+  );
+
+  useEffect(() => {
+    // Limpiar capas anteriores (excepto capas base)
+    Object.entries(layers).forEach(([key, layer]) => {
+      if (key !== "baseLayers" && layer && layer.remove) {
+        try {
+          map.removeLayer(layer);
+        } catch (e) {
+          // La capa podría no estar en el mapa, ignorar error
+        }
+      }
+    });
+
+    const newLayers = {};
+
+    // Crear panes personalizados para controlar el orden de las capas
+    if (!map.getPane("vectorPane")) {
+      map.createPane("vectorPane");
+      map.getPane("vectorPane").style.zIndex = 400; // Capas vectoriales debajo
+    }
+
+    if (!map.getPane("rasterPane")) {
+      map.createPane("rasterPane");
+      map.getPane("rasterPane").style.zIndex = 450; // Capas raster encima
+    }
+
+    // Capas base
+    const baseLayers = {
+      "Topográfico (OpenTopoMap)": L.tileLayer(
+        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        {
+          attribution:
+            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          maxZoom: 17,
+        }
+      ),
+      "Satélite (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution:
+            "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+        }
+      ),
+    };
+
+    // Agregar capa base activa por defecto
+    baseLayers[activeBaseLayer].addTo(map);
+
+    // Zona de Estudio
+    if (area) {
+      newLayers.area = L.geoJSON(area, {
+        style: { color: "black", weight: 6, fillOpacity: 0 },
+      });
+      if (activeLayers.area) {
+        newLayers.area.addTo(map);
+      }
+    }
+
+    if (paisajes) {
+      newLayers.paisajes = L.geoJSON(paisajes, {
+        style: { color: "white", weight: 3, fillOpacity: 0 },
+      });
+      if (activeLayers.paisajes) {
+        newLayers.paisajes.addTo(map);
+      }
+    }
+
+    if (municipios) {
+      newLayers.municipios = L.geoJSON(municipios, {
+        style: { color: "black", weight: 1, fillOpacity: 0 },
+      });
+      if (activeLayers.municipios) {
+        newLayers.municipios.addTo(map);
+      }
+    }
+
+    // Capas de Interés - Clima (usando clima con colores por CLIMA)
+    if (clima) {
+      // Generar mapa de colores para el campo CLIMA usando la guía específica
+      const climaValues = clima.features
+        .map((f) => f.properties.CLIMA)
+        .filter(Boolean);
+      const newColorMap = generateClimaColorPalette(climaValues);
+
+      newLayers.clima = L.geoJSON(clima, {
+        pane: "vectorPane", // Asignar al pane vectorial
+        style: (feature) => {
+          const climaValue = feature.properties.CLIMA;
+          return {
+            fillColor: newColorMap[climaValue] || "#gray",
+            weight: 0,
+            opacity: 1,
+            color: "white",
+            fillOpacity: 1,
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            const props = feature.properties;
+
+            // Configurar tooltip al hacer hover si está habilitado
+            const bindTooltipIfEnabled = () => {
+              if (tooltipsEnabled) {
+                layer.bindTooltip(
+                  `
+                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+                  <strong>Tipo de Clima:</strong> ${props.CLIMA || "N/A"}<br>
+                  <strong>Hectáreas:</strong> ${props.HECTARES || "N/A"}
+                  `,
+                  {
+                    permanent: false,
+                    direction: "auto",
+                    className: "custom-tooltip",
+                  }
+                );
+              } else {
+                layer.unbindTooltip();
+              }
+            };
+
+            bindTooltipIfEnabled();
+
+            // Reconfigurar tooltip cuando cambie el estado
+            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+          }
+        },
+      });
+
+      // Solo agregar al mapa si está activa, pero siempre crear la capa para poder togglearla
+      if (activeLayers.clima) {
+        newLayers.clima.addTo(map);
+        if (onColorMapChange) {
+          onColorMapChange(newColorMap);
+        }
+        if (onLegendVisibilityChange) {
+          onLegendVisibilityChange(true);
+        }
+      } else {
+        // Si no está activa, asegurar que la leyenda esté oculta
+        if (onColorMapChange) {
+          onColorMapChange({});
+        }
+        if (onLegendVisibilityChange) {
+          onLegendVisibilityChange(false);
+        }
+      }
+    }
+
+    newLayers.baseLayers = baseLayers;
+    setLayers(newLayers);
+
+    // Configurar el zoom inicial basado en el área
+    if (area && area.features && area.features.length > 0) {
+      const layer = L.geoJSON(area);
+      map.fitBounds(layer.getBounds());
+    }
+  }, [
+    map,
+    area,
+    paisajes,
+    municipios,
+    clima,
+    activeLayers,
+    activeBaseLayer,
+    tooltipsEnabled,
+    onColorMapChange,
+    onLegendVisibilityChange,
+  ]);
+
+  // Actualizar tooltips cuando cambie el estado
+  useEffect(() => {
+    Object.values(layers).forEach((layer) => {
+      if (layer && layer.eachLayer) {
+        layer.eachLayer((subLayer) => {
+          if (subLayer.bindTooltipIfEnabled) {
+            subLayer.bindTooltipIfEnabled();
+          }
+        });
+      }
+    });
+  }, [tooltipsEnabled, layers]);
+
+  const toggleLayer = (layerKey) => {
+    const newActiveLayers = {
+      ...activeLayers,
+      [layerKey]: !activeLayers[layerKey],
+    };
+    setActiveLayers(newActiveLayers);
+
+    const layer = layers[layerKey];
+    if (layer && layer !== layers.baseLayers) {
+      if (newActiveLayers[layerKey]) {
+        layer.addTo(map);
+      } else {
+        map.removeLayer(layer);
+      }
+    }
+
+    // Controlar visibilidad de la leyenda y actualizar colorMap para clima
+    if (layerKey === "clima" && onLegendVisibilityChange && onColorMapChange) {
+      if (newActiveLayers.clima && clima) {
+        // Clima activa, mostrar leyenda
+        const climaValues = clima.features
+          .map((f) => f.properties.CLIMA)
+          .filter(Boolean);
+        const newColorMap = generateClimaColorPalette(climaValues);
+        onColorMapChange(newColorMap);
+        onLegendVisibilityChange(true);
+      } else {
+        // Clima inactiva, ocultar leyenda
+        onColorMapChange({});
+        onLegendVisibilityChange(false);
+      }
+    }
+  };
+
+  const changeBaseLayer = (newBaseLayer) => {
+    // Remover capa base actual
+    if (layers.baseLayers && layers.baseLayers[activeBaseLayer]) {
+      map.removeLayer(layers.baseLayers[activeBaseLayer]);
+    }
+
+    // Agregar nueva capa base
+    if (layers.baseLayers && layers.baseLayers[newBaseLayer]) {
+      layers.baseLayers[newBaseLayer].addTo(map);
+      setActiveBaseLayer(newBaseLayer);
+    }
+  };
+
+  const handleOpacityChange = (layerKey, newOpacity) => {
+    setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+
+    const layer = layers[layerKey];
+    if (layer && layer.setStyle) {
+      layer.setStyle({ fillOpacity: newOpacity });
+    }
+  };
+
+  const controlStyle = {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    backgroundColor: "white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "12px",
+    maxWidth: "300px",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+  };
+
+  const LayerItem = ({
+    layerKey,
+    title,
+    data,
+    showDownload = true,
+    showOpacity = true,
+  }) => (
+    <div
+      style={{
+        marginBottom: "6px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
       <div
-        style={{ position: "absolute", bottom: 120, left: 14, zIndex: 1100 }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "8px",
+          gap: "8px",
+        }}
       >
-        <div
-          style={{
-            background: "rgba(255,255,255,0.95)",
-            padding: 8,
-            borderRadius: 8,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: 6 }}>
-            Opacidad rasters
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
+        {showDownload && (
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              padding: "0px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              marginLeft: "2px",
+              width: "18px",
+              height: "18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={`Descargar ${title}`}
+            onClick={() => downloadGeoJSON(data, title.toLowerCase())}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v8m0 0l-3-3m3 3l3-3"
+                stroke="#333"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="3"
+                y="13"
+                width="10"
+                height="1.5"
+                rx="0.75"
+                fill="#333"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+      {showOpacity && (
+        <>
+          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
             type="range"
             min="0"
             max="1"
-            step="0.05"
-            value={rasterOpacity}
-            onChange={(e) => setRasterOpacity(parseFloat(e.target.value))}
+            step="0.1"
+            value={opacity[layerKey]}
+            onChange={(e) =>
+              handleOpacityChange(layerKey, parseFloat(e.target.value))
+            }
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+            }}
+            onMouseUp={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+            }}
+            onMouseLeave={(e) => {
+              map.dragging.enable();
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+            }}
+            style={{ width: "100%" }}
           />
-          <div style={{ fontSize: 12, marginTop: 6 }}>
-            {Math.round(rasterOpacity * 100)}%
-          </div>
-        </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={controlStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Capas</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
       </div>
 
-      <MapContainer
-        whenCreated={(m) => (mapRef.current = m)}
-        center={[23.6345, -102.5528]}
-        zoom={5}
-        style={style}
-        zoomControl={false}
-      >
-        <MapExtraControls />
+      {!isCollapsed && (
+        <div style={{ padding: "15px" }}>
+          {/* Capas Base */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {layers.baseLayers &&
+                Object.keys(layers.baseLayers).map((baseLayerName) => (
+                  <div key={baseLayerName} style={{ marginBottom: "5px" }}>
+                    <input
+                      type="radio"
+                      name="baseLayer"
+                      checked={activeBaseLayer === baseLayerName}
+                      onChange={() => changeBaseLayer(baseLayerName)}
+                    />
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      {baseLayerName}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
 
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="OpenStreetMap">
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap contributors"
-            />
-          </LayersControl.BaseLayer>
-
-          <LayersControl.Overlay name="Área de Estudio">
-            {areaData ? (
-              <GeoJSON
-                data={areaData}
-                style={() => ({ color: "black", weight: 4, fillOpacity: 0 })}
+          {/* Zona de Estudio */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Límites
+            </strong>
+            {area && (
+              <LayerItem
+                layerKey="area"
+                title="Área de estudio"
+                data={area}
+                showOpacity={false}
               />
-            ) : null}
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="CLIMA (GeoJSON)">
-            {climaData ? (
-              <GeoJSON
-                data={climaData}
-                style={(feature) => {
-                  const key = feature.properties && feature.properties.CLIMA;
-                  const color =
-                    (climaCategories &&
-                      climaCategories.mapping &&
-                      climaCategories.mapping[key]) ||
-                    "#2b83ba";
-                  return {
-                    color: color,
-                    weight: 1,
-                    fillColor: color,
-                    fillOpacity: 0.5,
-                  };
-                }}
-                onEachFeature={(feature, layer) => {
-                  const name =
-                    feature.properties &&
-                    (feature.properties.NOMGEO ||
-                      feature.properties.NOMBRE ||
-                      feature.properties.CLIMA);
-                  const climaValue =
-                    feature.properties && feature.properties.CLIMA;
-                  layer.bindTooltip(
-                    `<strong>${name}</strong><br/>CLIMA: ${climaValue}`,
-                    { direction: "auto" }
-                  );
-                }}
+            )}
+            {paisajes && (
+              <LayerItem
+                layerKey="paisajes"
+                title="Paisajes bioculturales"
+                data={paisajes}
+                showOpacity={false}
               />
-            ) : null}
-          </LayersControl.Overlay>
+            )}
+            {municipios && (
+              <LayerItem
+                layerKey="municipios"
+                title="Municipios"
+                data={municipios}
+                showOpacity={false}
+              />
+            )}
+          </div>
 
-          {/* Rasters: ahora cada overlay contiene RasterOverlay, de modo que LayersControl los enciende/apaga */}
-          <LayersControl.Overlay name="PREC_TOTAL_ANUAL">
-            <GeoRasterLeaflet
-              url="/PREC_TOTAL_ANUAL.tif"
-              name="PREC_TOTAL_ANUAL"
-              opacity={rasterOpacity}
-              onAdd={handleRasterAdd}
-              onRemove={handleRasterRemove}
-            />
-          </LayersControl.Overlay>
+          {/* Capas de Interés */}
+          <div
+            style={{
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
+            }}
+          >
+            <strong
+              style={{
+                color: "#2c3e50",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Clima
+            </strong>
+            {clima && (
+              <LayerItem
+                layerKey="clima"
+                title="Tipos de clima"
+                data={clima}
+                showOpacity={true}
+              />
+            )}
 
-          <LayersControl.Overlay name="TEMP_MIN_ANUAL">
-            <GeoRasterLeaflet
-              url="/TEMP_MIN_ANUAL.tif"
-              name="TEMP_MIN_ANUAL"
-              opacity={rasterOpacity}
-              onAdd={handleRasterAdd}
-              onRemove={handleRasterRemove}
-            />
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="TEMP_MED_ANUAL">
-            <GeoRasterLeaflet
-              url="/TEMP_MED_ANUAL.tif"
-              name="TEMP_MED_ANUAL"
-              opacity={rasterOpacity}
-              onAdd={handleRasterAdd}
-              onRemove={handleRasterRemove}
-            />
-          </LayersControl.Overlay>
-
-          <LayersControl.Overlay name="TEMP_MAX_ANUAL">
-            <GeoRasterLeaflet
-              url="/TEMP_MAX_ANUAL.tif"
-              name="TEMP_MAX_ANUAL"
-              opacity={rasterOpacity}
-              onAdd={handleRasterAdd}
-              onRemove={handleRasterRemove}
-            />
-          </LayersControl.Overlay>
-        </LayersControl>
-      </MapContainer>
-
-      {loading && (
-        <div
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            zIndex: 1200,
-            background: "rgba(255,255,255,0.9)",
-            padding: 8,
-            borderRadius: 6,
-          }}
-        >
-          Cargando capas...
-        </div>
-      )}
-
-      {/* Leyenda de CLIMA */}
-      {climaCategories && climaCategories.cats && (
-        <div
-          style={{
-            position: "absolute",
-            top: 24,
-            right: 24,
-            background: "rgba(255,255,255,0.95)",
-            borderRadius: 8,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-            padding: "12px 18px",
-            zIndex: 999,
-            minWidth: 160,
-            fontSize: 13,
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: 8 }}>Climas</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {climaCategories.cats.map((c) => (
+            {/* Precipitación anual */}
+            <div
+              style={{
+                marginBottom: "6px",
+                padding: "0px",
+                backgroundColor: "transparent",
+                borderRadius: "0px",
+              }}
+            >
               <div
-                key={c}
-                style={{ display: "flex", alignItems: "center", gap: 8 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                  gap: "8px",
+                }}
               >
-                <div
-                  style={{
-                    width: 18,
-                    height: 14,
-                    background: climaCategories.mapping[c],
-                    border: "1px solid #444",
-                  }}
+                <input
+                  type="checkbox"
+                  checked={activeLayers.precipitacion || false}
+                  onChange={() => toggleLayer("precipitacion")}
                 />
-                <div>{c}</div>
+                <span
+                  style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
+                >
+                  Precipitación anual
+                </span>
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    padding: "0px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginLeft: "2px",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Descargar Precipitación Anual"
+                  onClick={() =>
+                    downloadRaster(
+                      "PREC_TOTAL_ANUAL.tif",
+                      "Precipitación Anual"
+                    )
+                  }
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2v8m0 0l-3-3m3 3l3-3"
+                      stroke="#333"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="13"
+                      width="10"
+                      height="1.5"
+                      rx="0.75"
+                      fill="#333"
+                    />
+                  </svg>
+                </button>
               </div>
-            ))}
+              <div
+                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+              >
+                Opacidad: {Math.round(opacity.precipitacion * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={opacity.precipitacion}
+                onChange={(e) =>
+                  setOpacity((prev) => ({
+                    ...prev,
+                    precipitacion: parseFloat(e.target.value),
+                  }))
+                }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Temperatura máxima anual */}
+            <div
+              style={{
+                marginBottom: "6px",
+                padding: "0px",
+                backgroundColor: "transparent",
+                borderRadius: "0px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                  gap: "8px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={activeLayers.tempMax || false}
+                  onChange={() => toggleLayer("tempMax")}
+                />
+                <span
+                  style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
+                >
+                  Temperatura máxima anual
+                </span>
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    padding: "0px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginLeft: "2px",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Descargar Temperatura Máxima Anual"
+                  onClick={() =>
+                    downloadRaster(
+                      "TEMP_MAX_ANUAL.tif",
+                      "Temperatura Máxima Anual"
+                    )
+                  }
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2v8m0 0l-3-3m3 3l3-3"
+                      stroke="#333"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="13"
+                      width="10"
+                      height="1.5"
+                      rx="0.75"
+                      fill="#333"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+              >
+                Opacidad: {Math.round(opacity.tempMax * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={opacity.tempMax}
+                onChange={(e) =>
+                  setOpacity((prev) => ({
+                    ...prev,
+                    tempMax: parseFloat(e.target.value),
+                  }))
+                }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Temperatura media anual */}
+            <div
+              style={{
+                marginBottom: "6px",
+                padding: "0px",
+                backgroundColor: "transparent",
+                borderRadius: "0px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                  gap: "8px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={activeLayers.tempMed || false}
+                  onChange={() => toggleLayer("tempMed")}
+                />
+                <span
+                  style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
+                >
+                  Temperatura media anual
+                </span>
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    padding: "0px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginLeft: "2px",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Descargar Temperatura Media Anual"
+                  onClick={() =>
+                    downloadRaster(
+                      "TEMP_MED_ANUAL.tif",
+                      "Temperatura Media Anual"
+                    )
+                  }
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2v8m0 0l-3-3m3 3l3-3"
+                      stroke="#333"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="13"
+                      width="10"
+                      height="1.5"
+                      rx="0.75"
+                      fill="#333"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+              >
+                Opacidad: {Math.round(opacity.tempMed * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={opacity.tempMed}
+                onChange={(e) =>
+                  setOpacity((prev) => ({
+                    ...prev,
+                    tempMed: parseFloat(e.target.value),
+                  }))
+                }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Temperatura mínima anual */}
+            <div
+              style={{
+                marginBottom: "6px",
+                padding: "0px",
+                backgroundColor: "transparent",
+                borderRadius: "0px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                  gap: "8px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={activeLayers.tempMin || false}
+                  onChange={() => toggleLayer("tempMin")}
+                />
+                <span
+                  style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
+                >
+                  Temperatura mínima anual
+                </span>
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    padding: "0px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginLeft: "2px",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Descargar Temperatura Mínima Anual"
+                  onClick={() =>
+                    downloadRaster(
+                      "TEMP_MIN_ANUAL.tif",
+                      "Temperatura Mínima Anual"
+                    )
+                  }
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2v8m0 0l-3-3m3 3l3-3"
+                      stroke="#333"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="13"
+                      width="10"
+                      height="1.5"
+                      rx="0.75"
+                      fill="#333"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+              >
+                Opacidad: {Math.round(opacity.tempMin * 100)}%
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={opacity.tempMin}
+                onChange={(e) =>
+                  setOpacity((prev) => ({
+                    ...prev,
+                    tempMin: parseFloat(e.target.value),
+                  }))
+                }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                style={{ width: "100%" }}
+              />
+            </div>
           </div>
         </div>
       )}
-
-      {/* Leyenda continua para raster activo (mostrar la primera entrada de legendMap) */}
-      {Object.keys(legendMap).length > 0 &&
-        (() => {
-          const firstKey = Object.keys(legendMap)[0];
-          const info = legendMap[firstKey];
-          const isTemp = info.type === "temp";
-          const barColors = isTemp
-            ? ["#fff5f0", "#fcae91", "#fb6a4a", "#de2d26", "#99000d"]
-            : ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"];
-          return (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 24,
-                right: 24,
-                zIndex: 999,
-                background: "rgba(255,255,255,0.95)",
-                padding: 12,
-                borderRadius: 8,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              }}
-            >
-              <div style={{ fontWeight: "bold", marginBottom: 6 }}>
-                {firstKey}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 12 }}>{info.min}</span>
-                <div style={{ height: 12, flex: 1, display: "flex" }}>
-                  {barColors.map((c, i) => (
-                    <div key={i} style={{ background: c, flex: 1 }} />
-                  ))}
-                </div>
-                <span style={{ fontSize: 12 }}>{info.max}</span>
-              </div>
-            </div>
-          );
-        })()}
     </div>
+  );
+};
+
+// Componente para controlar el dragging del mapa
+const DraggingControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const enableDragging = () => {
+      map.dragging.enable();
+    };
+
+    map.getContainer().addEventListener("mouseleave", enableDragging);
+
+    return () => {
+      map.getContainer().removeEventListener("mouseleave", enableDragging);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para mostrar valores de píxeles raster
+const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
+  const hasActiveRasterLayers = Object.entries(activeLayers).some(
+    ([key, isActive]) =>
+      isActive &&
+      ["precipitacion", "tempMax", "tempMed", "tempMin"].includes(key)
+  );
+
+  const hasPixelValues = Object.values(pixelValues).some(
+    (value) => value !== null
+  );
+
+  if (!hasActiveRasterLayers) {
+    return null;
+  }
+
+  const displayStyle = {
+    position: "absolute",
+    top: "120px", // Debajo del botón de información
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "11px",
+    padding: "8px 12px",
+    border: "2px solid rgba(0,0,0,0.2)",
+    minWidth: "180px",
+  };
+
+  const headerStyle = {
+    fontWeight: "bold",
+    marginBottom: "6px",
+    fontSize: "12px",
+    color: "#2c3e50",
+  };
+
+  const valueStyle = {
+    marginBottom: "3px",
+    display: "flex",
+    justifyContent: "space-between",
+  };
+
+  const labelStyle = {
+    color: "#666",
+  };
+
+  const valueNumberStyle = {
+    fontWeight: "bold",
+    color: "#333",
+  };
+
+  const getLayerName = (key) => {
+    const names = {
+      precipitacion: "Precipitación",
+      tempMax: "Temp. Máxima",
+      tempMed: "Temp. Media",
+      tempMin: "Temp. Mínima",
+    };
+    return names[key] || key;
+  };
+
+  const getUnit = (key) => {
+    const units = {
+      precipitacion: "mm",
+      tempMax: "°C",
+      tempMed: "°C",
+      tempMin: "°C",
+    };
+    return units[key] || "";
+  };
+
+  return (
+    <div style={displayStyle}>
+      <div style={headerStyle}>Valores del Pixel</div>
+      {!hasPixelValues && (
+        <div style={{ color: "#888", fontStyle: "italic" }}>
+          Pasa el cursor sobre el mapa
+        </div>
+      )}
+      {Object.entries(pixelValues).map(([key, value]) => {
+        if (!activeLayers[key] || value === null) return null;
+
+        return (
+          <div key={key} style={valueStyle}>
+            <span style={labelStyle}>{getLayerName(key)}:</span>
+            <span style={valueNumberStyle}>
+              {typeof value === "number" ? value.toFixed(1) : value}{" "}
+              {getUnit(key)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const Clima = () => {
+  const [area, setArea] = useState(null);
+  const [paisajes, setPaisajes] = useState(null);
+  const [municipios, setMunicipios] = useState(null);
+  const [clima, setClima] = useState(null);
+  const [colorMap, setColorMap] = useState({});
+  const [showLegend, setShowLegend] = useState(false);
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+  const [pixelValues, setPixelValues] = useState({
+    precipitacion: null,
+    tempMax: null,
+    tempMed: null,
+    tempMin: null,
+  });
+  const [activeLayers, setActiveLayers] = useState({
+    area: true,
+    municipios: true,
+    paisajes: true,
+    clima: true,
+    precipitacion: false,
+    tempMax: false,
+    tempMed: false,
+    tempMin: false,
+  });
+  const [opacity, setOpacity] = useState({
+    area: 1,
+    municipios: 1,
+    paisajes: 1,
+    clima: 1,
+    precipitacion: 0.7,
+    tempMax: 0.7,
+    tempMed: 0.7,
+    tempMin: 0.7,
+  });
+
+  const toggleTooltips = () => {
+    setTooltipsEnabled(!tooltipsEnabled);
+  };
+
+  // Limpiar valores de píxeles cuando se desactivan capas raster
+  useEffect(() => {
+    setPixelValues((prev) => {
+      const newValues = { ...prev };
+      Object.keys(newValues).forEach((key) => {
+        if (!activeLayers[key]) {
+          newValues[key] = null;
+        }
+      });
+      return newValues;
+    });
+  }, [activeLayers]);
+
+  useEffect(() => {
+    fetch("/AREA.geojson")
+      .then((res) => res.json())
+      .then(setArea);
+    fetch("/PAISAJES.geojson")
+      .then((res) => res.json())
+      .then(setPaisajes);
+    fetch("/MUNICIPIOS.geojson")
+      .then((res) => res.json())
+      .then(setMunicipios);
+    fetch("/CLIMA.geojson")
+      .then((res) => res.json())
+      .then(setClima);
+  }, []);
+
+  return (
+    <MapContainer
+      center={[16.67566, -96.28311]}
+      zoom={10}
+      scrollWheelZoom={true}
+      dragging={true}
+      style={{ height: "100vh", width: "100%" }}
+    >
+      <InfoControl
+        onToggleTooltips={toggleTooltips}
+        tooltipsEnabled={tooltipsEnabled}
+      />
+      <DraggingControl />
+      <PixelValueDisplay
+        pixelValues={pixelValues}
+        activeLayers={activeLayers}
+      />
+      <GroupedLayerControl
+        area={area}
+        paisajes={paisajes}
+        municipios={municipios}
+        clima={clima}
+        onColorMapChange={setColorMap}
+        onLegendVisibilityChange={setShowLegend}
+        tooltipsEnabled={tooltipsEnabled}
+        activeLayers={activeLayers}
+        setActiveLayers={setActiveLayers}
+        opacity={opacity}
+        setOpacity={setOpacity}
+      />
+      <CoordinateControl />
+      <ScaleControl />
+      <ColorLegend colorMap={colorMap} isVisible={showLegend} />
+
+      {/* Capas raster con overlays condicionales */}
+      {activeLayers.precipitacion && (
+        <RasterOverlay
+          fileName="PREC_TOTAL_ANUAL.tif"
+          colorMap={["#d4edff", "#7fcdff", "#43a2ca", "#1e78b4", "#08519c"]} // Rampa azul claro a oscuro
+          baseUrl="/"
+          continuous={true}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={(value) =>
+            setPixelValues((prev) => ({ ...prev, precipitacion: value }))
+          }
+          overlayOpacity={opacity.precipitacion}
+          pane="rasterPane"
+        />
+      )}
+
+      {activeLayers.tempMax && (
+        <RasterOverlay
+          fileName="TEMP_MAX_ANUAL.tif"
+          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
+          baseUrl="/"
+          continuous={true}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={(value) =>
+            setPixelValues((prev) => ({ ...prev, tempMax: value }))
+          }
+          overlayOpacity={opacity.tempMax}
+          pane="rasterPane"
+        />
+      )}
+
+      {activeLayers.tempMed && (
+        <RasterOverlay
+          fileName="TEMP_MED_ANUAL.tif"
+          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
+          baseUrl="/"
+          continuous={true}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={(value) =>
+            setPixelValues((prev) => ({ ...prev, tempMed: value }))
+          }
+          overlayOpacity={opacity.tempMed}
+          pane="rasterPane"
+        />
+      )}
+
+      {activeLayers.tempMin && (
+        <RasterOverlay
+          fileName="TEMP_MIN_ANUAL.tif"
+          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
+          baseUrl="/"
+          continuous={true}
+          setError={() => {}}
+          setLoading={() => {}}
+          onPixelValue={(value) =>
+            setPixelValues((prev) => ({ ...prev, tempMin: value }))
+          }
+          overlayOpacity={opacity.tempMin}
+          pane="rasterPane"
+        />
+      )}
+    </MapContainer>
   );
 };
 

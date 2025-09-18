@@ -60,33 +60,14 @@ export const componentMapping = {
 
   // 1.1.3 - Clima
   "1.1.3": {
-    component: MapChart,
-    props: {
-      geoJsonUrl: "/CLIMA.geojson",
-      categoriaCol: "CLIMA",
-      hectareasCol: "HECTARES",
-      showPaletteControl: false,
-      showChartLabels: false,
-      title: "Tipos de Clima",
-      showLegend: true,
-      mainLayerLabel: "Tipos de Clima",
-    },
+    component: Clima,
+    props: {},
   },
 
   // 1.1.4 - Vegetación y uso de suelo
   "1.1.4": {
     component: TimeSeriesMapViewer,
-    props: {
-      layers: [
-        { url: "/SERIE1.geojson", year: "1985", categoriaCol: "tipo_veg" },
-        { url: "/SERIE2.geojson", year: "1995", categoriaCol: "tipo_veg" },
-        { url: "/SERIE3.geojson", year: "2005", categoriaCol: "tipo_veg" },
-        { url: "/SERIE4.geojson", year: "2015", categoriaCol: "tipo_veg" },
-        { url: "/SERIE5.geojson", year: "2020", categoriaCol: "tipo_veg" },
-        { url: "/SERIE6.geojson", year: "2023", categoriaCol: "tipo_veg" },
-      ],
-      title: "Evolución de la Vegetación",
-    },
+    props: {},
   },
 
   // 1.1.5 - Áreas de protección
