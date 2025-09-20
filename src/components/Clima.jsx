@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -20,19 +20,38 @@ const generateClimaColorPalette = (values) => {
     "Semifrio--Humedo": "#c4a1b1", // rosa viejo
   };
 
-  // Crear mapa solo con los valores que existen en los datos
+  // Mapeo de nombres sin acentos a nombres con acentos para la leyenda
+  const displayNames = {
+    "Calido-Arido": "Cálido-Árido",
+    "Calido-semiarido": "Cálido-Semiárido",
+    "Calido-Humedo": "Cálido-Húmedo",
+    "Semicalido-semiarido": "Semicálido-Semiárido",
+    "Semicalido-Subhumedo": "Semicálido-Subhúmedo",
+    "Semicalido-Humedo": "Semicálido-Húmedo",
+    "Templado-Semiarido": "Templado-Semiárido",
+    "Templado-Subhumedo": "Templado-Subhúmedo",
+    "Templado-Humedo": "Templado-Húmedo",
+    "Semifrio--Subhumedo": "Semifrío-Subhúmedo",
+    "Semifrio--Humedo": "Semifrío-Húmedo",
+  };
+
+  // Crear dos mapas: uno para coloreado (sin acentos) y otro para leyenda (con acentos)
   const uniqueValues = [...new Set(values)];
-  const result = {};
+  const coloringMap = {}; // Para asignar colores a las características
+  const legendMap = {}; // Para mostrar en la leyenda
+
   uniqueValues.forEach((value) => {
     if (colorMap[value]) {
-      result[value] = colorMap[value];
+      coloringMap[value] = colorMap[value]; // Clave sin acentos para coloreado
+      legendMap[displayNames[value] || value] = colorMap[value]; // Clave con acentos para leyenda
     } else {
       // Fallback color si no está en la guía
-      result[value] = "#CCCCCC";
+      coloringMap[value] = "#CCCCCC";
+      legendMap[value] = "#CCCCCC";
     }
   });
 
-  return result;
+  return { coloringMap, legendMap };
 };
 
 // Función para descargar GeoJSON
@@ -103,19 +122,19 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     backgroundColor: "#f8f9fa",
   };
 
-  // Orden específico para tipos de clima según la imagen
+  // Orden específico para tipos de clima según la imagen (con acentos para la leyenda)
   const climaOrder = [
-    "Calido-Arido",
-    "Calido-semiarido",
-    "Calido-Humedo",
-    "Semicalido-semiarido",
-    "Semicalido-Subhumedo",
-    "Semicalido-Humedo",
-    "Templado-Semiarido",
-    "Templado-Subhumedo",
-    "Templado-Humedo",
-    "Semifrio--Subhumedo",
-    "Semifrio--Humedo",
+    "Cálido-Árido",
+    "Cálido-Semiárido",
+    "Cálido-Húmedo",
+    "Semicálido-Semiárido",
+    "Semicálido-Subhúmedo",
+    "Semicálido-Húmedo",
+    "Templado-Semiárido",
+    "Templado-Subhúmedo",
+    "Templado-Húmedo",
+    "Semifrío-Subhúmedo",
+    "Semifrío-Húmedo",
   ];
 
   const sortedEntries = Object.entries(colorMap).sort(([a], [b]) => {
@@ -342,8 +361,7 @@ const GroupedLayerControl = ({
       "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
       ),
     };
@@ -381,18 +399,18 @@ const GroupedLayerControl = ({
 
     // Capas de Interés - Clima (usando clima con colores por CLIMA)
     if (clima) {
-      // Generar mapa de colores para el campo CLIMA usando la guía específica
+      // Generar mapas de colores para el campo CLIMA usando la guía específica
       const climaValues = clima.features
         .map((f) => f.properties.CLIMA)
         .filter(Boolean);
-      const newColorMap = generateClimaColorPalette(climaValues);
+      const { coloringMap, legendMap } = generateClimaColorPalette(climaValues);
 
       newLayers.clima = L.geoJSON(clima, {
         pane: "vectorPane", // Asignar al pane vectorial
         style: (feature) => {
           const climaValue = feature.properties.CLIMA;
           return {
-            fillColor: newColorMap[climaValue] || "#gray",
+            fillColor: coloringMap[climaValue] || "#gray", // Usar coloringMap sin acentos
             weight: 0,
             opacity: 1,
             color: "white",
@@ -436,7 +454,7 @@ const GroupedLayerControl = ({
       if (activeLayers.clima) {
         newLayers.clima.addTo(map);
         if (onColorMapChange) {
-          onColorMapChange(newColorMap);
+          onColorMapChange(legendMap); // Usar legendMap con acentos para la leyenda
         }
         if (onLegendVisibilityChange) {
           onLegendVisibilityChange(true);
@@ -509,8 +527,8 @@ const GroupedLayerControl = ({
         const climaValues = clima.features
           .map((f) => f.properties.CLIMA)
           .filter(Boolean);
-        const newColorMap = generateClimaColorPalette(climaValues);
-        onColorMapChange(newColorMap);
+        const { legendMap } = generateClimaColorPalette(climaValues);
+        onColorMapChange(legendMap); // Usar legendMap con acentos para la leyenda
         onLegendVisibilityChange(true);
       } else {
         // Clima inactiva, ocultar leyenda
@@ -574,7 +592,7 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
+        marginBottom: "2px",
         padding: "0px",
         backgroundColor: "transparent",
         borderRadius: "0px",
@@ -584,8 +602,8 @@ const GroupedLayerControl = ({
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
-          gap: "8px",
+          marginBottom: "4px",
+          gap: "6px",
         }}
       >
         <input
@@ -689,19 +707,19 @@ const GroupedLayerControl = ({
       </div>
 
       {!isCollapsed && (
-        <div style={{ padding: "15px" }}>
+        <div style={{ padding: "12px" }}>
           {/* Capas Base */}
           <div
             style={{
-              marginBottom: "20px",
+              marginBottom: "15px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "10px",
+              paddingBottom: "8px",
             }}
           >
             <strong
               style={{
                 color: "#2c3e50",
-                marginBottom: "10px",
+                marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
               }}
@@ -711,7 +729,7 @@ const GroupedLayerControl = ({
             <div style={{ marginLeft: "10px" }}>
               {layers.baseLayers &&
                 Object.keys(layers.baseLayers).map((baseLayerName) => (
-                  <div key={baseLayerName} style={{ marginBottom: "5px" }}>
+                  <div key={baseLayerName} style={{ marginBottom: "3px" }}>
                     <input
                       type="radio"
                       name="baseLayer"
@@ -735,15 +753,15 @@ const GroupedLayerControl = ({
           {/* Zona de Estudio */}
           <div
             style={{
-              marginBottom: "20px",
+              marginBottom: "15px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "10px",
+              paddingBottom: "8px",
             }}
           >
             <strong
               style={{
                 color: "#2c3e50",
-                marginBottom: "10px",
+                marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
               }}
@@ -779,15 +797,15 @@ const GroupedLayerControl = ({
           {/* Capas de Interés */}
           <div
             style={{
-              marginBottom: "20px",
+              marginBottom: "15px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "10px",
+              paddingBottom: "8px",
             }}
           >
             <strong
               style={{
                 color: "#2c3e50",
-                marginBottom: "10px",
+                marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
               }}
@@ -806,7 +824,7 @@ const GroupedLayerControl = ({
             {/* Precipitación anual */}
             <div
               style={{
-                marginBottom: "6px",
+                marginBottom: "2px",
                 padding: "0px",
                 backgroundColor: "transparent",
                 borderRadius: "0px",
@@ -816,8 +834,8 @@ const GroupedLayerControl = ({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
-                  gap: "8px",
+                  marginBottom: "4px",
+                  gap: "6px",
                 }}
               >
                 <input
@@ -921,7 +939,7 @@ const GroupedLayerControl = ({
             {/* Temperatura máxima anual */}
             <div
               style={{
-                marginBottom: "6px",
+                marginBottom: "2px",
                 padding: "0px",
                 backgroundColor: "transparent",
                 borderRadius: "0px",
@@ -931,8 +949,8 @@ const GroupedLayerControl = ({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
-                  gap: "8px",
+                  marginBottom: "4px",
+                  gap: "6px",
                 }}
               >
                 <input
@@ -1036,7 +1054,7 @@ const GroupedLayerControl = ({
             {/* Temperatura media anual */}
             <div
               style={{
-                marginBottom: "6px",
+                marginBottom: "2px",
                 padding: "0px",
                 backgroundColor: "transparent",
                 borderRadius: "0px",
@@ -1046,8 +1064,8 @@ const GroupedLayerControl = ({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
-                  gap: "8px",
+                  marginBottom: "4px",
+                  gap: "6px",
                 }}
               >
                 <input
@@ -1151,7 +1169,7 @@ const GroupedLayerControl = ({
             {/* Temperatura mínima anual */}
             <div
               style={{
-                marginBottom: "6px",
+                marginBottom: "2px",
                 padding: "0px",
                 backgroundColor: "transparent",
                 borderRadius: "0px",
@@ -1161,8 +1179,8 @@ const GroupedLayerControl = ({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
-                  gap: "8px",
+                  marginBottom: "4px",
+                  gap: "6px",
                 }}
               >
                 <input
@@ -1438,6 +1456,32 @@ const Clima = () => {
     });
   }, [activeLayers]);
 
+  // Funciones de callback estabilizadas para evitar re-renders
+  const onPrecipitacionPixelValue = useCallback((value) => {
+    setPixelValues((prev) => ({ ...prev, precipitacion: value }));
+  }, []);
+
+  const onTempMaxPixelValue = useCallback((value) => {
+    setPixelValues((prev) => ({ ...prev, tempMax: value }));
+  }, []);
+
+  const onTempMedPixelValue = useCallback((value) => {
+    setPixelValues((prev) => ({ ...prev, tempMed: value }));
+  }, []);
+
+  const onTempMinPixelValue = useCallback((value) => {
+    setPixelValues((prev) => ({ ...prev, tempMin: value }));
+  }, []);
+
+  // Funciones estabilizadas para manejar errores y loading
+  const handleError = useCallback(() => {
+    // Opcional: manejar errores si es necesario
+  }, []);
+
+  const handleLoading = useCallback(() => {
+    // Opcional: manejar estado de carga si es necesario
+  }, []);
+
   useEffect(() => {
     fetch("/AREA.geojson")
       .then((res) => res.json())
@@ -1494,11 +1538,9 @@ const Clima = () => {
           colorMap={["#d4edff", "#7fcdff", "#43a2ca", "#1e78b4", "#08519c"]} // Rampa azul claro a oscuro
           baseUrl="/"
           continuous={true}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={(value) =>
-            setPixelValues((prev) => ({ ...prev, precipitacion: value }))
-          }
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onPrecipitacionPixelValue}
           overlayOpacity={opacity.precipitacion}
           pane="rasterPane"
         />
@@ -1510,11 +1552,9 @@ const Clima = () => {
           colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
           baseUrl="/"
           continuous={true}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={(value) =>
-            setPixelValues((prev) => ({ ...prev, tempMax: value }))
-          }
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMaxPixelValue}
           overlayOpacity={opacity.tempMax}
           pane="rasterPane"
         />
@@ -1526,11 +1566,9 @@ const Clima = () => {
           colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
           baseUrl="/"
           continuous={true}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={(value) =>
-            setPixelValues((prev) => ({ ...prev, tempMed: value }))
-          }
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMedPixelValue}
           overlayOpacity={opacity.tempMed}
           pane="rasterPane"
         />
@@ -1542,11 +1580,9 @@ const Clima = () => {
           colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
           baseUrl="/"
           continuous={true}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={(value) =>
-            setPixelValues((prev) => ({ ...prev, tempMin: value }))
-          }
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMinPixelValue}
           overlayOpacity={opacity.tempMin}
           pane="rasterPane"
         />

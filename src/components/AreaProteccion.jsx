@@ -32,6 +32,30 @@ const generateANPColorPalette = (values) => {
   return result;
 };
 
+// Función para generar mapa de leyenda con nombres descriptivos
+const generateLegendMap = (colorMap) => {
+  const displayNames = {
+    "Área de Protección de Flora y Fauna":
+      "Área de Protección de Flora y Fauna",
+    "Área de Protección de Recursos Naturales":
+      "Área de Protección de Recursos Naturales",
+    "Monumento Nacional": "Monumento Nacional",
+    "Parque Nacional": "Parque Nacional",
+    "Reserva de la Biosfera": "Reserva de la Biosfera",
+    ADVC: "Área destinada voluntariamente a la conservación",
+    "Parque estatal": "Parque estatal",
+    "Otra Categoría": "Otra Categoría",
+  };
+
+  const legendMap = {};
+  Object.entries(colorMap).forEach(([originalName, color]) => {
+    const displayName = displayNames[originalName] || originalName;
+    legendMap[displayName] = color;
+  });
+
+  return legendMap;
+};
+
 // Función para descargar GeoJSON
 const downloadGeoJSON = (data, filename) => {
   const dataStr = JSON.stringify(data, null, 2);
@@ -355,7 +379,8 @@ const GroupedLayerControl = ({
         .filter((v) => v);
 
       const colorMap = generateANPColorPalette(values);
-      onColorMapChange(colorMap);
+      const legendMap = generateLegendMap(colorMap);
+      onColorMapChange(legendMap);
 
       const anpLayer = L.geoJSON(anpData, {
         style: (feature) => {

@@ -15,6 +15,14 @@ import Localizacion from "../components/Localizacion";
 import Edafologia from "../components/Edafologia";
 import Clima from "../components/Clima";
 import AreaProteccion from "../components/AreaProteccion";
+import Poblacion from "../components/Poblacion";
+import ActividadProductiva from "../components/ActividadProductiva";
+import Erosion from "../components/Erosion";
+import Nutrientes from "../components/Nutrientes";
+import Carbono from "../components/Carbono";
+import Polinizadores from "../components/Polinizadores";
+import CUS from "../components/CUS";
+import Productiva from "../components/Productiva";
 import { color } from "framer-motion";
 
 // Mapeo de ID de sección/subsección a componente de visualización
@@ -67,7 +75,7 @@ export const componentMapping = {
 
   // 1.1.4 - Vegetación y uso de suelo
   "1.1.4": {
-    component: TimeSeriesMapViewer,
+    component: CUS,
     props: {},
   },
 
@@ -83,63 +91,38 @@ export const componentMapping = {
 
   // 1.2.1 - Población
   "1.2.1": {
-    component: GeoJsonLayerWithLegend,
-    props: {
-      geoJsonUrl: "/MARGINACION.geojson",
-      categoriaCol: "grado_marg",
-      title: "Grado de Marginación",
-    },
+    component: Poblacion,
+    props: {},
   },
 
   // 1.2.2 - Actividades productivas
   "1.2.2": {
-    component: GeoJsonLayerWithLegend,
-    props: {
-      geoJsonUrl: "/POBREZA.geojson",
-      categoriaCol: "grado_pobr",
-      title: "Nivel de Pobreza",
-    },
+    component: Productiva,
+    props: {},
   },
 
   // 2.1 - Erosión del suelo
   2.1: {
-    component: RasterViewer,
-    props: {
-      fileName: "/reprojected_USLE_Tendencia.tif",
-      colorMap: "RdYlBu_r",
-    },
+    component: Erosion,
+    props: {},
   },
 
   // 2.2 - Acumulación de Nutrientes
   2.2: {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/reprojected_Tend_N.tif",
-      rightRasterUrl: "/reprojected_tend_P.tif",
-      leftTitle: "Tendencia de Nitrógeno",
-      rightTitle: "Tendencia de Fósforo",
-    },
+    component: Nutrientes,
+    props: {},
   },
 
   // 2.3 - Secuestro de Carbono
   2.3: {
-    component: RasterViewer,
-    props: {
-      rasterUrl: "/reprojected_tend_co2.tif",
-      title: "Tendencia de Secuestro de CO2",
-      colormap: "RdYlGn",
-    },
+    component: Carbono,
+    props: {},
   },
 
   // 2.4 - Abundancia de Polinizadores
   2.4: {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/reprojected_abundance_total_primavera.tif",
-      rightRasterUrl: "/reprojected_abundance_total_verano.tif",
-      leftTitle: "Abundancia Primavera",
-      rightTitle: "Abundancia Verano",
-    },
+    component: Polinizadores,
+    props: {},
   },
 
   // 3.1.1 - Escenario actual

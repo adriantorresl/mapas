@@ -71,27 +71,37 @@ const hexToRgba = (hex) => {
 };
 
 // 🔹 Carga el raster y lo monta como imagen sobre Leaflet
-
-export const RasterOverlay = ({
+export const RasterOverlay = React.memo(({
   fileName,
   colorMap,
   baseUrl,
-  setError,
-  setLoading,
+  setError = () => {},
+  setLoading = () => {},
   continuous = false,
-  onPixelValue,
+  onPixelValue = () => {},
   overlayOpacity = 0.8,
+  pane = "overlayPane",
 }) => {
+  // Validación defensiva
+  const safeSetError = typeof setError === 'function' ? setError : () => {};
+  const safeSetLoading = typeof setLoading === 'function' ? setLoading : () => {};
+  
   const map = useMap();
   const overlayRef = useRef(null);
   const loadedRef = useRef(false);
   const imageRef = useRef(null);
+  const onPixelValueRef = useRef(onPixelValue);
   const imageDataRef = useRef({
     data: null,
     width: 0,
     height: 0,
     bounds: null,
   });
+
+  // Actualizar la ref cuando cambie la función
+  useEffect(() => {
+    onPixelValueRef.current = onPixelValue;
+  }, [onPixelValue]);
 
   // Memorizar el colorMap parseado para evitar re-renders innecesarios
   const parsedColorMap = useMemo(() => parseColorMap(colorMap), [colorMap]);
@@ -175,20 +185,20 @@ export const RasterOverlay = ({
             `[RasterViewer] min: ${min}, max: ${max}, nodata: ${nodata}`
           );
           if (!colors || colors.length < 2) {
-            setError("colorMap debe tener al menos dos colores");
-            setLoading(false);
+            safeSetError("colorMap debe tener al menos dos colores");
+            safeSetLoading(false);
             return;
           }
           if (!isFinite(min) || !isFinite(max)) {
-            setError("No se pudo calcular el rango de valores del raster");
-            setLoading(false);
+            safeSetError("No se pudo calcular el rango de valores del raster");
+            safeSetLoading(false);
             return;
           }
           if (min === max) {
-            setError(
+            safeSetError(
               `El raster tiene un solo valor (${min}), no se puede generar escala de color.`
             );
-            setLoading(false);
+            safeSetLoading(false);
             return;
           }
           scale = chroma.scale(colors).domain([min, max]);
@@ -263,15 +273,15 @@ export const RasterOverlay = ({
         let overlay;
         try {
           overlay = L.imageOverlay(imageUrl, rasterBounds, {
-            opacity: overlayOpacity,
+            opacity: 1.0, // Usar opacidad fija inicial
+            pane: pane, // Usar el pane especificado
           });
           overlay.addTo(map);
           // Asegurar visibilidad y zIndex
           try {
             if (typeof overlay.setOpacity === "function")
               overlay.setOpacity(overlayOpacity);
-            if (typeof overlay.setZIndex === "function")
-              overlay.setZIndex(9999);
+            // No establecer zIndex manualmente si estamos usando panes
             if (typeof overlay.bringToFront === "function")
               overlay.bringToFront();
           } catch (err) {
@@ -281,12 +291,7 @@ export const RasterOverlay = ({
         } catch (e) {
           console.error("[RasterViewer] Failed to create/add overlay:", e);
         }
-        // Asegurar que la imagen esté por encima de otros overlays
-        try {
-          if (typeof overlay.setZIndex === "function") overlay.setZIndex(600);
-        } catch (e) {
-          /* ignore */
-        }
+        // Usar panes en lugar de zIndex manual para mejor control
         overlayRef.current = overlay;
         imageRef.current = image;
 
@@ -306,35 +311,44 @@ export const RasterOverlay = ({
 
         if (isMounted && !loadedRef.current) {
           loadedRef.current = true;
-          setLoading(false);
-          setError(null);
+          safeSetLoading(false);
+          safeSetError(null);
         }
       } catch (err) {
         console.error("❌ Error cargando raster:", err);
         if (isMounted && !loadedRef.current) {
           loadedRef.current = true;
-          setLoading(false);
-          setError(err.message || "Error al cargar el raster");
+          safeSetLoading(false);
+          safeSetError(err.message || "Error al cargar el raster");
         }
       }
     };
 
-    setLoading(true);
-    setError(null);
+    safeSetLoading(true);
+    safeSetError(null);
     loadRaster();
 
-    // Evento para mostrar valor del pixel
+    // Evento para mostrar valor del pixel con throttling
+    let lastUpdate = 0;
+    const throttleDelay = 50; // ms
+
     function onMapMouseMove(e) {
+      const now = Date.now();
+      if (now - lastUpdate < throttleDelay) {
+        return; // Skip update si es muy reciente
+      }
+      lastUpdate = now;
+
       const { data, width, height, bounds } = imageDataRef.current;
       if (!data || !bounds) {
-        onPixelValue(null);
+        onPixelValueRef.current(null);
         return;
       }
       const [minX, minY, maxX, maxY] = bounds;
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
       if (lng < minX || lng > maxX || lat < minY || lat > maxY) {
-        onPixelValue(null);
+        onPixelValueRef.current(null);
         return;
       }
       // Convertir lat/lng a pixel
@@ -342,11 +356,11 @@ export const RasterOverlay = ({
       const y = Math.floor((1 - (lat - minY) / (maxY - minY)) * (height - 1));
       const idx = y * width + x;
       const value = data[idx];
-      onPixelValue(value);
+      onPixelValueRef.current(value);
     }
 
     map.on("mousemove", onMapMouseMove);
-    map.on("mouseout", () => onPixelValue(null));
+    map.on("mouseout", () => onPixelValueRef.current(null));
 
     return () => {
       isMounted = false;
@@ -364,11 +378,30 @@ export const RasterOverlay = ({
     map,
     setError,
     setLoading,
-    onPixelValue,
   ]);
 
+  // useEffect separado para manejar solo cambios de opacidad sin recrear el overlay
+  useEffect(() => {
+    if (
+      overlayRef.current &&
+      typeof overlayRef.current.setOpacity === "function"
+    ) {
+      overlayRef.current.setOpacity(overlayOpacity);
+    }
+  }, [overlayOpacity]);
+
   return null;
-};
+}, (prevProps, nextProps) => {
+  // Solo re-renderizar si cambian props críticas para el overlay
+  return (
+    prevProps.fileName === nextProps.fileName &&
+    prevProps.overlayOpacity === nextProps.overlayOpacity &&
+    prevProps.pane === nextProps.pane &&
+    JSON.stringify(prevProps.colorMap) === JSON.stringify(nextProps.colorMap) &&
+    prevProps.continuous === nextProps.continuous &&
+    prevProps.baseUrl === nextProps.baseUrl
+  );
+});
 
 // Control de escala y coordenadas fuera del componente principal
 function MapExtraControls() {
@@ -430,10 +463,18 @@ const RasterViewer = ({
   }, []);
 
   // Crear funciones estables para evitar re-renders
-  const stableSetError = useCallback((err) => setError(err), []);
+  const stableSetError = useCallback((err) => {
+    if (typeof setError === 'function') {
+      setError(err);
+    }
+  }, [setError]);
   const stableSetLoading = useCallback(
-    (isLoading) => setLoading(isLoading),
-    []
+    (isLoading) => {
+      if (typeof setLoading === 'function') {
+        setLoading(isLoading);
+      }
+    },
+    [setLoading]
   );
 
   return (
@@ -644,6 +685,29 @@ RasterViewer.defaultProps = {
 };
 
 export default RasterViewer;
+
+// PropTypes para RasterOverlay
+RasterOverlay.propTypes = {
+  fileName: PropTypes.string.isRequired,
+  colorMap: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]).isRequired,
+  baseUrl: PropTypes.string,
+  setError: PropTypes.func.isRequired,
+  setLoading: PropTypes.func.isRequired,
+  continuous: PropTypes.bool,
+  onPixelValue: PropTypes.func.isRequired,
+  overlayOpacity: PropTypes.number,
+  pane: PropTypes.string,
+};
+
+RasterOverlay.defaultProps = {
+  baseUrl: "/",
+  continuous: false,
+  overlayOpacity: 0.8,
+  pane: "overlayPane",
+};
 
 // Compatibilidad: exportar RasterOverlay también como GeoRasterLeaflet
 export const GeoRasterLeaflet = RasterOverlay;
