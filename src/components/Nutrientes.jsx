@@ -743,19 +743,31 @@ const GroupedLayerControl = ({
               handleOpacityChange(layerKey, parseFloat(e.target.value))
             }
             onMouseDown={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
               e.target.style.cursor = "grabbing";
             }}
             onMouseUp={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
               e.target.style.cursor = "grab";
             }}
             onMouseLeave={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
               e.target.style.cursor = "grab";
             }}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => {
+              e.stopPropagation();
+              map.touchZoom.disable();
+              map.dragging.disable();
               e.target.style.cursor = "grabbing";
             }}
             onTouchEnd={(e) => {
+              e.stopPropagation();
+              map.touchZoom.enable();
+              map.dragging.enable();
               e.target.style.cursor = "grab";
             }}
             style={{ width: "100%" }}
@@ -943,6 +955,29 @@ const GroupedLayerControl = ({
                 onChange={(e) =>
                   handleOpacityChange("rasterN", parseFloat(e.target.value))
                 }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.touchZoom.disable();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.touchZoom.enable();
+                  map.dragging.enable();
+                }}
                 style={{ width: "100%" }}
               />
             </div>
@@ -1043,6 +1078,29 @@ const GroupedLayerControl = ({
                 onChange={(e) =>
                   handleOpacityChange("rasterP", parseFloat(e.target.value))
                 }
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  map.dragging.disable();
+                }}
+                onMouseUp={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  map.dragging.enable();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  map.touchZoom.disable();
+                  map.dragging.disable();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  map.touchZoom.enable();
+                  map.dragging.enable();
+                }}
                 style={{ width: "100%" }}
               />
             </div>
