@@ -4,332 +4,57 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
 
-/**
- * Componente para visualizar datos de polinizadores por estaciones
- * Muestra rasters estacionales para Anoura geoffroyi y polinizadores genéricos
- * @param {Object} props - Propiedades del componente
- * @param {string} props.rastersBasePath - Ruta base para archivos raster (default: '/data/rasters/polinizadores/')
- */
-
-// Función para descargar archivos
-const downloadFile = async (filename, displayName) => {
+// Función para descargar archivos raster
+const downloadRaster = async (filename, displayName) => {
   try {
     const url = `/${filename}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("No se pudo descargar el archivo");
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = downloadUrl;
+    link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
-    console.error("Error descargando archivo:", error);
+    console.error(`Error descargando ${displayName}:`, error);
     alert(`Error al descargar ${displayName}`);
   }
 };
 
-// Componente selector de estaciones
-const SeasonSelector = ({ activeSeason, onSeasonChange }) => {
-  const selectorStyle = {
-    position: "absolute",
-    top: "10px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    backgroundColor: "white",
-    borderRadius: "5px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    display: "flex",
-    overflow: "hidden",
-    border: "1px solid #ddd",
-  };
-
-  const seasonStyle = {
-    padding: "10px 15px",
-    cursor: "pointer",
-    borderRight: "1px solid #ddd",
-    fontSize: "13px",
-    fontWeight: "bold",
-    transition: "background-color 0.3s",
-    minWidth: "80px",
-    textAlign: "center",
-  };
-
-  const activeSeasonStyle = {
-    ...seasonStyle,
-    backgroundColor: "#28a745",
-    color: "white",
-  };
-
-  const inactiveSeasonStyle = {
-    ...seasonStyle,
-    backgroundColor: "white",
-    color: "#333",
-  };
-
-  const seasons = [
-    { key: 'primavera', label: 'Primavera' },
-    { key: 'verano', label: 'Verano' },
-    { key: 'otono', label: 'Otoño' },
-    { key: 'invierno', label: 'Invierno' }
-  ];
-
-  return (
-    <div style={selectorStyle}>
-      {seasons.map((season, index) => (
-        <div
-          key={season.key}
-          style={{
-            ...(activeSeason === season.key ? activeSeasonStyle : inactiveSeasonStyle),
-            borderRight: index === seasons.length - 1 ? "none" : "1px solid #ddd",
-          }}
-          onClick={() => onSeasonChange(season.key)}
-        >
-          {season.label}
-        </div>
-      ))}
-    </div>
-  );
+// Función para descargar GeoJSON
+const downloadGeoJSON = (data, filename) => {
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.geojson`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
-// Componente de leyenda para raster
-const RasterLegend = ({ isVisible, currentRaster, speciesType }) => {
+// Componente de leyenda para Anoura geoffroyi
+const AnouraLegend = ({ isVisible, season }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  if (!isVisible || !currentRaster) {
+  if (!isVisible) {
     return null;
   }
 
   const legendStyle = {
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "white",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
-    borderBottom: isCollapsed ? "none" : "1px solid #dee2e6",
-  };
-
-  // Generar colores para probabilidad (0-1) con escala de calor
-  const generateProbabilityColors = () => {
-    return ['#ffffcc', '#ffeda0', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#bd0026'];
-  };
-
-  const colors = generateProbabilityColors();
-
-  // Generar valores de probabilidad del 0% al 100%
-  const probabilityValues = [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>{currentRaster}</span>
-        <span>{isCollapsed ? "+" : "-"}</span>
-      </div>
-      {!isCollapsed && (
-        <div style={{ padding: "8px" }}>
-          <div style={{ marginBottom: "5px", fontSize: "11px", fontWeight: "bold" }}>
-            Probabilidad de Presencia
-          </div>
-          {colors.map((color, index) => (
-            <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "2px" }}>
-              <div
-                style={{
-                  width: "20px",
-                  height: "8px",
-                  backgroundColor: color,
-                  marginRight: "8px",
-                  border: "1px solid #ccc",
-                }}
-              />
-              <span style={{ fontSize: "10px" }}>
-                {index === 0 
-                  ? `${probabilityValues[index]}%` 
-                  : index === colors.length - 1 
-                  ? `${probabilityValues[index]}%`
-                  : `${probabilityValues[index]}%`
-                }
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Controles estándar
-const CoordinateControl = () => {
-  const map = useMap();
-  const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCoordinates({ lat: e.latlng.lat, lng: e.latlng.lng });
-    };
-
-    map.on("mousemove", handleMouseMove);
-    return () => map.off("mousemove", handleMouseMove);
-  }, [map]);
-
-  const controlStyle = {
-    position: "absolute",
-    bottom: "10px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "5px 10px",
-    borderRadius: "3px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "monospace",
-    fontSize: "12px",
-  };
-
-  return (
-    <div style={controlStyle}>
-      Lat: {coordinates.lat.toFixed(6)}, Lng: {coordinates.lng.toFixed(6)}
-    </div>
-  );
-};
-
-const ScaleControl = () => {
-  const map = useMap();
-
-  useEffect(() => {
-    const scale = L.control.scale({ position: 'bottomleft' });
-    scale.addTo(map);
-    return () => map.removeControl(scale);
-  }, [map]);
-
-  return null;
-};
-
-const InfoControl = ({ activeSeason }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "80px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "10px",
-    borderRadius: "5px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "14px",
-    maxWidth: "300px",
-  };
-
-  const getSeasonName = () => {
-    const seasonNames = {
-      'primavera': 'Primavera',
-      'verano': 'Verano',
-      'otono': 'Otoño',
-      'invierno': 'Invierno'
-    };
-    return seasonNames[activeSeason] || activeSeason;
-  };
-
-  return (
-    <div style={controlStyle}>
-      <h4 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-        Polinizadores - {getSeasonName()}
-      </h4>
-      <p style={{ margin: "0", fontSize: "12px", color: "#666" }}>
-        Visualización de probabilidad de presencia de polinizadores por estación. 
-        Incluye Anoura geoffroyi y polinizadores genéricos.
-      </p>
-    </div>
-  );
-};
-
-const DraggingControl = () => {
-  const map = useMap();
-  const [isDraggingEnabled, setIsDraggingEnabled] = useState(true);
-
-  const toggleDragging = () => {
-    if (isDraggingEnabled) {
-      map.dragging.disable();
-    } else {
-      map.dragging.enable();
-    }
-    setIsDraggingEnabled(!isDraggingEnabled);
-  };
-
-  const controlStyle = {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: "5px",
-    cursor: "pointer",
-    zIndex: 1000,
-  };
-
-  return (
-    <div
-      style={controlStyle}
-      onClick={toggleDragging}
-      title={isDraggingEnabled ? "Deshabilitar arrastre" : "Habilitar arrastre"}
-    >
-      <span style={{ fontSize: "18px" }}>{isDraggingEnabled ? "🔓" : "🔒"}</span>
-    </div>
-  );
-};
-
-// Control agrupado de capas
-const GroupedLayerControl = ({ 
-  activeSeason,
-  showAnoura,
-  onAnouraToggle,
-  showGeneric,
-  onGenericToggle,
-  anouraOpacity,
-  onAnouraOpacityChange,
-  genericOpacity,
-  onGenericOpacityChange,
-  onZoomToLayer,
-  onDownloadAnoura,
-  onDownloadGeneric,
-  area,
-  paisajes,
-  municipios
-}) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const controlStyle = {
-    position: "absolute",
-    top: "80px",
-    right: "10px",
+    bottom: "20px",
+    right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
     borderRadius: "4px",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "280px",
-    maxWidth: "320px",
+    minWidth: isCollapsed ? "auto" : "180px",
+    maxWidth: "220px",
     fontFamily: "Arial, sans-serif",
-    fontSize: "13px",
+    fontSize: "12px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
 
@@ -342,472 +67,1012 @@ const GroupedLayerControl = ({
     alignItems: "center",
   };
 
-  const sectionStyle = {
-    marginBottom: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
+  const seasonNames = {
+    PRI: "Primavera",
+    VER: "Verano",
+    OTO: "Otoño",
+    INV: "Invierno",
   };
 
-  const sectionHeaderStyle = {
-    backgroundColor: "#f8f9fa",
-    padding: "5px 8px",
-    fontWeight: "bold",
-    fontSize: "12px",
-    borderBottom: "1px solid #ddd",
-  };
+  // Rampa de colores para abundancia (YlOrRd - amarillo a rojo)
+  const createColorRamp = () => {
+    const colors = [
+      "#ffffcc", // Amarillo muy claro (abundancia muy baja)
+      "#ffeda0", // Amarillo claro
+      "#fed976", // Amarillo
+      "#feb24c", // Naranja claro
+      "#fd8d3c", // Naranja
+      "#fc4e2a", // Rojo naranja
+      "#e31a1c", // Rojo
+      "#bd0026", // Rojo oscuro
+      "#800026", // Rojo muy oscuro (abundancia muy alta)
+    ];
 
-  if (isCollapsed) {
     return (
-      <div style={controlStyle}>
-        <div style={headerStyle} onClick={() => setIsCollapsed(false)}>
-          <span>☰</span>
+      <div style={{ marginTop: "8px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+            marginBottom: "4px",
+          }}
+        >
+          <span>Baja</span>
+          <span>Alta</span>
+        </div>
+        <div
+          style={{
+            height: "20px",
+            background: `linear-gradient(to right, ${colors.join(", ")})`,
+            border: "1px solid #666",
+            borderRadius: "2px",
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            fontSize: "10px",
+            marginTop: "4px",
+            fontStyle: "italic",
+          }}
+        >
+          <span>Abundancia relativa</span>
         </div>
       </div>
     );
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Anoura geoffroyi - {seasonNames[season] || season}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+      {!isCollapsed && createColorRamp()}
+    </div>
+  );
+};
+
+// Componente de leyenda para Polinizadores generales
+const PolinizadoresLegend = ({ isVisible, season }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
   }
+
+  const legendStyle = {
+    position: "absolute",
+    bottom: "20px",
+    right: "20px",
+    backgroundColor: "white",
+    border: "2px solid rgba(0,0,0,0.2)",
+    borderRadius: "4px",
+    padding: isCollapsed ? "8px" : "15px",
+    zIndex: 1000,
+    minWidth: isCollapsed ? "auto" : "180px",
+    maxWidth: "220px",
+    fontFamily: "Arial, sans-serif",
+    fontSize: "12px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+  };
+
+  const headerStyle = {
+    fontWeight: "bold",
+    marginBottom: isCollapsed ? "0" : "10px",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  };
+
+  const seasonNames = {
+    PRI: "Primavera",
+    VER: "Verano",
+  };
+
+  // Rampa de colores para polinizadores (BuPu - azul a púrpura)
+  const createColorRamp = () => {
+    const colors = [
+      "#f7fcfd", // Azul muy claro (abundancia muy baja)
+      "#e0ecf4", // Azul claro
+      "#bfd3e6", // Azul
+      "#9ebcda", // Azul medio
+      "#8c96c6", // Azul púrpura
+      "#8c6bb1", // Púrpura
+      "#88419d", // Púrpura oscuro
+      "#810f7c", // Púrpura muy oscuro
+      "#4d004b", // Púrpura casi negro (abundancia muy alta)
+    ];
+
+    return (
+      <div style={{ marginTop: "8px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "10px",
+            marginBottom: "4px",
+          }}
+        >
+          <span>Baja</span>
+          <span>Alta</span>
+        </div>
+        <div
+          style={{
+            height: "20px",
+            background: `linear-gradient(to right, ${colors.join(", ")})`,
+            border: "1px solid #666",
+            borderRadius: "2px",
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            fontSize: "10px",
+            marginTop: "4px",
+            fontStyle: "italic",
+          }}
+        >
+          <span>Abundancia relativa</span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Polinizadores - {seasonNames[season] || season}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+      {!isCollapsed && createColorRamp()}
+    </div>
+  );
+};
+
+// Componente para el control de capas agrupadas
+const GroupedLayerControl = ({
+  area,
+  paisajes,
+  municipios,
+  activeLayers,
+  setActiveLayers,
+  opacity,
+  setOpacity,
+}) => {
+  const map = useMap();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [layers, setLayers] = useState({});
+  const [activeBaseLayer, setActiveBaseLayer] = useState(
+    "Topográfico (OpenTopoMap)"
+  );
+
+  useEffect(() => {
+    const baseLayers = {
+      "Topográfico (OpenTopoMap)": L.tileLayer(
+        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        {
+          attribution:
+            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+        }
+      ),
+      "Satelital (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+    };
+
+    // Agregar capa base activa
+    const currentBaseLayer = baseLayers[activeBaseLayer];
+    if (currentBaseLayer && !map.hasLayer(currentBaseLayer)) {
+      // Remover otras capas base
+      Object.values(baseLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+      currentBaseLayer.addTo(map);
+    }
+
+    const newLayers = {};
+
+    // Área de estudio
+    if (area) {
+      newLayers.area = L.geoJSON(area, {
+        style: { color: "black", weight: 6, fillOpacity: 0 },
+      });
+      if (activeLayers.area) {
+        newLayers.area.addTo(map);
+      }
+    }
+
+    // Paisajes
+    if (paisajes) {
+      newLayers.paisajes = L.geoJSON(paisajes, {
+        style: { color: "white", weight: 4, fillOpacity: 0 },
+      });
+      if (activeLayers.paisajes) {
+        newLayers.paisajes.addTo(map);
+      }
+    }
+
+    // Municipios
+    if (municipios) {
+      newLayers.municipios = L.geoJSON(municipios, {
+        style: { color: "black", weight: 2, fillOpacity: 0 },
+      });
+      if (activeLayers.municipios) {
+        newLayers.municipios.addTo(map);
+      }
+    }
+
+    setLayers(newLayers);
+
+    return () => {
+      Object.values(newLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+      Object.values(baseLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+    };
+  }, [
+    map,
+    area,
+    paisajes,
+    municipios,
+    activeBaseLayer,
+    activeLayers.area,
+    activeLayers.paisajes,
+    activeLayers.municipios,
+  ]);
+
+  const toggleLayer = (layerKey) => {
+    const newActiveLayers = { ...activeLayers };
+    newActiveLayers[layerKey] = !activeLayers[layerKey];
+    setActiveLayers(newActiveLayers);
+
+    // Para capas raster, el manejo se hace en el componente principal
+    if (layerKey.startsWith("raster")) {
+      return;
+    }
+
+    const layer = layers[layerKey];
+    if (layer) {
+      if (newActiveLayers[layerKey]) {
+        layer.addTo(map);
+      } else {
+        map.removeLayer(layer);
+      }
+    }
+  };
+
+  const changeBaseLayer = (baseLayerName) => {
+    setActiveBaseLayer(baseLayerName);
+  };
+
+  const handleOpacityChange = (layerKey, newOpacity) => {
+    setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+    const layer = layers[layerKey];
+    if (layer && activeLayers[layerKey]) {
+      layer.setStyle({ fillOpacity: newOpacity });
+    }
+  };
+
+  const controlStyle = {
+    position: "absolute",
+    top: "20px",
+    right: "10px",
+    backgroundColor: "white",
+    border: "2px solid rgba(0,0,0,0.2)",
+    borderRadius: "4px",
+    padding: isCollapsed ? "6px" : "8px",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "12px",
+    maxWidth: isCollapsed ? "auto" : "220px",
+    minWidth: isCollapsed ? "auto" : "200px",
+    width: isCollapsed ? "fit-content" : "auto",
+    maxHeight: isCollapsed ? "auto" : "85vh",
+    overflowY: isCollapsed ? "visible" : "auto",
+    overflowX: "hidden",
+  };
+
+  const headerStyle = {
+    padding: isCollapsed ? "8px 10px" : "10px 15px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    fontSize: isCollapsed ? "12px" : "13px",
+    whiteSpace: "nowrap",
+  };
+
+  const LayerItem = ({
+    layerKey,
+    title,
+    data,
+    showDownload = true,
+    showOpacity = true,
+  }) => (
+    <div
+      style={{
+        marginBottom: "1px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "3px",
+          gap: "6px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+          {title}
+        </span>
+        {showDownload && data && (
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              padding: "0px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              marginLeft: "2px",
+              width: "16px",
+              height: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={`Descargar ${title}`}
+            onClick={() => downloadGeoJSON(data, title)}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v8m0 0l-3-3m3 3l3-3"
+                stroke="#333"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="3"
+                y="13"
+                width="10"
+                height="1.5"
+                rx="0.75"
+                fill="#333"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+      {showOpacity && (
+        <>
+          <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={opacity[layerKey]}
+            onChange={(e) =>
+              handleOpacityChange(layerKey, parseFloat(e.target.value))
+            }
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+              e.target.style.cursor = "grabbing";
+            }}
+            onMouseUp={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            onMouseLeave={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              map.touchZoom.disable();
+              map.dragging.disable();
+              e.target.style.cursor = "grabbing";
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              map.touchZoom.enable();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            style={{ width: "100%", marginBottom: "4px" }}
+          />
+        </>
+      )}
+    </div>
+  );
+
+  const RasterLayerItem = ({ layerKey, title, filename }) => (
+    <div
+      style={{
+        marginBottom: "1px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "2px",
+          gap: "6px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+          {title}
+        </span>
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            padding: "0px",
+            borderRadius: "3px",
+            cursor: "pointer",
+            marginLeft: "2px",
+            width: "16px",
+            height: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title={`Descargar ${filename}`}
+          onClick={() => downloadRaster(filename, title)}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 2v8m0 0l-3-3m3 3l3-3"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+          </svg>
+        </button>
+      </div>
+      <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+        Opacidad: {Math.round(opacity[layerKey] * 100)}%
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.1"
+        value={opacity[layerKey]}
+        onChange={(e) =>
+          setOpacity((prev) => ({
+            ...prev,
+            [layerKey]: parseFloat(e.target.value),
+          }))
+        }
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          map.dragging.disable();
+        }}
+        onMouseUp={(e) => {
+          e.stopPropagation();
+          map.dragging.enable();
+        }}
+        onMouseLeave={(e) => {
+          e.stopPropagation();
+          map.dragging.enable();
+        }}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          map.touchZoom.disable();
+          map.dragging.disable();
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          map.touchZoom.enable();
+          map.dragging.enable();
+        }}
+        style={{ width: "100%", marginBottom: "4px" }}
+      />
+    </div>
+  );
 
   return (
     <div style={controlStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(true)}>
-        <span>Control de Capas</span>
-        <span>−</span>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>{isCollapsed ? "Capas" : "Capas"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
       </div>
 
-      {/* Capas Base */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Capas Base</div>
-        <div style={{ padding: "8px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            <input type="checkbox" defaultChecked style={{ marginRight: "5px" }} />
-            OpenStreetMap
-          </label>
-        </div>
-      </div>
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "8px",
+            maxHeight: "80vh",
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          {/* Capas Base */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "6px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Mapa Base
+            </div>
+            {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
+              (layerName) => (
+                <div
+                  key={layerName}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "3px",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === layerName}
+                    onChange={() => changeBaseLayer(layerName)}
+                  />
+                  <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                    {layerName}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
 
-      {/* Límites */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Límites</div>
-        <div style={{ padding: "8px" }}>
-          {area && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" defaultChecked style={{ marginRight: "5px" }} />
-              Área de estudio
-            </label>
-          )}
-          {paisajes && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" style={{ marginRight: "5px" }} />
-              Paisajes
-            </label>
-          )}
-          {municipios && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" style={{ marginRight: "5px" }} />
-              Municipios
-            </label>
-          )}
-        </div>
-      </div>
-
-      {/* Anoura geoffroyi */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Anoura geoffroyi</div>
-        <div style={{ padding: "8px" }}>
-          <label style={{ display: "block", marginBottom: "10px" }}>
-            <input
-              type="checkbox"
-              checked={showAnoura}
-              onChange={(e) => onAnouraToggle(e.target.checked)}
-              style={{ marginRight: "5px" }}
+          {/* Límites */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "6px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Límites
+            </div>
+            <LayerItem
+              layerKey="area"
+              title="Área de estudio"
+              data={area}
+              showOpacity={false}
             />
-            Mostrar Anoura geoffroyi
-          </label>
-          
-          {showAnoura && (
-            <>
-              <label style={{ display: "block", marginBottom: "5px", fontSize: "11px" }}>
-                Opacidad:
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={anouraOpacity}
-                onChange={(e) => onAnouraOpacityChange(parseFloat(e.target.value))}
-                style={{ width: "100%", marginBottom: "5px" }}
-              />
-              <div style={{ textAlign: "center", fontSize: "10px" }}>
-                {Math.round(anouraOpacity * 100)}%
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Polinizadores Genéricos */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Polinizadores Genéricos</div>
-        <div style={{ padding: "8px" }}>
-          <label style={{ display: "block", marginBottom: "10px" }}>
-            <input
-              type="checkbox"
-              checked={showGeneric}
-              onChange={(e) => onGenericToggle(e.target.checked)}
-              style={{ marginRight: "5px" }}
+            <LayerItem
+              layerKey="paisajes"
+              title="Paisajes bioculturales"
+              data={paisajes}
+              showOpacity={false}
             />
-            Mostrar Polinizadores
-          </label>
-          
-          {showGeneric && (
-            <>
-              <label style={{ display: "block", marginBottom: "5px", fontSize: "11px" }}>
-                Opacidad:
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={genericOpacity}
-                onChange={(e) => onGenericOpacityChange(parseFloat(e.target.value))}
-                style={{ width: "100%", marginBottom: "5px" }}
-              />
-              <div style={{ textAlign: "center", fontSize: "10px" }}>
-                {Math.round(genericOpacity * 100)}%
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+            <LayerItem
+              layerKey="municipios"
+              title="Municipios"
+              data={municipios}
+              showOpacity={false}
+            />
+          </div>
 
-      {/* Controles */}
-      <div style={{ marginTop: "15px", display: "flex", gap: "5px", flexWrap: "wrap" }}>
-        <button
-          onClick={onZoomToLayer}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: "pointer",
-            flex: "1",
-          }}
-        >
-          Zoom
-        </button>
-        <button
-          onClick={onDownloadAnoura}
-          disabled={!showAnoura}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: showAnoura ? "#28a745" : "#6c757d",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: showAnoura ? "pointer" : "not-allowed",
-            flex: "1",
-          }}
-        >
-          DL Anoura
-        </button>
-        <button
-          onClick={onDownloadGeneric}
-          disabled={!showGeneric}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: showGeneric ? "#17a2b8" : "#6c757d",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: showGeneric ? "pointer" : "not-allowed",
-            flex: "1",
-          }}
-        >
-          DL Polin
-        </button>
-      </div>
+          {/* Grupo de Anoura geoffroyi */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "4px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Anoura geoffroyi
+            </div>
+            <RasterLayerItem
+              layerKey="rasterAG_PRI"
+              title="Primavera"
+              filename="AG_PRI.tif"
+            />
+            <RasterLayerItem
+              layerKey="rasterAG_VER"
+              title="Verano"
+              filename="AG_VER.tif"
+            />
+            <RasterLayerItem
+              layerKey="rasterAG_OTO"
+              title="Otoño"
+              filename="AG_OTO.tif"
+            />
+            <RasterLayerItem
+              layerKey="rasterAG_INV"
+              title="Invierno"
+              filename="AG_INV.tif"
+            />
+          </div>
+
+          {/* Grupo de Polinizadores */}
+          <div style={{ marginBottom: "0px" }}>
+            <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+              Polinizadores
+            </div>
+            <RasterLayerItem
+              layerKey="rasterPOLIN_PRI"
+              title="Primavera"
+              filename="POLIN_PRI.tif"
+            />
+            <RasterLayerItem
+              layerKey="rasterPOLIN_VER"
+              title="Verano"
+              filename="POLIN_VER.tif"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // Componente principal
-const Polinizadores = ({ 
-  rastersBasePath = '/data/rasters/polinizadores/'
-}) => {
+const Polinizadores = () => {
   // Estados para datos
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
 
-  // Estados para controles
-  const [activeSeason, setActiveSeason] = useState('primavera');
-  const [showAnoura, setShowAnoura] = useState(true);
-  const [showGeneric, setShowGeneric] = useState(false);
-  const [anouraOpacity, setAnouraOpacity] = useState(0.7);
-  const [genericOpacity, setGenericOpacity] = useState(0.7);
+  // Estados para visualización
+  const [activeLayers, setActiveLayers] = useState({
+    area: true,
+    paisajes: false,
+    municipios: false,
+    rasterAG_PRI: false,
+    rasterAG_VER: false,
+    rasterAG_OTO: false,
+    rasterAG_INV: false,
+    rasterPOLIN_PRI: false,
+    rasterPOLIN_VER: false,
+  });
 
-  // Mapeo de estaciones a códigos de archivo
-  const seasonMap = {
-    'primavera': 'PRI',
-    'verano': 'VER',
-    'otono': 'OTO',
-    'invierno': 'INV'
-  };
+  // Estado para opacidad de capas
+  const [opacity, setOpacity] = useState({
+    rasterAG_PRI: 0.7,
+    rasterAG_VER: 0.7,
+    rasterAG_OTO: 0.7,
+    rasterAG_INV: 0.7,
+    rasterPOLIN_PRI: 0.7,
+    rasterPOLIN_VER: 0.7,
+  });
 
-  // Cargar datos
+  // Estados para leyendas
+  const [anouraLegendVisible, setAnouraLegendVisible] = useState(false);
+  const [anouraLegendSeason, setAnouraLegendSeason] = useState("");
+  const [polinizadoresLegendVisible, setPolinizadoresLegendVisible] =
+    useState(false);
+  const [polinizadoresLegendSeason, setPolinizadoresLegendSeason] =
+    useState("");
+
+  // Estados para manejo de carga y errores del raster
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Estado para el centro del mapa
+  const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
+  const [mapZoom, setMapZoom] = useState(10);
+
+  // Cargar datos GeoJSON al montar el componente
   useEffect(() => {
-    fetch("/AREA.geojson")
-      .then((res) => res.json())
-      .then(setArea)
-      .catch(console.error);
-    fetch("/PAISAJES.geojson")
-      .then((res) => res.json())
-      .then(setPaisajes)
-      .catch(console.error);
-    fetch("/MUNICIPIOS.geojson")
-      .then((res) => res.json())
-      .then(setMunicipios)
-      .catch(console.error);
+    const loadGeoData = async () => {
+      try {
+        // Cargar área de estudio
+        const areaResponse = await fetch("/AREA.geojson");
+        if (areaResponse.ok) {
+          const areaData = await areaResponse.json();
+          setArea(areaData);
+
+          // Calcular el centro y zoom basado en el área de estudio
+          if (areaData && areaData.features && areaData.features.length > 0) {
+            const bounds = L.geoJSON(areaData).getBounds();
+            const center = bounds.getCenter();
+            setMapCenter([center.lat, center.lng]);
+
+            // Calcular zoom apropiado basado en el tamaño del área
+            const latDiff = bounds.getNorth() - bounds.getSouth();
+            const lngDiff = bounds.getEast() - bounds.getWest();
+            const maxDiff = Math.max(latDiff, lngDiff);
+
+            // Ajustar zoom basado en el tamaño del área
+            let zoom = 10;
+            if (maxDiff > 2) zoom = 8;
+            else if (maxDiff > 1) zoom = 9;
+            else if (maxDiff > 0.5) zoom = 10;
+            else if (maxDiff > 0.2) zoom = 11;
+            else zoom = 12;
+
+            setMapZoom(zoom);
+          }
+        }
+
+        // Cargar paisajes
+        const paisajesResponse = await fetch("/PAISAJES.geojson");
+        if (paisajesResponse.ok) {
+          const paisajesData = await paisajesResponse.json();
+          setPaisajes(paisajesData);
+        }
+
+        // Cargar municipios
+        const municipiosResponse = await fetch("/MUNICIPIOS.geojson");
+        if (municipiosResponse.ok) {
+          const municipiosData = await municipiosResponse.json();
+          setMunicipios(municipiosData);
+        }
+      } catch (error) {
+        console.error("Error cargando datos geográficos:", error);
+      }
+    };
+
+    loadGeoData();
   }, []);
 
-  // Funciones de control
-  const handleZoomToArea = () => {
-    if (area && window.mapInstance) {
-      const geojsonLayer = L.geoJSON(area);
-      window.mapInstance.fitBounds(geojsonLayer.getBounds());
-    }
-  };
-
-  const handleDownloadAnoura = () => {
-    const seasonCode = seasonMap[activeSeason];
-    const filename = `AG_${seasonCode}.tif`;
-    const displayName = `Anoura geoffroyi ${activeSeason}`;
-    downloadFile(filename, displayName);
-  };
-
-  const handleDownloadGeneric = () => {
-    const seasonCode = seasonMap[activeSeason];
-    const filename = `POLIN_${seasonCode}.tif`;
-    const displayName = `Polinizadores ${activeSeason}`;
-    downloadFile(filename, displayName);
-  };
-
-  // Obtener archivos raster actuales
-  const getAnouraRaster = () => {
-    const seasonCode = seasonMap[activeSeason];
-    return `AG_${seasonCode}.tif`;
-  };
-
-  const getGenericRaster = () => {
-    const seasonCode = seasonMap[activeSeason];
-    // Solo primavera y verano para polinizadores genéricos
-    if (activeSeason === 'primavera' || activeSeason === 'verano') {
-      return `POLIN_${seasonCode}.tif`;
-    }
-    return null;
-  };
-
-  const getAnouraRasterName = () => {
-    const seasonNames = {
-      'primavera': 'Primavera',
-      'verano': 'Verano',
-      'otono': 'Otoño',
-      'invierno': 'Invierno'
-    };
-    return `Anoura geoffroyi - ${seasonNames[activeSeason]}`;
-  };
-
-  const getGenericRasterName = () => {
-    const seasonNames = {
-      'primavera': 'Primavera',
-      'verano': 'Verano'
-    };
-    return `Polinizadores - ${seasonNames[activeSeason]}`;
-  };
-
-  // Verificar si los rasters genéricos están disponibles
-  const isGenericAvailable = activeSeason === 'primavera' || activeSeason === 'verano';
-
-  // Ocultar polinizadores genéricos si no están disponibles
+  // Efecto para controlar la visibilidad de las leyendas
   useEffect(() => {
-    if (!isGenericAvailable) {
-      setShowGeneric(false);
+    // Determinar qué leyenda mostrar basado en las capas activas
+    const activeAnouraLayers = Object.keys(activeLayers).filter(
+      (key) => key.startsWith("rasterAG_") && activeLayers[key]
+    );
+
+    const activePolinizadoresLayers = Object.keys(activeLayers).filter(
+      (key) => key.startsWith("rasterPOLIN_") && activeLayers[key]
+    );
+
+    // Mostrar leyenda de Anoura si hay alguna capa activa
+    if (activeAnouraLayers.length > 0) {
+      setAnouraLegendVisible(true);
+      // Tomar la primera capa activa para determinar la estación
+      const season = activeAnouraLayers[0].replace("rasterAG_", "");
+      setAnouraLegendSeason(season);
+    } else {
+      setAnouraLegendVisible(false);
     }
-  }, [isGenericAvailable]);
+
+    // Mostrar leyenda de Polinizadores si hay alguna capa activa
+    if (activePolinizadoresLayers.length > 0) {
+      setPolinizadoresLegendVisible(true);
+      // Tomar la primera capa activa para determinar la estación
+      const season = activePolinizadoresLayers[0].replace("rasterPOLIN_", "");
+      setPolinizadoresLegendSeason(season);
+    } else {
+      setPolinizadoresLegendVisible(false);
+    }
+
+    // Si ambos grupos tienen capas activas, priorizar Polinizadores
+    if (activeAnouraLayers.length > 0 && activePolinizadoresLayers.length > 0) {
+      setAnouraLegendVisible(false);
+    }
+  }, [activeLayers]);
+
+  // Paletas de colores para cada tipo
+  const anouraColorMap = [
+    "#ffffcc",
+    "#ffeda0",
+    "#fed976",
+    "#feb24c",
+    "#fd8d3c",
+    "#fc4e2a",
+    "#e31a1c",
+    "#bd0026",
+    "#800026",
+  ];
+
+  const polinizadoresColorMap = [
+    "#f7fcfd",
+    "#e0ecf4",
+    "#bfd3e6",
+    "#9ebcda",
+    "#8c96c6",
+    "#8c6bb1",
+    "#88419d",
+    "#810f7c",
+    "#4d004b",
+  ];
 
   return (
-    <div style={{ height: "100vh", width: "100%", position: "relative" }}>
+    <div style={{ height: "100vh", width: "100%" }}>
       <MapContainer
-        center={[19.5, -99.0]}
-        zoom={8}
+        center={mapCenter}
+        zoom={mapZoom}
         style={{ height: "100%", width: "100%" }}
-        ref={(mapInstance) => {
-          if (mapInstance) {
-            window.mapInstance = mapInstance;
-          }
-        }}
+        zoomControl={false}
+        key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
       >
-        {/* Tile Layer Base */}
-        <div style={{ height: "100%", width: "100%" }}>
-          {(() => {
-            const map = window.mapInstance;
-            if (map) {
-              // Limpiar capas anteriores (excepto base)
-              map.eachLayer((layer) => {
-                if (layer instanceof L.TileLayer === false) {
-                  map.removeLayer(layer);
-                }
-              });
-
-              // Agregar tile layer base
-              if (!map._baseLayer) {
-                map._baseLayer = L.tileLayer(
-                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  {
-                    attribution: '© OpenStreetMap contributors'
-                  }
-                ).addTo(map);
-              }
-
-              // Agregar límites base
-              if (area) {
-                L.geoJSON(area, {
-                  style: {
-                    color: '#ff7800',
-                    weight: 3,
-                    opacity: 0.8,
-                    fillOpacity: 0
-                  }
-                }).addTo(map);
-              }
-            }
-            return null;
-          })()}
-        </div>
-
-        {/* Raster Overlays */}
-        {showAnoura && getAnouraRaster() && (
+        {/* RasterOverlays para Anoura geoffroyi */}
+        {activeLayers.rasterAG_PRI && (
           <RasterOverlay
-            rasterUrl={`/${getAnouraRaster()}`}
-            opacity={anouraOpacity}
+            fileName="AG_PRI.tif"
+            colorMap={anouraColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterAG_PRI}
+          />
+        )}
+        {activeLayers.rasterAG_VER && (
+          <RasterOverlay
+            fileName="AG_VER.tif"
+            colorMap={anouraColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterAG_VER}
+          />
+        )}
+        {activeLayers.rasterAG_OTO && (
+          <RasterOverlay
+            fileName="AG_OTO.tif"
+            colorMap={anouraColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterAG_OTO}
+          />
+        )}
+        {activeLayers.rasterAG_INV && (
+          <RasterOverlay
+            fileName="AG_INV.tif"
+            colorMap={anouraColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterAG_INV}
           />
         )}
 
-        {showGeneric && getGenericRaster() && (
+        {/* RasterOverlays para Polinizadores */}
+        {activeLayers.rasterPOLIN_PRI && (
           <RasterOverlay
-            rasterUrl={`/${getGenericRaster()}`}
-            opacity={genericOpacity}
+            fileName="POLIN_PRI.tif"
+            colorMap={polinizadoresColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterPOLIN_PRI}
+          />
+        )}
+        {activeLayers.rasterPOLIN_VER && (
+          <RasterOverlay
+            fileName="POLIN_VER.tif"
+            colorMap={polinizadoresColorMap}
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={() => {}}
+            overlayOpacity={opacity.rasterPOLIN_VER}
           />
         )}
 
-        {/* Controles */}
-        <SeasonSelector
-          activeSeason={activeSeason}
-          onSeasonChange={setActiveSeason}
-        />
-        <InfoControl activeSeason={activeSeason} />
-        <DraggingControl />
-        <CoordinateControl />
-        <ScaleControl />
-        
+        {/* Control de capas agrupadas */}
         <GroupedLayerControl
-          activeSeason={activeSeason}
-          showAnoura={showAnoura}
-          onAnouraToggle={setShowAnoura}
-          showGeneric={showGeneric && isGenericAvailable}
-          onGenericToggle={setShowGeneric}
-          anouraOpacity={anouraOpacity}
-          onAnouraOpacityChange={setAnouraOpacity}
-          genericOpacity={genericOpacity}
-          onGenericOpacityChange={setGenericOpacity}
-          onZoomToLayer={handleZoomToArea}
-          onDownloadAnoura={handleDownloadAnoura}
-          onDownloadGeneric={handleDownloadGeneric}
           area={area}
           paisajes={paisajes}
           municipios={municipios}
+          activeLayers={activeLayers}
+          setActiveLayers={setActiveLayers}
+          opacity={opacity}
+          setOpacity={setOpacity}
         />
 
+        {/* Indicador de carga */}
+        {loading && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              zIndex: 2000,
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            Cargando raster...
+          </div>
+        )}
+
+        {/* Indicador de error */}
+        {error && (
+          <div
+            style={{
+              position: "absolute",
+              top: "10px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              backgroundColor: "#ff4444",
+              color: "white",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              zIndex: 2000,
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            Error: {error}
+          </div>
+        )}
+
         {/* Leyendas */}
-        {showAnoura && (
-          <RasterLegend
-            isVisible={showAnoura}
-            currentRaster={getAnouraRasterName()}
-            speciesType="anoura"
-          />
-        )}
-
-        {showGeneric && getGenericRaster() && (
-          <div style={{ position: "relative" }}>
-            <RasterLegend
-              isVisible={showGeneric}
-              currentRaster={getGenericRasterName()}
-              speciesType="generic"
-            />
-          </div>
-        )}
-
-        {/* Mensaje para estaciones sin datos de polinizadores genéricos */}
-        {!isGenericAvailable && (
-          <div style={{
-            position: "absolute",
-            bottom: "270px",
-            right: "10px",
-            backgroundColor: "white",
-            padding: "10px",
-            borderRadius: "5px",
-            boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-            zIndex: 1000,
-            fontFamily: "Arial, sans-serif",
-            fontSize: "12px",
-            maxWidth: "200px",
-            border: "1px solid #ffc107",
-            backgroundColor: "#fff3cd",
-          }}>
-            <div style={{ fontWeight: "bold", color: "#856404", marginBottom: "5px" }}>
-              ⚠️ Información
-            </div>
-            <div style={{ color: "#856404" }}>
-              Datos de polinizadores genéricos solo disponibles para primavera y verano.
-            </div>
-          </div>
-        )}
+        <AnouraLegend
+          isVisible={anouraLegendVisible}
+          season={anouraLegendSeason}
+        />
+        <PolinizadoresLegend
+          isVisible={polinizadoresLegendVisible}
+          season={polinizadoresLegendSeason}
+        />
       </MapContainer>
     </div>
   );
 };
 
 export default Polinizadores;
-
-/**
- * Ejemplo de uso:
- * 
- * import Polinizadores from './components/Polinizadores';
- * 
- * function App() {
- *   return (
- *     <Polinizadores 
- *       rastersBasePath="/data/rasters/polinizadores/"
- *     />
- *   );
- * }
- * 
- * Test manual sugerido:
- * 1. Cargar componente y verificar que muestra primavera por defecto
- * 2. Cambiar entre estaciones usando el selector superior
- * 3. Verificar que Anoura geoffroyi está disponible en todas las estaciones
- * 4. Verificar que polinizadores genéricos solo aparecen en primavera/verano
- * 5. Activar/desactivar cada especie independientemente
- * 6. Ajustar opacidades de cada capa por separado
- * 7. Probar descargas (botón deshabilitado cuando capa no visible)
- * 8. Verificar leyendas con escala de probabilidad 0-100%
- * 9. Observar mensaje informativo en otoño/invierno para genéricos
- * 
- * Dependencias necesarias:
- * npm install react-leaflet leaflet geotiff
- */
