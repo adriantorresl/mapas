@@ -25,6 +25,7 @@ import CUS from "../components/CUS";
 import Productiva from "../components/Productiva";
 import { color } from "framer-motion";
 import EscenarioActual from "../components/EscenarioActual";
+import EscenarioCC from "../components/EscenarioCC";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
@@ -134,14 +135,8 @@ export const componentMapping = {
 
   // 3.1.2 - Escenarios con cambio climático
   "3.1.2": {
-    component: SlideTifCompare,
-    props: {
-      rasters: [
-        { url: "/Temp_med_4569.tif", title: "Escenario 2045-2069" },
-        { url: "/Temp_med_7599.tif", title: "Escenario 2075-2099" },
-      ],
-      title: "Proyecciones de Temperatura",
-    },
+    component: EscenarioCC,
+    props: {},
   },
 
   // 3.2.1 - Agave Arroqueño

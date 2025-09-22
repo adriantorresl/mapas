@@ -4,37 +4,38 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
 
-/**
- * Componente para visualizar escenarios de cambio climático
- * Muestra rasters por periodos temporales con modo de comparación
- * @param {Object} props - Propiedades del componente
- * @param {boolean} props.allowCompare - Permitir comparación lado a lado (default: true)
- * @param {string} props.rastersBasePath - Ruta base para archivos raster (default: '/data/rasters/clima/')
- */
-
-// Función para descargar archivos
-const downloadFile = async (filename, displayName) => {
+// Función para descargar archivos raster
+const downloadRaster = async (filename, displayName) => {
   try {
     const url = `/${filename}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("No se pudo descargar el archivo");
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = downloadUrl;
+    link.href = url;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
-    console.error("Error descargando archivo:", error);
+    console.error(`Error descargando ${displayName}:`, error);
     alert(`Error al descargar ${displayName}`);
   }
 };
 
+// Función para descargar GeoJSON
+const downloadGeoJSON = (data, filename) => {
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.geojson`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // Componente de pestañas para periodos
-const PeriodTabs = ({ activePeriod, onPeriodChange, compareMode }) => {
+const PeriodTabs = ({ activePeriod, onPeriodChange }) => {
   const tabsStyle = {
     position: "absolute",
     top: "10px",
@@ -73,40 +74,10 @@ const PeriodTabs = ({ activePeriod, onPeriodChange, compareMode }) => {
   };
 
   const periods = [
-    { key: '2015-2039', label: '2015-2039' },
-    { key: '2045-2069', label: '2045-2069' },
-    { key: '2075-2099', label: '2075-2099' }
+    { key: "2015-2039", label: "2015-2039" },
+    { key: "2045-2069", label: "2045-2069" },
+    { key: "2075-2099", label: "2075-2099" },
   ];
-
-  if (compareMode) {
-    return (
-      <div style={{ ...tabsStyle, flexDirection: "column", minWidth: "180px" }}>
-        <div style={{ 
-          padding: "8px", 
-          backgroundColor: "#f8f9fa", 
-          borderBottom: "1px solid #ddd",
-          fontSize: "11px",
-          fontWeight: "bold",
-          textAlign: "center"
-        }}>
-          Modo Comparación
-        </div>
-        {periods.map((period, index) => (
-          <div
-            key={period.key}
-            style={{
-              ...(activePeriod === period.key ? activeTabStyle : inactiveTabStyle),
-              borderRight: "none",
-              borderBottom: index === periods.length - 1 ? "none" : "1px solid #ddd",
-            }}
-            onClick={() => onPeriodChange(period.key)}
-          >
-            {period.label}
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div style={tabsStyle}>
@@ -114,8 +85,11 @@ const PeriodTabs = ({ activePeriod, onPeriodChange, compareMode }) => {
         <div
           key={period.key}
           style={{
-            ...(activePeriod === period.key ? activeTabStyle : inactiveTabStyle),
-            borderRight: index === periods.length - 1 ? "none" : "1px solid #ddd",
+            ...(activePeriod === period.key
+              ? activeTabStyle
+              : inactiveTabStyle),
+            borderRight:
+              index === periods.length - 1 ? "none" : "1px solid #ddd",
           }}
           onClick={() => onPeriodChange(period.key)}
         >
@@ -126,762 +100,957 @@ const PeriodTabs = ({ activePeriod, onPeriodChange, compareMode }) => {
   );
 };
 
-// Componente de leyenda para raster climático
-const ClimateRasterLegend = ({ isVisible, rasterType, periodName, compareMode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  if (!isVisible || !rasterType) {
-    return null;
-  }
-
-  const legendStyle = {
-    position: "absolute",
-    bottom: "50px",
-    right: compareMode ? "calc(50% + 10px)" : "10px",
-    backgroundColor: "white",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
-    borderBottom: isCollapsed ? "none" : "1px solid #dee2e6",
-  };
-
-  // Generar colores específicos por tipo climático
-  const getColorsByType = (type) => {
-    switch (type) {
-      case 'PT':
-        return ['#ffffd4', '#fed98e', '#fe9929', '#d95f0e', '#993404']; // naranjas (más seco)
-      case 'TEMP':
-        return ['#ffffcc', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026']; // rojos (más caliente)
-      default:
-        return ['#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#2c7fb8'];
-    }
-  };
-
-  const colors = getColorsByType(rasterType);
-
-  const getLabels = (type) => {
-    switch (type) {
-      case 'PT':
-        return ['< 400mm', '400-600mm', '600-800mm', '800-1000mm', '> 1000mm'];
-      case 'TEMP':
-        return ['< 15°C', '15-18°C', '18-21°C', '21-24°C', '24-27°C', '> 27°C'];
-      default:
-        return colors.map((_, i) => `Clase ${i + 1}`);
-    }
-  };
-
-  const labels = getLabels(rasterType);
-
-  const getVariableName = (type) => {
-    switch (type) {
-      case 'PT':
-        return 'Precipitación';
-      case 'TEMP':
-        return 'Temperatura';
-      default:
-        return 'Variable';
-    }
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>{getVariableName(rasterType)} - {periodName}</span>
-        <span>{isCollapsed ? "+" : "-"}</span>
-      </div>
-      {!isCollapsed && (
-        <div style={{ padding: "8px" }}>
-          {colors.map((color, index) => (
-            <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "3px" }}>
-              <div
-                style={{
-                  width: "20px",
-                  height: "12px",
-                  backgroundColor: color,
-                  marginRight: "8px",
-                  border: "1px solid #ccc",
-                }}
-              />
-              <span style={{ fontSize: "11px" }}>
-                {labels[index] || `Clase ${index + 1}`}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Control de modo comparación
-const CompareControl = ({ compareMode, onCompareModeToggle, allowCompare }) => {
-  if (!allowCompare) return null;
-
-  const controlStyle = {
-    position: "absolute",
-    top: "70px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: "8px 12px",
-    cursor: "pointer",
-    zIndex: 1000,
-    fontSize: "12px",
-    fontWeight: "bold",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: "#28a745",
-    color: "white",
-  };
-
-  return (
-    <div
-      style={compareMode ? activeStyle : controlStyle}
-      onClick={onCompareModeToggle}
-      title="Activar/Desactivar modo comparación"
-    >
-      {compareMode ? "🔄 Comparación ON" : "🔄 Modo Comparación"}
-    </div>
-  );
-};
-
-// Controles estándar
+// Componente para mostrar coordenadas
 const CoordinateControl = () => {
   const map = useMap();
-  const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
-
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCoordinates({ lat: e.latlng.lat, lng: e.latlng.lng });
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.left = "10px"; // Lado izquierdo del mapa
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
     };
 
-    map.on("mousemove", handleMouseMove);
-    return () => map.off("mousemove", handleMouseMove);
-  }, [map]);
+    map.on("mousemove", updateCoordinates);
 
-  const controlStyle = {
-    position: "absolute",
-    bottom: "10px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "5px 10px",
-    borderRadius: "3px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "monospace",
-    fontSize: "12px",
-  };
-
-  return (
-    <div style={controlStyle}>
-      Lat: {coordinates.lat.toFixed(6)}, Lng: {coordinates.lng.toFixed(6)}
-    </div>
-  );
-};
-
-const ScaleControl = () => {
-  const map = useMap();
-
-  useEffect(() => {
-    const scale = L.control.scale({ position: 'bottomleft' });
-    scale.addTo(map);
-    return () => map.removeControl(scale);
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
   }, [map]);
 
   return null;
 };
 
-const InfoControl = ({ activePeriod, compareMode }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: compareMode ? "120px" : "80px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "10px",
-    borderRadius: "5px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "14px",
-    maxWidth: "300px",
-  };
-
-  return (
-    <div style={controlStyle}>
-      <h4 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-        Escenarios Cambio Climático
-      </h4>
-      <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#666" }}>
-        Proyecciones climáticas para tres periodos temporales.
-        {compareMode && " Modo comparación activo."}
-      </p>
-      <div style={{ fontSize: "11px", color: "#007bff", fontWeight: "bold" }}>
-        Periodo activo: {activePeriod}
-      </div>
-    </div>
-  );
-};
-
-const DraggingControl = () => {
+// Componente para mostrar la escala
+const ScaleControl = () => {
   const map = useMap();
-  const [isDraggingEnabled, setIsDraggingEnabled] = useState(true);
 
-  const toggleDragging = () => {
-    if (isDraggingEnabled) {
-      map.dragging.disable();
-    } else {
-      map.dragging.enable();
-    }
-    setIsDraggingEnabled(!isDraggingEnabled);
-  };
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
 
-  const controlStyle = {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: "5px",
-    cursor: "pointer",
-    zIndex: 1000,
-  };
+    map.addControl(scaleControl);
 
-  return (
-    <div
-      style={controlStyle}
-      onClick={toggleDragging}
-      title={isDraggingEnabled ? "Deshabilitar arrastre" : "Habilitar arrastre"}
-    >
-      <span style={{ fontSize: "18px" }}>{isDraggingEnabled ? "🔓" : "🔒"}</span>
-    </div>
-  );
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
 };
 
-// Control agrupado de capas
-const GroupedLayerControl = ({ 
-  activePeriod,
-  showPT,
-  onPTToggle,
-  showTEMP,
-  onTEMPToggle,
-  ptOpacity,
-  onPTOpacityChange,
-  tempOpacity,
-  onTEMPOpacityChange,
-  compareMode,
-  onZoomToLayer,
-  onDownloadPT,
-  onDownloadTEMP,
+// Componente para mostrar valor del pixel
+const PixelValueControl = ({ pixelValue }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Crear el div para el valor del pixel
+    const pixelDiv = L.DomUtil.create("div", "pixel-value-control");
+    pixelDiv.style.position = "absolute";
+    pixelDiv.style.bottom = "40px"; // Arriba de las coordenadas
+    pixelDiv.style.left = "10px"; // Mismo lado izquierdo
+    pixelDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    pixelDiv.style.padding = "5px";
+    pixelDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    pixelDiv.style.borderRadius = "0px";
+    pixelDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    pixelDiv.style.zIndex = "999";
+    pixelDiv.innerHTML = "Valor: N/A";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(pixelDiv);
+
+    return () => {
+      if (pixelDiv.parentNode) {
+        pixelDiv.parentNode.removeChild(pixelDiv);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    const pixelDiv = map.getContainer().querySelector(".pixel-value-control");
+    if (pixelDiv) {
+      pixelDiv.innerHTML = `Valor: ${
+        pixelValue !== null ? pixelValue.toFixed(2) : "N/A"
+      }`;
+    }
+  }, [map, pixelValue]);
+
+  return null;
+};
+
+// Componente para mostrar leyendas dentro del mapa
+const LegendsControl = ({ activeLayers, activePeriod }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Crear el div para las leyendas
+    const legendsDiv = L.DomUtil.create("div", "legends-control");
+    legendsDiv.style.position = "absolute";
+    legendsDiv.style.bottom = "50px";
+    legendsDiv.style.right = "10px";
+    legendsDiv.style.zIndex = "1000";
+    legendsDiv.style.display = "flex";
+    legendsDiv.style.flexDirection = "column";
+    legendsDiv.style.gap = "8px";
+    legendsDiv.style.pointerEvents = "auto"; // Permitir interacción
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(legendsDiv);
+
+    return () => {
+      if (legendsDiv.parentNode) {
+        legendsDiv.parentNode.removeChild(legendsDiv);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    const legendsDiv = map.getContainer().querySelector(".legends-control");
+    if (legendsDiv) {
+      // Limpiar contenido anterior
+      legendsDiv.innerHTML = "";
+
+      // Crear leyendas según las capas activas
+      if (activeLayers.rasterPT) {
+        const ptLegend = document.createElement("div");
+        ptLegend.innerHTML = `
+          <div style="
+            background-color: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 15px;
+            min-width: 180px;
+            max-width: 220px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+          ">
+            <div style="
+              font-weight: bold;
+              margin-bottom: 10px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <span>Precipitación - ${activePeriod}</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <div style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 10px;
+                margin-bottom: 4px;
+              ">
+                <span>Baja</span>
+                <span>Alta</span>
+              </div>
+              <div style="
+                height: 20px;
+                background: linear-gradient(to right, #ffffcc, #c7e9b4, #7fcdbb, #41b6c4, #2c7fb8, #253494);
+                border: 1px solid #666;
+                border-radius: 2px;
+              "></div>
+              <div style="
+                display: flex;
+                justify-content: center;
+                font-size: 10px;
+                margin-top: 4px;
+                font-style: italic;
+              ">
+                <span>Precipitación (mm/año)</span>
+              </div>
+            </div>
+          </div>
+        `;
+        legendsDiv.appendChild(ptLegend);
+      }
+
+      if (activeLayers.rasterTEMP) {
+        const tempLegend = document.createElement("div");
+        tempLegend.innerHTML = `
+          <div style="
+            background-color: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 15px;
+            min-width: 180px;
+            max-width: 220px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
+          ">
+            <div style="
+              font-weight: bold;
+              margin-bottom: 10px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            ">
+              <span>Temperatura - ${activePeriod}</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <div style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 10px;
+                margin-bottom: 4px;
+              ">
+                <span>Fría</span>
+                <span>Cálida</span>
+              </div>
+              <div style="
+                height: 20px;
+                background: linear-gradient(to right, #ffffcc, #fed976, #feb24c, #fd8d3c, #fc4e2a, #e31a1c);
+                border: 1px solid #666;
+                border-radius: 2px;
+              "></div>
+              <div style="
+                display: flex;
+                justify-content: center;
+                font-size: 10px;
+                margin-top: 4px;
+                font-style: italic;
+              ">
+                <span>Temperatura (°C)</span>
+              </div>
+            </div>
+          </div>
+        `;
+        legendsDiv.appendChild(tempLegend);
+      }
+    }
+  }, [map, activeLayers, activePeriod]);
+
+  return null;
+};
+
+// Componente para el control de capas agrupadas
+const GroupedLayerControl = ({
   area,
   paisajes,
-  municipios
+  municipios,
+  activeLayers,
+  setActiveLayers,
+  opacity,
+  setOpacity,
+  activePeriod,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const map = useMap();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [layers, setLayers] = useState({});
+  const [activeBaseLayer, setActiveBaseLayer] = useState(
+    "Topográfico (OpenTopoMap)"
+  );
+
+  // Mapeo de periodos a códigos de archivo
+  const periodMap = {
+    "2015-2039": "1539",
+    "2045-2069": "4569",
+    "2075-2099": "7599",
+  };
+
+  useEffect(() => {
+    const baseLayers = {
+      "Topográfico (OpenTopoMap)": L.tileLayer(
+        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        {
+          attribution:
+            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }
+      ),
+      "Satelital (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+    };
+
+    // Agregar capa base activa
+    const currentBaseLayer = baseLayers[activeBaseLayer];
+    if (currentBaseLayer && !map.hasLayer(currentBaseLayer)) {
+      // Remover otras capas base
+      Object.values(baseLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+      currentBaseLayer.addTo(map);
+    }
+
+    const newLayers = {};
+
+    // Área de estudio
+    if (area) {
+      newLayers.area = L.geoJSON(area, {
+        style: { color: "black", weight: 6, fillOpacity: 0 },
+      });
+      if (activeLayers.area) {
+        newLayers.area.addTo(map);
+      }
+    }
+
+    // Paisajes
+    if (paisajes) {
+      newLayers.paisajes = L.geoJSON(paisajes, {
+        style: { color: "white", weight: 4, fillOpacity: 0 },
+      });
+      if (activeLayers.paisajes) {
+        newLayers.paisajes.addTo(map);
+      }
+    }
+
+    // Municipios
+    if (municipios) {
+      newLayers.municipios = L.geoJSON(municipios, {
+        style: { color: "black", weight: 2, fillOpacity: 0 },
+      });
+      if (activeLayers.municipios) {
+        newLayers.municipios.addTo(map);
+      }
+    }
+
+    setLayers(newLayers);
+
+    return () => {
+      Object.values(newLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+      Object.values(baseLayers).forEach((layer) => {
+        if (map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+    };
+  }, [
+    map,
+    area,
+    paisajes,
+    municipios,
+    activeBaseLayer,
+    activeLayers.area,
+    activeLayers.paisajes,
+    activeLayers.municipios,
+  ]);
+
+  const toggleLayer = (layerKey) => {
+    const newActiveLayers = { ...activeLayers };
+    newActiveLayers[layerKey] = !activeLayers[layerKey];
+    setActiveLayers(newActiveLayers);
+
+    // Para capas raster, el manejo se hace en el componente principal
+    if (layerKey.startsWith("raster")) {
+      return;
+    }
+
+    const layer = layers[layerKey];
+    if (layer) {
+      if (newActiveLayers[layerKey]) {
+        layer.addTo(map);
+      } else {
+        map.removeLayer(layer);
+      }
+    }
+  };
+
+  const changeBaseLayer = (baseLayerName) => {
+    setActiveBaseLayer(baseLayerName);
+  };
+
+  const handleOpacityChange = (layerKey, newOpacity) => {
+    setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+    const layer = layers[layerKey];
+    if (layer && activeLayers[layerKey]) {
+      layer.setStyle({ fillOpacity: newOpacity });
+    }
+  };
 
   const controlStyle = {
     position: "absolute",
-    top: compareMode ? "120px" : "80px",
+    top: "20px",
     right: "10px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
     borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
+    padding: isCollapsed ? "6px" : "8px",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "280px",
-    maxWidth: "320px",
     fontFamily: "Arial, sans-serif",
-    fontSize: "13px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    fontSize: "12px",
+    maxWidth: isCollapsed ? "auto" : "220px",
+    minWidth: isCollapsed ? "auto" : "200px",
+    width: isCollapsed ? "fit-content" : "auto",
+    maxHeight: isCollapsed ? "auto" : "80vh",
+    overflowY: isCollapsed ? "visible" : "auto",
+    overflowX: "hidden",
   };
 
   const headerStyle = {
+    padding: isCollapsed ? "8px 10px" : "10px 15px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    fontSize: isCollapsed ? "12px" : "13px",
+    whiteSpace: "nowrap",
   };
 
-  const sectionStyle = {
-    marginBottom: "15px",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-  };
-
-  const sectionHeaderStyle = {
-    backgroundColor: "#f8f9fa",
-    padding: "5px 8px",
-    fontWeight: "bold",
-    fontSize: "12px",
-    borderBottom: "1px solid #ddd",
-  };
-
-  if (isCollapsed) {
-    return (
-      <div style={controlStyle}>
-        <div style={headerStyle} onClick={() => setIsCollapsed(false)}>
-          <span>☰</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={controlStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(true)}>
-        <span>Control de Capas</span>
-        <span>−</span>
-      </div>
-
-      {/* Capas Base */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Capas Base</div>
-        <div style={{ padding: "8px" }}>
-          <label style={{ display: "block", marginBottom: "5px" }}>
-            <input type="checkbox" defaultChecked style={{ marginRight: "5px" }} />
-            OpenStreetMap
-          </label>
-        </div>
-      </div>
-
-      {/* Límites */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>Límites</div>
-        <div style={{ padding: "8px" }}>
-          {area && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" defaultChecked style={{ marginRight: "5px" }} />
-              Área de estudio
-            </label>
-          )}
-          {paisajes && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" style={{ marginRight: "5px" }} />
-              Paisajes
-            </label>
-          )}
-          {municipios && (
-            <label style={{ display: "block", marginBottom: "5px" }}>
-              <input type="checkbox" style={{ marginRight: "5px" }} />
-              Municipios
-            </label>
-          )}
-        </div>
-      </div>
-
-      {/* Variables Climáticas */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>
-          Variables - {activePeriod}
-        </div>
-        <div style={{ padding: "8px" }}>
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            <input
-              type="checkbox"
-              checked={showPT}
-              onChange={(e) => onPTToggle(e.target.checked)}
-              style={{ marginRight: "5px" }}
-            />
-            Precipitación
-          </label>
-          
-          {showPT && (
-            <div style={{ marginLeft: "20px", marginBottom: "10px" }}>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={ptOpacity}
-                onChange={(e) => onPTOpacityChange(parseFloat(e.target.value))}
-                style={{ width: "100%", marginBottom: "3px" }}
-              />
-              <div style={{ textAlign: "center", fontSize: "10px" }}>
-                {Math.round(ptOpacity * 100)}%
-              </div>
-            </div>
-          )}
-
-          <label style={{ display: "block", marginBottom: "8px" }}>
-            <input
-              type="checkbox"
-              checked={showTEMP}
-              onChange={(e) => onTEMPToggle(e.target.checked)}
-              style={{ marginRight: "5px" }}
-            />
-            Temperatura
-          </label>
-          
-          {showTEMP && (
-            <div style={{ marginLeft: "20px", marginBottom: "8px" }}>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={tempOpacity}
-                onChange={(e) => onTEMPOpacityChange(parseFloat(e.target.value))}
-                style={{ width: "100%", marginBottom: "3px" }}
-              />
-              <div style={{ textAlign: "center", fontSize: "10px" }}>
-                {Math.round(tempOpacity * 100)}%
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Controles */}
-      <div style={{ marginTop: "15px", display: "flex", gap: "5px", flexWrap: "wrap" }}>
-        <button
-          onClick={onZoomToLayer}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: "pointer",
-            flex: "1",
-          }}
-        >
-          Zoom
-        </button>
-        <button
-          onClick={onDownloadPT}
-          disabled={!showPT}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: showPT ? "#28a745" : "#6c757d",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: showPT ? "pointer" : "not-allowed",
-            flex: "1",
-          }}
-        >
-          DL PT
-        </button>
-        <button
-          onClick={onDownloadTEMP}
-          disabled={!showTEMP}
-          style={{
-            padding: "5px 8px",
-            fontSize: "10px",
-            backgroundColor: showTEMP ? "#17a2b8" : "#6c757d",
-            color: "white",
-            border: "none",
-            borderRadius: "3px",
-            cursor: showTEMP ? "pointer" : "not-allowed",
-            flex: "1",
-          }}
-        >
-          DL TEMP
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Componente principal
-const EscenarioCC = ({ 
-  allowCompare = true,
-  rastersBasePath = '/data/rasters/clima/'
-}) => {
-  // Estados para datos
-  const [area, setArea] = useState(null);
-  const [paisajes, setPaisajes] = useState(null);
-  const [municipios, setMunicipios] = useState(null);
-
-  // Estados para controles
-  const [activePeriod, setActivePeriod] = useState('2015-2039');
-  const [compareMode, setCompareMode] = useState(false);
-  const [showPT, setShowPT] = useState(true);
-  const [showTEMP, setShowTEMP] = useState(false);
-  const [ptOpacity, setPTOpacity] = useState(0.7);
-  const [tempOpacity, setTEMPOpacity] = useState(0.7);
-
-  // Mapeo de periodos a códigos de archivo
-  const periodMap = {
-    '2015-2039': '1539',
-    '2045-2069': '4569',
-    '2075-2099': '7599'
-  };
-
-  // Cargar datos
-  useEffect(() => {
-    fetch("/AREA.geojson")
-      .then((res) => res.json())
-      .then(setArea)
-      .catch(console.error);
-    fetch("/PAISAJES.geojson")
-      .then((res) => res.json())
-      .then(setPaisajes)
-      .catch(console.error);
-    fetch("/MUNICIPIOS.geojson")
-      .then((res) => res.json())
-      .then(setMunicipios)
-      .catch(console.error);
-  }, []);
-
-  // Funciones de control
-  const handleZoomToArea = () => {
-    if (area && window.mapInstance) {
-      const geojsonLayer = L.geoJSON(area);
-      window.mapInstance.fitBounds(geojsonLayer.getBounds());
-    }
-  };
-
-  const handleDownloadPT = () => {
-    const periodCode = periodMap[activePeriod];
-    const filename = `PT_${periodCode}.tif`;
-    const displayName = `Precipitación ${activePeriod}`;
-    downloadFile(filename, displayName);
-  };
-
-  const handleDownloadTEMP = () => {
-    const periodCode = periodMap[activePeriod];
-    const filename = `TEMP_${periodCode}.tif`;
-    const displayName = `Temperatura ${activePeriod}`;
-    downloadFile(filename, displayName);
-  };
-
-  // Obtener archivos raster actuales
-  const getPTRaster = () => {
-    const periodCode = periodMap[activePeriod];
-    return `PT_${periodCode}.tif`;
-  };
-
-  const getTEMPRaster = () => {
-    const periodCode = periodMap[activePeriod];
-    return `TEMP_${periodCode}.tif`;
-  };
-
-  // Determinar capa activa para leyenda
-  const getActiveLegend = () => {
-    if (showPT) return { type: 'PT', name: activePeriod };
-    if (showTEMP) return { type: 'TEMP', name: activePeriod };
-    return null;
-  };
-
-  const activeLegend = getActiveLegend();
-
-  return (
-    <div style={{ height: "100vh", width: "100%", position: "relative" }}>
-      <MapContainer
-        center={[19.5, -99.0]}
-        zoom={8}
-        style={{ 
-          height: "100%", 
-          width: compareMode ? "50%" : "100%",
-          float: "left"
-        }}
-        ref={(mapInstance) => {
-          if (mapInstance) {
-            window.mapInstance = mapInstance;
-          }
+  const LayerItem = ({
+    layerKey,
+    title,
+    data,
+    showDownload = true,
+    showOpacity = true,
+  }) => (
+    <div
+      style={{
+        marginBottom: "1px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "3px",
+          gap: "6px",
         }}
       >
-        {/* Tile Layer Base */}
-        <div style={{ height: "100%", width: "100%" }}>
-          {(() => {
-            const map = window.mapInstance;
-            if (map) {
-              // Limpiar capas anteriores (excepto base)
-              map.eachLayer((layer) => {
-                if (layer instanceof L.TileLayer === false) {
-                  map.removeLayer(layer);
-                }
-              });
-
-              // Agregar tile layer base
-              if (!map._baseLayer) {
-                map._baseLayer = L.tileLayer(
-                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  {
-                    attribution: '© OpenStreetMap contributors'
-                  }
-                ).addTo(map);
-              }
-
-              // Agregar límites base
-              if (area) {
-                L.geoJSON(area, {
-                  style: {
-                    color: '#ff7800',
-                    weight: 3,
-                    opacity: 0.8,
-                    fillOpacity: 0
-                  }
-                }).addTo(map);
-              }
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+          {title}
+        </span>
+        {showDownload && data && (
+          <button
+            style={{
+              backgroundColor: "transparent",
+              border: "none",
+              padding: "0px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              marginLeft: "2px",
+              width: "16px",
+              height: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title={`Descargar ${title}`}
+            onClick={() => downloadGeoJSON(data, title)}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v8m0 0l-3-3m3 3l3-3"
+                stroke="#333"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="3"
+                y="13"
+                width="10"
+                height="1.5"
+                rx="0.75"
+                fill="#333"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+      {showOpacity && (
+        <>
+          <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={opacity[layerKey]}
+            onChange={(e) =>
+              handleOpacityChange(layerKey, parseFloat(e.target.value))
             }
-            return null;
-          })()}
-        </div>
-
-        {/* Raster Overlays */}
-        {showPT && (
-          <RasterOverlay
-            rasterUrl={`/${getPTRaster()}`}
-            opacity={ptOpacity}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              map.dragging.disable();
+              e.target.style.cursor = "grabbing";
+            }}
+            onMouseUp={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            onMouseLeave={(e) => {
+              e.stopPropagation();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              map.touchZoom.disable();
+              map.dragging.disable();
+              e.target.style.cursor = "grabbing";
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              map.touchZoom.enable();
+              map.dragging.enable();
+              e.target.style.cursor = "grab";
+            }}
+            style={{ width: "100%", marginBottom: "4px" }}
           />
-        )}
+        </>
+      )}
+    </div>
+  );
 
-        {showTEMP && (
-          <RasterOverlay
-            rasterUrl={`/${getTEMPRaster()}`}
-            opacity={tempOpacity}
-          />
-        )}
-
-        {/* Controles */}
-        <PeriodTabs
-          activePeriod={activePeriod}
-          onPeriodChange={setActivePeriod}
-          compareMode={compareMode}
+  const RasterLayerItem = ({ layerKey, title, filename }) => (
+    <div
+      style={{
+        marginBottom: "1px",
+        padding: "0px",
+        backgroundColor: "transparent",
+        borderRadius: "0px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "2px",
+          gap: "6px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
         />
-        
-        <CompareControl
-          compareMode={compareMode}
-          onCompareModeToggle={() => setCompareMode(!compareMode)}
-          allowCompare={allowCompare}
-        />
-        
-        <InfoControl 
-          activePeriod={activePeriod}
-          compareMode={compareMode}
-        />
-        <DraggingControl />
-        <CoordinateControl />
-        <ScaleControl />
-        
-        <GroupedLayerControl
-          activePeriod={activePeriod}
-          showPT={showPT}
-          onPTToggle={setShowPT}
-          showTEMP={showTEMP}
-          onTEMPToggle={setShowTEMP}
-          ptOpacity={ptOpacity}
-          onPTOpacityChange={setPTOpacity}
-          tempOpacity={tempOpacity}
-          onTEMPOpacityChange={setTEMPOpacity}
-          compareMode={compareMode}
-          onZoomToLayer={handleZoomToArea}
-          onDownloadPT={handleDownloadPT}
-          onDownloadTEMP={handleDownloadTEMP}
-          area={area}
-          paisajes={paisajes}
-          municipios={municipios}
-        />
-
-        {/* Leyenda */}
-        {activeLegend && (
-          <ClimateRasterLegend
-            isVisible={true}
-            rasterType={activeLegend.type}
-            periodName={activeLegend.name}
-            compareMode={compareMode}
-          />
-        )}
-      </MapContainer>
-
-      {/* Segundo mapa para modo comparación */}
-      {compareMode && (
-        <div 
-          style={{ 
-            height: "100vh", 
-            width: "50%", 
-            float: "right",
-            position: "relative"
-          }}
-        >
-          {/* Placeholder para segundo mapa en modo comparación */}
-          <div style={{
-            height: "100%",
-            width: "100%",
-            backgroundColor: "#f8f9fa",
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+          {title}
+        </span>
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            padding: "0px",
+            borderRadius: "3px",
+            cursor: "pointer",
+            marginLeft: "2px",
+            width: "16px",
+            height: "16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "16px",
-            color: "#666",
-            flexDirection: "column"
-          }}>
-            <div style={{ marginBottom: "10px", fontSize: "18px" }}>🚧</div>
-            <div style={{ textAlign: "center" }}>
-              <strong>Modo Comparación</strong><br/>
-              Próximamente: Vista lado a lado<br/>
-              con diferentes periodos
-            </div>
-          </div>
-          
-          {/* Leyenda del segundo mapa */}
-          {activeLegend && (
-            <ClimateRasterLegend
-              isVisible={true}
-              rasterType={activeLegend.type}
-              periodName="Comparación"
-              compareMode={false}
+          }}
+          title={`Descargar ${filename}`}
+          onClick={() => downloadRaster(filename, title)}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 2v8m0 0l-3-3m3 3l3-3"
+              stroke="#333"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          )}
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+          </svg>
+        </button>
+      </div>
+      <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+        Opacidad: {Math.round(opacity[layerKey] * 100)}%
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.1"
+        value={opacity[layerKey]}
+        onChange={(e) =>
+          setOpacity((prev) => ({
+            ...prev,
+            [layerKey]: parseFloat(e.target.value),
+          }))
+        }
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          map.dragging.disable();
+        }}
+        onMouseUp={(e) => {
+          e.stopPropagation();
+          map.dragging.enable();
+        }}
+        onMouseLeave={(e) => {
+          e.stopPropagation();
+          map.dragging.enable();
+        }}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          map.touchZoom.disable();
+          map.dragging.disable();
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          map.touchZoom.enable();
+          map.dragging.enable();
+        }}
+        style={{ width: "100%", marginBottom: "4px" }}
+      />
+    </div>
+  );
+
+  return (
+    <div style={controlStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>{isCollapsed ? "Capas" : "Capas"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "8px",
+            maxHeight: "80vh",
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          {/* Capas Base */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "6px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Mapa Base
+            </div>
+            {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
+              (layerName) => (
+                <div
+                  key={layerName}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "3px",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === layerName}
+                    onChange={() => changeBaseLayer(layerName)}
+                  />
+                  <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                    {layerName}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Límites */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "6px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Límites
+            </div>
+            <LayerItem
+              layerKey="area"
+              title="Área de estudio"
+              data={area}
+              showOpacity={false}
+            />
+            <LayerItem
+              layerKey="paisajes"
+              title="Paisajes bioculturales"
+              data={paisajes}
+              showOpacity={false}
+            />
+            <LayerItem
+              layerKey="municipios"
+              title="Municipios"
+              data={municipios}
+              showOpacity={false}
+            />
+          </div>
+
+          {/* Grupo de Datos Climáticos - Periodo Actual */}
+          <div
+            style={{
+              marginBottom: "8px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "4px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+              Cambio Climático - {activePeriod}
+            </div>
+            <RasterLayerItem
+              layerKey="rasterPT"
+              title="Precipitación Total Anual"
+              filename={`PT_${periodMap[activePeriod]}.tif`}
+            />
+            <RasterLayerItem
+              layerKey="rasterTEMP"
+              title="Temperatura Media"
+              filename={`TEMP_${periodMap[activePeriod]}.tif`}
+            />
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default EscenarioCC;
+// Componente principal
+const EscenarioCC = () => {
+  // Estados para las capas vectoriales
+  const [area, setArea] = useState(null);
+  const [paisajes, setPaisajes] = useState(null);
+  const [municipios, setMunicipios] = useState(null);
 
-/**
- * Ejemplo de uso:
- * 
- * import EscenarioCC from './components/EscenarioCC';
- * 
- * function App() {
- *   return (
- *     <EscenarioCC 
- *       allowCompare={true}
- *       rastersBasePath="/data/rasters/clima/"
- *     />
- *   );
- * }
- * 
- * Test manual sugerido:
- * 1. Cargar componente y verificar que muestra periodo 2015-2039 por defecto
- * 2. Cambiar entre pestañas de periodos y verificar cambios de raster
- * 3. Activar/desactivar variables climáticas independientemente
- * 4. Ajustar opacidades de cada variable
- * 5. Activar modo comparación y verificar cambio de layout
- * 6. Verificar leyendas con colores específicos para clima (naranjas/rojos)
- * 7. Probar descargas de archivos por periodo
- * 8. Verificar que controles se adaptan al modo comparación
- * 9. Comprobar que PT muestra datos más secos y TEMP más cálidos
- * 10. Verificar mensajes informativos sobre proyecciones climáticas
- * 
- * Dependencias necesarias:
- * npm install react-leaflet leaflet geotiff
- */
+  // Estado para controlar el centro y zoom del mapa
+  const [mapCenter, setMapCenter] = useState([19.5, -99.0]); // Coordenadas de México central
+  const [mapZoom, setMapZoom] = useState(6);
+  const [mapKey, setMapKey] = useState(0); // Para forzar re-render del mapa
+
+  // Estado para el periodo activo
+  const [activePeriod, setActivePeriod] = useState("2015-2039");
+
+  // Estado para las capas activas
+  const [activeLayers, setActiveLayers] = useState({
+    area: true,
+    paisajes: false,
+    municipios: false,
+    rasterPT: true, // Precipitación activada por defecto
+    rasterTEMP: false,
+  });
+
+  // Estado para opacidad de las capas
+  const [opacity, setOpacity] = useState({
+    area: 0.8,
+    paisajes: 0.8,
+    municipios: 0.8,
+    rasterPT: 0.7,
+    rasterTEMP: 0.7,
+  });
+
+  // Estados para información del mapa
+  const [pixelValue, setPixelValue] = useState(null);
+
+  // Mapeo de periodos a códigos de archivo
+  const periodMap = {
+    "2015-2039": "1539",
+    "2045-2069": "4569",
+    "2075-2099": "7599",
+  };
+
+  // Cargar datos vectoriales
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Cargar área de estudio
+        const areaResponse = await fetch("/AREA.geojson");
+        if (areaResponse.ok) {
+          const areaData = await areaResponse.json();
+          setArea(areaData);
+
+          // Calcular centro del área para el mapa
+          if (areaData.features && areaData.features.length > 0) {
+            try {
+              const geometry = areaData.features[0].geometry;
+              if (
+                geometry &&
+                geometry.coordinates &&
+                geometry.coordinates.length > 0
+              ) {
+                const coordinates = geometry.coordinates[0];
+                if (coordinates && coordinates.length > 0) {
+                  const lats = coordinates
+                    .map((coord) => coord[1])
+                    .filter((lat) => !isNaN(lat));
+                  const lngs = coordinates
+                    .map((coord) => coord[0])
+                    .filter((lng) => !isNaN(lng));
+
+                  if (lats.length > 0 && lngs.length > 0) {
+                    const centerLat =
+                      (Math.min(...lats) + Math.max(...lats)) / 2;
+                    const centerLng =
+                      (Math.min(...lngs) + Math.max(...lngs)) / 2;
+
+                    if (!isNaN(centerLat) && !isNaN(centerLng)) {
+                      setMapCenter([centerLat, centerLng]);
+                      setMapZoom(15); // Zoom mucho mayor para escala ~5-10km
+                      setMapKey((prev) => prev + 1); // Forzar re-render del mapa
+                    }
+                  }
+                }
+              }
+            } catch (error) {
+              console.warn("Error calculando centro del área:", error);
+              // Mantener coordenadas por defecto
+            }
+          }
+        }
+
+        // Cargar paisajes
+        const paisajesResponse = await fetch("/PAISAJES.geojson");
+        if (paisajesResponse.ok) {
+          const paisajesData = await paisajesResponse.json();
+          setPaisajes(paisajesData);
+        }
+
+        // Cargar municipios
+        const municipiosResponse = await fetch("/MUNICIPIOS.geojson");
+        if (municipiosResponse.ok) {
+          const municipiosData = await municipiosResponse.json();
+          setMunicipios(municipiosData);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  return (
+    <div style={{ position: "relative", height: "80vh", width: "100%" }}>
+      <MapContainer
+        center={mapCenter}
+        zoom={mapZoom}
+        style={{ height: "100%", width: "100%" }}
+        key={`map-${mapKey}`}
+      >
+        <PeriodTabs
+          activePeriod={activePeriod}
+          onPeriodChange={setActivePeriod}
+        />
+
+        <GroupedLayerControl
+          area={area}
+          paisajes={paisajes}
+          municipios={municipios}
+          activeLayers={activeLayers}
+          setActiveLayers={setActiveLayers}
+          opacity={opacity}
+          setOpacity={setOpacity}
+          activePeriod={activePeriod}
+        />
+
+        {/* Capas raster */}
+        {activeLayers.rasterPT && (
+          <RasterOverlay
+            fileName={`PT_${periodMap[activePeriod]}.tif`}
+            baseUrl="http://localhost:3000"
+            overlayOpacity={opacity.rasterPT}
+            colorMap={[
+              "#f7fbff",
+              "#deebf7",
+              "#c6dbef",
+              "#9ecae1",
+              "#6baed6",
+              "#4292c6",
+              "#2171b5",
+              "#08519c",
+              "#08306b",
+            ]}
+            continuous={true}
+            onPixelValue={setPixelValue}
+          />
+        )}
+
+        {activeLayers.rasterTEMP && (
+          <RasterOverlay
+            fileName={`TEMP_${periodMap[activePeriod]}.tif`}
+            baseUrl="http://localhost:3000"
+            overlayOpacity={opacity.rasterTEMP}
+            colorMap={[
+              "#fff5f0",
+              "#fee0d2",
+              "#fcbba1",
+              "#fc9272",
+              "#fb6a4a",
+              "#ef3b2c",
+              "#cb181d",
+              "#a50f15",
+              "#67000d",
+            ]}
+            continuous={true}
+            onPixelValue={setPixelValue}
+          />
+        )}
+
+        <CoordinateControl />
+        <ScaleControl />
+        <PixelValueControl pixelValue={pixelValue} />
+        <LegendsControl
+          activeLayers={activeLayers}
+          activePeriod={activePeriod}
+        />
+      </MapContainer>
+    </div>
+  );
+};
+
+export default EscenarioCC;
