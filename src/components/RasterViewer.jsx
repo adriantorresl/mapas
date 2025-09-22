@@ -118,6 +118,7 @@ export const RasterOverlay = React.memo(({
           /^\//,
           ""
         )}`;
+        console.log(`[RasterViewer] Loading raster from URL: ${fullUrl}`);
         const tiff = await GeoTIFF.fromUrl(fullUrl);
         if (!isMounted) return;
         const image = await tiff.getImage();
@@ -319,7 +320,7 @@ export const RasterOverlay = React.memo(({
         if (isMounted && !loadedRef.current) {
           loadedRef.current = true;
           safeSetLoading(false);
-          safeSetError(err.message || "Error al cargar el raster");
+          safeSetError(err ? (err.message || err.toString() || "Error al cargar el raster") : "Error desconocido al cargar el raster");
         }
       }
     };

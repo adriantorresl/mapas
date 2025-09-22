@@ -24,6 +24,7 @@ import Polinizadores from "../components/Polinizadores";
 import CUS from "../components/CUS";
 import Productiva from "../components/Productiva";
 import { color } from "framer-motion";
+import EscenarioActual from "../components/EscenarioActual";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
@@ -127,13 +128,8 @@ export const componentMapping = {
 
   // 3.1.1 - Escenario actual
   "3.1.1": {
-    component: RasterSlideCompare,
-    props: {
-      leftRasterUrl: "/Temp_med_1539.tif",
-      rightRasterUrl: "/Temp_med_anual.tif",
-      leftTitle: "Temperatura Histórica",
-      rightTitle: "Temperatura Actual",
-    },
+    component: EscenarioActual,
+    props: {},
   },
 
   // 3.1.2 - Escenarios con cambio climático
