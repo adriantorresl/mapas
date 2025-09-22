@@ -26,6 +26,11 @@ import Productiva from "../components/Productiva";
 import { color } from "framer-motion";
 import EscenarioActual from "../components/EscenarioActual";
 import EscenarioCC from "../components/EscenarioCC";
+import Americana from "../components/Americana";
+import Angustifolia from "../components/Angustifolia";
+import Iyoba from "../components/Iyoba";
+import Karwinskii from "../components/Karwinskii";
+import Marmorata from "../components/Marmorata";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
@@ -141,57 +146,32 @@ export const componentMapping = {
 
   // 3.2.1 - Agave Arroqueño
   "3.2.1": {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/A_Americana_4326.tif",
-      rightRasterUrl: "/A_Americana_CC_4326.tif",
-      leftTitle: "Idoneidad Actual",
-      rightTitle: "Idoneidad con Cambio Climático",
-    },
+    component: Americana,
+    props: {},
   },
 
   // 3.2.2 - Agave Angustifolia (Espadín)
   "3.2.2": {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/A_Angustifolia_4326.tif",
-      rightRasterUrl: "/A_Angustifolia_CC_4326.tif",
-      leftTitle: "Idoneidad Actual",
-      rightTitle: "Idoneidad con Cambio Climático",
-    },
+    component: Angustifolia,
+    props: {},
   },
 
   // 3.2.3 - Agave Iyoba
   "3.2.3": {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/A_Iyoba_4326.tif",
-      rightRasterUrl: "/A_Iyoba_CC_4326.tif",
-      leftTitle: "Idoneidad Actual",
-      rightTitle: "Idoneidad con Cambio Climático",
-    },
+    component: Iyoba,
+    props: {},
   },
 
   // 3.2.4 - Agave Karwinskii
   "3.2.4": {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/A_Karswinskii_4326.tif",
-      rightRasterUrl: "/A_Karswinskii_CC_4326.tif",
-      leftTitle: "Idoneidad Actual",
-      rightTitle: "Idoneidad con Cambio Climático",
-    },
+    component: Karwinskii,
+    props: {},
   },
 
   // 3.2.5 - Agave Marmorata (Tepeztate)
   "3.2.5": {
-    component: SideBySideRasters,
-    props: {
-      leftRasterUrl: "/A_Marmorata_4326.tif",
-      rightRasterUrl: "/A_Marmorata_CC_4326.tif",
-      leftTitle: "Idoneidad Actual",
-      rightTitle: "Idoneidad con Cambio Climático",
-    },
+    component: Marmorata,
+    props: {},
   },
 
   // 4.1 - Zonificación
