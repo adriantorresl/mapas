@@ -13,8 +13,8 @@ import { Download } from "lucide-react";
 const generateColorPalette = (values) => {
   const uniqueValues = [...new Set(values)];
   const colors = [
-    "#FF6B6B",
-    "#4ECDC4",
+    "#c8d79e",
+    "#ffffbd",
     "#45B7D1",
     "#96CEB4",
     "#FFEAA7",
@@ -89,7 +89,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -248,7 +248,7 @@ const GroupedLayerControl = ({
     area: 1,
     paisajes: 1,
     municipios: 1,
-    paisajesBio: 1,
+    paisajesBio: 0.7,
   });
   const [colorMap, setColorMap] = useState({});
 
@@ -293,7 +293,7 @@ const GroupedLayerControl = ({
 
     if (municipios) {
       newLayers.municipios = L.geoJSON(municipios, {
-        style: { color: "black", weight: 1, fillOpacity: 0 },
+        style: { color: "red", weight: 1, fillOpacity: 0 },
       });
       newLayers.municipios.addTo(map); // Agregar por defecto
     }
@@ -317,8 +317,8 @@ const GroupedLayerControl = ({
           const paisaje = feature.properties.PAISAJE;
           return {
             fillColor: newColorMap[paisaje] || "#gray",
-            weight: 2,
-            opacity: 1,
+            weight: 0,
+            opacity: 0.7,
             color: "white",
             fillOpacity: 0.7,
           };
@@ -501,7 +501,9 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>{title}</span>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
         {showDownload && data && (
           <button
             style={{
@@ -516,10 +518,7 @@ const GroupedLayerControl = ({
             title={`Descargar ${title}`}
             onClick={() => downloadGeoJSON(data, title)}
           >
-            <Download
-              style={{ width: "20px", height: "20px" }}
-              color="#000"
-            />
+            <Download style={{ width: "20px", height: "20px" }} color="#000" />
           </button>
         )}
       </div>

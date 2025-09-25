@@ -34,6 +34,110 @@ const downloadRaster = async (filename, displayName) => {
   }
 };
 
+// Componente para mostrar coordenadas
+const CoordinateControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.left = "10px"; // Lado izquierdo del mapa
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
+    };
+
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para mostrar la escala
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
+
+    map.addControl(scaleControl);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "120px", // Debajo del control de capas
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
+  };
+
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
+  };
+
+  return (
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
+
 // Componente de leyenda para Balance de Carbono
 const CarbonoLegend = ({ isVisible }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,7 +148,7 @@ const CarbonoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -79,7 +183,7 @@ const CarbonoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Balance de Carbono (Ton CO₂)</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -121,7 +225,7 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -200,7 +304,7 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Tendencia CO₂</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -795,6 +899,14 @@ const Carbono = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para tooltips
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Función para toggle de tooltips
+  const toggleTooltips = () => {
+    setTooltipsEnabled(!tooltipsEnabled);
+  };
+
   // Estado para el centro del mapa
   const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
   const [mapZoom, setMapZoom] = useState(10);
@@ -968,6 +1080,16 @@ const Carbono = ({
         {/* Leyendas */}
         <CarbonoLegend isVisible={carbonoLegendVisible} />
         <TendenciaCarbonoLegend isVisible={tendenciaCarbonoLegendVisible} />
+
+        {/* Controles de coordenadas y escala */}
+        <CoordinateControl />
+        <ScaleControl />
+
+        {/* Control de información (tooltips) */}
+        <InfoControl
+          onToggleTooltips={toggleTooltips}
+          tooltipsEnabled={tooltipsEnabled}
+        />
       </MapContainer>
     </div>
   );

@@ -237,7 +237,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -346,7 +346,7 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -456,7 +456,7 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -543,7 +543,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (

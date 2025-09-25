@@ -128,7 +128,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (

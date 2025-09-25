@@ -34,6 +34,110 @@ const downloadGeoJSON = (data, filename) => {
   URL.revokeObjectURL(url);
 };
 
+// Componente para mostrar coordenadas
+const CoordinateControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.left = "10px"; // Lado izquierdo del mapa
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
+    };
+
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para mostrar la escala
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
+
+    map.addControl(scaleControl);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "120px", // Debajo del control de capas
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
+  };
+
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
+  };
+
+  return (
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
+
 // Componente de leyenda para Anoura geoffroyi
 const AnouraLegend = ({ isVisible, season }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,7 +148,7 @@ const AnouraLegend = ({ isVisible, season }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -74,18 +178,14 @@ const AnouraLegend = ({ isVisible, season }) => {
     INV: "Invierno",
   };
 
-  // Rampa de colores para abundancia (YlOrRd - amarillo a rojo)
+  // Rampa de colores para abundancia - usando la nueva paleta
   const createColorRamp = () => {
     const colors = [
-      "#ffffcc", // Amarillo muy claro (abundancia muy baja)
-      "#ffeda0", // Amarillo claro
-      "#fed976", // Amarillo
-      "#feb24c", // Naranja claro
-      "#fd8d3c", // Naranja
-      "#fc4e2a", // Rojo naranja
-      "#e31a1c", // Rojo
-      "#bd0026", // Rojo oscuro
-      "#800026", // Rojo muy oscuro (abundancia muy alta)
+      "#c59d7f", // Café claro (muy baja)
+      "#e7d4aa", // Beige
+      "#fefad6", // Amarillo muy claro
+      "#aaccc8", // Verde agua claro
+      "#8dbabe", // Verde agua (muy alta)
     ];
 
     return (
@@ -128,7 +228,7 @@ const AnouraLegend = ({ isVisible, season }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Anoura geoffroyi - {seasonNames[season] || season}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -145,7 +245,7 @@ const PolinizadoresLegend = ({ isVisible, season }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -173,18 +273,14 @@ const PolinizadoresLegend = ({ isVisible, season }) => {
     VER: "Verano",
   };
 
-  // Rampa de colores para polinizadores (BuPu - azul a púrpura)
+  // Rampa de colores para polinizadores - usando la rampa específica
   const createColorRamp = () => {
     const colors = [
-      "#f7fcfd", // Azul muy claro (abundancia muy baja)
-      "#e0ecf4", // Azul claro
-      "#bfd3e6", // Azul
-      "#9ebcda", // Azul medio
-      "#8c96c6", // Azul púrpura
-      "#8c6bb1", // Púrpura
-      "#88419d", // Púrpura oscuro
-      "#810f7c", // Púrpura muy oscuro
-      "#4d004b", // Púrpura casi negro (abundancia muy alta)
+      "#ffffb4", // Amarillo claro (muy baja)
+      "#feff70", // Amarillo más intenso
+      "#85e966", // Verde claro
+      "#78bfb9", // Verde azulado
+      "#7190ae", // Azul (muy alta)
     ];
 
     return (
@@ -227,7 +323,7 @@ const PolinizadoresLegend = ({ isVisible, season }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Polinizadores - {seasonNames[season] || season}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -806,6 +902,14 @@ const Polinizadores = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para tooltips
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Función para toggle de tooltips
+  const toggleTooltips = () => {
+    setTooltipsEnabled(!tooltipsEnabled);
+  };
+
   // Estado para el centro del mapa
   const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
   const [mapZoom, setMapZoom] = useState(10);
@@ -903,27 +1007,19 @@ const Polinizadores = () => {
 
   // Paletas de colores para cada tipo
   const anouraColorMap = [
-    "#ffffcc",
-    "#ffeda0",
-    "#fed976",
-    "#feb24c",
-    "#fd8d3c",
-    "#fc4e2a",
-    "#e31a1c",
-    "#bd0026",
-    "#800026",
+    "#c59d7f",
+    "#e7d4aa",
+    "#fefad6",
+    "#aaccc8",
+    "#8dbabe",
   ];
 
   const polinizadoresColorMap = [
-    "#f7fcfd",
-    "#e0ecf4",
-    "#bfd3e6",
-    "#9ebcda",
-    "#8c96c6",
-    "#8c6bb1",
-    "#88419d",
-    "#810f7c",
-    "#4d004b",
+    "#ffffb4",
+    "#feff70",
+    "#85e966",
+    "#78bfb9",
+    "#7190ae",
   ];
 
   return (
@@ -1069,6 +1165,16 @@ const Polinizadores = () => {
         <PolinizadoresLegend
           isVisible={polinizadoresLegendVisible}
           season={polinizadoresLegendSeason}
+        />
+
+        {/* Controles de coordenadas y escala */}
+        <CoordinateControl />
+        <ScaleControl />
+
+        {/* Control de información (tooltips) */}
+        <InfoControl
+          onToggleTooltips={toggleTooltips}
+          tooltipsEnabled={tooltipsEnabled}
         />
       </MapContainer>
     </div>

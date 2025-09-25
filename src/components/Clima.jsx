@@ -156,7 +156,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -412,9 +412,9 @@ const GroupedLayerControl = ({
           return {
             fillColor: coloringMap[climaValue] || "#gray", // Usar coloringMap sin acentos
             weight: 0,
-            opacity: 1,
+            opacity: opacity.clima,
             color: "white",
-            fillOpacity: 1,
+            fillOpacity: opacity.clima,
           };
         },
         onEachFeature: (feature, layer) => {
@@ -489,6 +489,7 @@ const GroupedLayerControl = ({
     tooltipsEnabled,
     onColorMapChange,
     onLegendVisibilityChange,
+    opacity.clima,
   ]);
 
   // Actualizar tooltips cuando cambie el estado
@@ -1432,7 +1433,7 @@ const Clima = () => {
     area: 1,
     municipios: 1,
     paisajes: 1,
-    clima: 1,
+    clima: 0.7,
     precipitacion: 0.7,
     tempMax: 0.7,
     tempMed: 0.7,

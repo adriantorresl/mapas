@@ -76,7 +76,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -131,7 +131,7 @@ const ElevationLegend = ({ isVisible }) => {
   }
 
   // Colores del gradiente de elevación (mismo que en RasterOverlay)
-  const colors = ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"];
+  const colors = ["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"];
 
   // Valores aproximados de elevación para la zona (ajustar según tus datos)
   const minElevation = 0; // metros
@@ -184,7 +184,7 @@ const ElevationLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
 
       {!isCollapsed && (
@@ -416,12 +416,35 @@ const GroupedLayerControl = ({
           }
         },
       });
-      newLayers.cuencas.addTo(map);
+      // No agregar automáticamente al mapa - se controlará por activeLayers
+      if (activeLayers.cuencas) {
+        newLayers.cuencas.addTo(map);
+      }
     }
 
     if (escurrimientos) {
       newLayers.escurrimientos = L.geoJSON(escurrimientos, {
-        style: { color: "cyan", weight: 2, fillOpacity: 0 },
+        style: (feature) => {
+          // Obtener el valor del campo ORD_FLOW para determinar el grosor
+          const ordFlow = feature.properties.ORD_FLOW || 5;
+
+          // Mapear valores específicos a grosores apropiados
+          let weight;
+          if (ordFlow <= 5) {
+            weight = 1.5; // Escurrimientos menores
+          } else if (ordFlow === 6) {
+            weight = 3.5; // Escurrimientos principales
+          } else {
+            weight = 2.5; // Valores intermedios si los hay
+          }
+
+          return {
+            color: "cyan",
+            weight: weight,
+            fillOpacity: 0,
+            opacity: 0.8,
+          };
+        },
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
@@ -430,7 +453,7 @@ const GroupedLayerControl = ({
                 layer.bindTooltip(
                   `<strong>Escurrimiento:</strong> ${
                     props.NOMBRE || props.NAME || "N/A"
-                  }`,
+                  }<br><strong>Orden:</strong> ${props.ORD_FLOW || "N/A"}`,
                   {
                     permanent: false,
                     direction: "auto",
@@ -444,7 +467,7 @@ const GroupedLayerControl = ({
             layer.bindPopup(
               `<strong>Escurrimiento:</strong> ${
                 props.NOMBRE || props.NAME || "N/A"
-              }`
+              }<br><strong>Orden:</strong> ${props.ORD_FLOW || "N/A"}`
             );
             bindTooltipIfEnabled();
             layer.updateTooltip = bindTooltipIfEnabled;
@@ -476,6 +499,7 @@ const GroupedLayerControl = ({
     cuencas,
     escurrimientos,
     activeBaseLayer,
+    activeLayers.cuencas,
   ]);
 
   // Efecto para actualizar tooltips cuando cambie el estado
@@ -950,7 +974,7 @@ const MapView = () => {
     area: true,
     paisajes: true,
     municipios: true,
-    cuencas: true,
+    cuencas: false,
     escurrimientos: true,
     raster: true,
   });
@@ -1016,7 +1040,7 @@ const MapView = () => {
       {activeLayers.raster && (
         <RasterOverlay
           fileName="MDE.tif"
-          colorMap={["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"]}
+          colorMap={["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"]}
           baseUrl="/"
           continuous={true}
           setError={() => {}}

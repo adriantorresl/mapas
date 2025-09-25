@@ -39,6 +39,110 @@ const downloadRaster = async (filename, displayName) => {
   }
 };
 
+// Componente para mostrar coordenadas
+const CoordinateControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.left = "10px"; // Lado izquierdo del mapa
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
+    };
+
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para mostrar la escala
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
+
+    map.addControl(scaleControl);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "120px", // Debajo del control de capas
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
+  };
+
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
+  };
+
+  return (
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
+
 // Componente de leyenda para Exportación de Sedimentos
 const ExportacionLegend = ({ isVisible }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -49,7 +153,7 @@ const ExportacionLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -84,7 +188,7 @@ const ExportacionLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Exportación de Sedimentos</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -126,7 +230,7 @@ const RasterLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -149,14 +253,15 @@ const RasterLegend = ({ isVisible }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para erosión (de menor a mayor) - usando la misma paleta viridis del raster
+  // Rampa de colores para erosión (de menor a mayor) - usando la paleta de la imagen
   const createColorRamp = () => {
     const colors = [
-      "#440154", // Morado oscuro (bajo)
-      "#3b528b", // Azul
-      "#21918c", // Verde azulado
-      "#5ec962", // Verde claro
-      "#fde725", // Amarillo (alto)
+      "#006837",
+      "#31a354",
+      "#78c679",
+      "#c2e699",
+      "#ffffcc",
+      "#d73027", // Rojo (muy alta)
     ];
 
     return (
@@ -169,8 +274,8 @@ const RasterLegend = ({ isVisible }) => {
             marginBottom: "4px",
           }}
         >
-          <span>Bajo</span>
-          <span>Alto</span>
+          <span>Muy Baja</span>
+          <span>Muy Alta</span>
         </div>
         <div
           style={{
@@ -199,7 +304,7 @@ const RasterLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>USLE Tendencia</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -216,6 +321,7 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  tooltipsEnabled,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -320,6 +426,32 @@ const GroupedLayerControl = ({
             fillColor: fillColor,
           };
         },
+        onEachFeature: (feature, layer) => {
+          // Configurar tooltip al hacer hover si está habilitado
+          const bindTooltipIfEnabled = () => {
+            if (tooltipsEnabled) {
+              layer.bindTooltip(
+                `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+                  <strong>Exportación de Sedimentos:</strong><br/>
+                  <strong>Nivel:</strong> ${feature.properties.Exp_Sed || "N/A"}
+                </div>`,
+                {
+                  permanent: false,
+                  direction: "auto",
+                  className: "custom-tooltip",
+                }
+              );
+            } else {
+              layer.unbindTooltip();
+            }
+          };
+
+          // Configurar tooltip inicial
+          bindTooltipIfEnabled();
+
+          // Actualizar tooltip cuando cambie el estado
+          layer.updateTooltip = bindTooltipIfEnabled;
+        },
       });
       if (activeLayers.exportacionSedimentos) {
         newLayers.exportacionSedimentos.addTo(map);
@@ -351,7 +483,17 @@ const GroupedLayerControl = ({
     activeLayers.paisajes,
     activeLayers.municipios,
     activeLayers.exportacionSedimentos,
+    tooltipsEnabled,
   ]);
+
+  // Efecto para actualizar tooltips cuando cambie el estado
+  useEffect(() => {
+    Object.values(layers).forEach((layer) => {
+      if (layer && layer.updateTooltip) {
+        layer.updateTooltip();
+      }
+    });
+  }, [tooltipsEnabled, layers]);
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = { ...activeLayers };
@@ -786,6 +928,14 @@ const Erosion = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para tooltips
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Función para toggle de tooltips
+  const toggleTooltips = () => {
+    setTooltipsEnabled(!tooltipsEnabled);
+  };
+
   // Cargar datos GeoJSON al montar el componente
   useEffect(() => {
     const loadGeoData = async () => {
@@ -856,7 +1006,14 @@ const Erosion = ({
         {activeLayers.raster && (
           <RasterOverlay
             fileName="USLE_TEND.tif"
-            colorMap={["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"]}
+            colorMap={[
+              "#ffffcc",
+              "#c2e699",
+              "#78c679",
+              "#31a354",
+              "#006837",
+              "#d73027",
+            ]}
             baseUrl="/"
             continuous={true}
             setError={setError}
@@ -876,6 +1033,7 @@ const Erosion = ({
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
+          tooltipsEnabled={tooltipsEnabled}
         />
 
         {/* Leyenda de Exportación de Sedimentos */}
@@ -925,6 +1083,16 @@ const Erosion = ({
 
         {/* Leyenda de exportación de sedimentos */}
         <ExportacionLegend isVisible={exportacionLegendVisible} />
+
+        {/* Controles de coordenadas y escala */}
+        <CoordinateControl />
+        <ScaleControl />
+
+        {/* Control de información (tooltips) */}
+        <InfoControl
+          onToggleTooltips={toggleTooltips}
+          tooltipsEnabled={tooltipsEnabled}
+        />
       </MapContainer>
     </div>
   );

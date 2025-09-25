@@ -34,6 +34,110 @@ const downloadRaster = async (filename, displayName) => {
   }
 };
 
+// Componente para mostrar coordenadas
+const CoordinateControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.left = "10px"; // Lado izquierdo del mapa
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "5px";
+    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font =
+      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
+    };
+
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para mostrar la escala
+const ScaleControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scaleControl = L.control.scale({
+      position: "bottomright",
+      metric: true,
+      imperial: false,
+    });
+
+    map.addControl(scaleControl);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
+  }, [map]);
+
+  return null;
+};
+
+// Componente para el control de información (tooltips)
+const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
+  const controlStyle = {
+    position: "absolute",
+    top: "120px", // Debajo del control de capas
+    left: "10px",
+    backgroundColor: "white",
+    borderRadius: "0%",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 999,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "16px",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    border: "2px solid rgba(0,0,0,0.2)",
+    userSelect: "none",
+  };
+
+  const activeStyle = {
+    ...controlStyle,
+    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
+    color: tooltipsEnabled ? "white" : "black",
+  };
+
+  return (
+    <div
+      style={activeStyle}
+      onClick={onToggleTooltips}
+      title={
+        tooltipsEnabled
+          ? "Desactivar información al pasar el mouse"
+          : "Activar información al pasar el mouse"
+      }
+    >
+      ℹ︎
+    </div>
+  );
+};
+
 // Componente de leyenda para Balance de Nitrógeno
 const NitrogenoLegend = ({ isVisible }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,7 +148,7 @@ const NitrogenoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -79,7 +183,7 @@ const NitrogenoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Balance de Nitrógeno (Ton/Nitrógeno)</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -121,7 +225,7 @@ const FosforoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -156,7 +260,7 @@ const FosforoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Balance de Fósforo (Ton/Fósforo)</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -198,7 +302,7 @@ const TendenciaNitrogenoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -221,20 +325,13 @@ const TendenciaNitrogenoLegend = ({ isVisible }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de nitrógeno (RdBu invertido)
+  // Rampa de colores para tendencia de nitrógeno - usando la paleta correcta
   const createColorRamp = () => {
     const colors = [
-      "#67001f", // Rojo oscuro (pérdida alta)
-      "#b2182b", // Rojo
-      "#d6604d", // Rojo claro
-      "#f4a582", // Rosa
-      "#fddbc7", // Rosa muy claro
-      "#ffffff", // Blanco (neutro)
-      "#d1e5f0", // Azul muy claro
-      "#92c5de", // Azul claro
-      "#4393c3", // Azul
-      "#2166ac", // Azul oscuro
-      "#053061", // Azul muy oscuro (ganancia alta)
+      "#238443", // Verde oscuro (muy baja)
+      "#78c679", // Verde claro
+      "#ffffcc", // Amarillo muy claro
+      "#8c6bb1", // Púrpura grisáceo/cafesoso (muy alta)
     ];
 
     return (
@@ -277,7 +374,7 @@ const TendenciaNitrogenoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Tendencia Nitrógeno</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -294,7 +391,7 @@ const TendenciaFosforoLegend = ({ isVisible }) => {
 
   const legendStyle = {
     position: "absolute",
-    bottom: "20px",
+    bottom: "60px",
     right: "20px",
     backgroundColor: "white",
     border: "2px solid rgba(0,0,0,0.2)",
@@ -317,20 +414,15 @@ const TendenciaFosforoLegend = ({ isVisible }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de fósforo (PRGn)
+  // Rampa de colores para tendencia de fósforo - usando la paleta correcta
   const createColorRamp = () => {
     const colors = [
-      "#40004b", // Púrpura oscuro (pérdida alta)
-      "#762a83", // Púrpura
-      "#9970ab", // Púrpura claro
-      "#c2a5cf", // Lavanda
-      "#e7d4e8", // Lavanda claro
-      "#ffffff", // Blanco (neutro)
-      "#d9f0d3", // Verde muy claro
-      "#a6dba0", // Verde claro
-      "#5aae61", // Verde
-      "#1b7837", // Verde oscuro
-      "#00441b", // Verde muy oscuro (ganancia alta)
+      "#238443", // Verde oscuro (muy baja)
+      "#41ab5d", // Verde medio
+      "#78c679", // Verde claro
+      "#c2e699", // Verde amarillento claro
+      "#ffffcc", // Amarillo muy claro
+      "#8c6bb1", // Púrpura grisáceo/cafesoso (muy alta)
     ];
 
     return (
@@ -373,7 +465,7 @@ const TendenciaFosforoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Tendencia Fósforo</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -1153,6 +1245,14 @@ const Nutrientes = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para tooltips
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Función para toggle de tooltips
+  const toggleTooltips = () => {
+    setTooltipsEnabled(!tooltipsEnabled);
+  };
+
   // Estado para el centro del mapa
   const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
   const [mapZoom, setMapZoom] = useState(10);
@@ -1272,17 +1372,12 @@ const Nutrientes = ({
           <RasterOverlay
             fileName="TEND_N.tif"
             colorMap={[
-              "#67001f",
-              "#b2182b",
-              "#d6604d",
-              "#f4a582",
-              "#fddbc7",
-              "#ffffff",
-              "#d1e5f0",
-              "#92c5de",
-              "#4393c3",
-              "#2166ac",
-              "#053061",
+              "#238443",
+              "#41ab5d",
+              "#78c679",
+              "#c2e699",
+              "#ffffcc",
+              "#8c6bb1",
             ]}
             baseUrl="/"
             continuous={true}
@@ -1297,17 +1392,12 @@ const Nutrientes = ({
           <RasterOverlay
             fileName="TEND_P.tif"
             colorMap={[
-              "#40004b",
-              "#762a83",
-              "#9970ab",
-              "#c2a5cf",
-              "#e7d4e8",
-              "#ffffff",
-              "#d9f0d3",
-              "#a6dba0",
-              "#5aae61",
-              "#1b7837",
-              "#00441b",
+              "#238443",
+              "#41ab5d",
+              "#78c679",
+              "#c2e699",
+              "#ffffcc",
+              "#8c6bb1",
             ]}
             baseUrl="/"
             continuous={true}
@@ -1374,6 +1464,16 @@ const Nutrientes = ({
         <FosforoLegend isVisible={fosforoLegendVisible} />
         <TendenciaNitrogenoLegend isVisible={tendenciaNitrogenoLegendVisible} />
         <TendenciaFosforoLegend isVisible={tendenciaFosforoLegendVisible} />
+
+        {/* Controles de coordenadas y escala */}
+        <CoordinateControl />
+        <ScaleControl />
+
+        {/* Control de información (tooltips) */}
+        <InfoControl
+          onToggleTooltips={toggleTooltips}
+          tooltipsEnabled={tooltipsEnabled}
+        />
       </MapContainer>
     </div>
   );
