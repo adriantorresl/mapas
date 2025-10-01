@@ -730,7 +730,9 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "white", marginBottom: "3px" }}>
+          <div
+            style={{ fontSize: "10px", color: "white", marginBottom: "3px" }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input

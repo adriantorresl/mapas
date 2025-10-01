@@ -498,7 +498,14 @@ const GroupedLayerControl = ({
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#ffffffff" />
+            <rect
+              x="3"
+              y="13"
+              width="10"
+              height="1.5"
+              rx="0.75"
+              fill="#ffffffff"
+            />
           </svg>
         </button>
       </div>
@@ -567,7 +574,13 @@ const GroupedLayerControl = ({
               paddingBottom: "6px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "6px",
+                color: "white",
+              }}
+            >
               Mapa Base
             </div>
             {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
@@ -602,7 +615,13 @@ const GroupedLayerControl = ({
               paddingBottom: "6px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "6px",
+                color: "white",
+              }}
+            >
               Límites
             </div>
             <LayerItem
@@ -627,7 +646,13 @@ const GroupedLayerControl = ({
 
           {/* Grupo de Agave Marmorata */}
           <div style={{ marginBottom: "0px" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "6px",
+                color: "white",
+              }}
+            >
               Agave Marmorata
             </div>
             <RasterLayerItem
