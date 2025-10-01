@@ -6,7 +6,6 @@ import SideBySideRasters from "../components/SideBySideRasters";
 import RasterSlideCompare from "../components/RasterSlideCompare";
 import TimeSeriesMapViewer from "../components/TimeSeriesMapViewer";
 import Heatmap from "../components/Heatmap";
-import SlideTifCompare from "../components/SlideTifCompare";
 import GeoLayerCompare from "../components/GeoLayerCompare";
 import DefaultVisualization from "../components/DefaultVisualization";
 import GeoMapViewer from "../components/GeoMapViewer";

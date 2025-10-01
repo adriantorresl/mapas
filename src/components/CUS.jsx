@@ -149,17 +149,17 @@ const ColorLegend = ({ colorMap, isVisible, title }) => {
   const sortedEntries = getSortedEntries();
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
   };
 
   const headerStyle = {
@@ -170,25 +170,24 @@ const ColorLegend = ({ colorMap, isVisible, title }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>{title || "Leyenda"}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
         <div
           style={{
             padding: "8px",
-            maxHeight: "500px",
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
-            scrollbarWidth: "thin",
+            maxHeight: "500px", // Altura máxima aumentada para mostrar todos los elementos
+            overflowY: "auto", // Auto para que aparezca solo si es necesario
+            backgroundColor: "#1E3C20",
+            scrollbarWidth: "thin", // Para Firefox
           }}
         >
           {sortedEntries.map(([item, color]) => (
@@ -677,19 +676,21 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "300px",
   };
 
   const headerStyle = {
+    fontSize: "12px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -708,7 +709,7 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "2px",
+        marginBottom: "6px",
         padding: "0px",
         backgroundColor: "transparent",
         borderRadius: "0px",
@@ -718,8 +719,8 @@ const GroupedLayerControl = ({
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "4px",
-          gap: "6px",
+          marginBottom: "8px",
+          gap: "8px",
         }}
       >
         <input
@@ -776,7 +777,13 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          <div
+            style={{
+              fontSize: "10px",
+              color: "#ffffffff",
+              marginBottom: "5px",
+            }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -819,7 +826,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -834,7 +841,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "#ffffffff",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "14px",
@@ -877,7 +884,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "#ffffffff",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
@@ -916,7 +923,7 @@ const GroupedLayerControl = ({
           <div>
             <strong
               style={{
-                color: "#2c3e50",
+                color: "#ffffffff",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",

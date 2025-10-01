@@ -1,7 +1,7 @@
-import TextOverlay from "../TextOverlay";
 import Header from "../shared/Header";
 import logo from "../../assets/logo.png";
 import { useNavigation } from "../../contexts/NavigationContext";
+import TextOverlay from "../TextOverlay";
 // import Footer from "../shared/Footer";
 import "./../core.css";
 

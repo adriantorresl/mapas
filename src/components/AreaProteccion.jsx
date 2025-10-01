@@ -103,14 +103,15 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
     border: "2px solid rgba(0,0,0,0.2)",
+    color: "white",
   };
 
   const headerStyle = {
@@ -121,14 +122,14 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -538,7 +539,9 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          <div
+            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -638,7 +641,7 @@ const GroupedLayerControl = ({
         </button>
       </div>
       <>
-        <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+        <div style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}>
           Opacidad: {Math.round((opacity[filename] || 0.7) * 100)}%
         </div>
         <input
@@ -679,21 +682,23 @@ const GroupedLayerControl = ({
   return (
     <div
       style={{
+        color: "white",
         position: "absolute",
         top: "10px",
         right: "10px",
-        backgroundColor: "white",
+        backgroundColor: "#1E3C20",
         border: "2px solid rgba(0,0,0,0.2)",
         borderRadius: "0px",
         boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
         zIndex: 1000,
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "Inter, sans-serif",
         fontSize: "12px",
         maxWidth: "300px",
       }}
     >
       <div
         style={{
+          fontSize: "12px",
           padding: "10px 15px",
           fontWeight: "bold",
           cursor: "pointer",
@@ -705,7 +710,6 @@ const GroupedLayerControl = ({
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
       </div>
 
       {!isCollapsed && (
@@ -720,7 +724,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
@@ -761,7 +765,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
@@ -807,7 +811,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",

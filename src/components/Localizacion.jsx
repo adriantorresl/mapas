@@ -8,6 +8,7 @@ import "leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css";
 import "leaflet-groupedlayercontrol";
 import { CloudDownloadOutlined } from "@ant-design/icons";
 import { Download } from "lucide-react";
+import { color } from "framer-motion";
 
 // Función para generar colores únicos basados en valores
 const generateColorPalette = (values) => {
@@ -61,17 +62,16 @@ const ColorLegend = ({ colorMap, isVisible }) => {
   }
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "11px",
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
     maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
   };
 
   const headerStyle = {
@@ -82,14 +82,14 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -101,7 +101,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
                 display: "flex",
                 alignItems: "center",
                 marginBottom: "6px",
-                fontSize: "10px",
+                fontSize: "12px",
               }}
             >
               <div
@@ -130,14 +130,13 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.bottom = "18px";
     coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "5px";
-    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.padding = "2px";
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font =
-      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.font = "10px, Inter, sans-serif";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -440,10 +439,11 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
@@ -476,15 +476,6 @@ const GroupedLayerControl = ({
         padding: " 2px 10px",
         backgroundColor: "transparent",
         borderRadius: "4px",
-        hover: {
-          backgroundColor: "#f9f9f9",
-        },
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#f9f9f9";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
       <div
@@ -518,13 +509,15 @@ const GroupedLayerControl = ({
             title={`Descargar ${title}`}
             onClick={() => downloadGeoJSON(data, title)}
           >
-            <Download style={{ width: "20px", height: "20px" }} color="#000" />
+            <Download style={{ width: "20px", height: "20px" }} color="white" />
           </button>
         )}
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          <div
+            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -567,7 +560,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -582,10 +575,10 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
-                fontSize: "14px",
+                fontSize: "16px",
                 fontWeight: "600",
               }}
             >
@@ -625,7 +618,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
@@ -664,7 +657,7 @@ const GroupedLayerControl = ({
           <div>
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",

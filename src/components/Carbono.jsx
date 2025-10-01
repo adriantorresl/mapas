@@ -3,6 +3,7 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
+import { color } from "framer-motion";
 
 // Función para descargar GeoJSON
 const downloadGeoJSON = (data, filename) => {
@@ -147,19 +148,17 @@ const CarbonoLegend = ({ isVisible }) => {
   }
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
     bottom: "60px",
     right: "20px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
+    backgroundColor: "#1E3C20",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "200px",
     maxWidth: "250px",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
 
   const headerStyle = {
@@ -183,7 +182,7 @@ const CarbonoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Balance de Carbono (Ton CO₂)</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -224,19 +223,17 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
   }
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
     bottom: "60px",
     right: "20px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
+    backgroundColor: "#1E3C20",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "180px",
     maxWidth: "220px",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
 
   const headerStyle = {
@@ -281,8 +278,6 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
           style={{
             height: "20px",
             background: `linear-gradient(to right, ${colors.join(", ")})`,
-            border: "1px solid #666",
-            borderRadius: "2px",
           }}
         />
         <div
@@ -304,7 +299,7 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Tendencia CO₂</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -508,15 +503,14 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "20px",
     right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
+    backgroundColor: "#1E3C20",
+    padding: isCollapsed ? "4px" : "15px",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: isCollapsed ? "auto" : "220px",
     minWidth: isCollapsed ? "auto" : "200px",
@@ -593,7 +587,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="#ffffffff"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -604,7 +598,7 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="#ffffffff"
               />
             </svg>
           </button>
@@ -612,7 +606,13 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          <div
+            style={{
+              fontSize: "10px",
+              color: "#ffffffff",
+              marginBottom: "5px",
+            }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -663,7 +663,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>{isCollapsed ? "Capas" : "Capas"}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -801,7 +801,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#333"
+                      stroke="#ffffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -812,13 +812,17 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#333"
+                      fill="#ffffffff"
                     />
                   </svg>
                 </button>
               </div>
               <div
-                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+                style={{
+                  fontSize: "10px",
+                  color: "#ffffffff",
+                  marginBottom: "5px",
+                }}
               >
                 Opacidad: {Math.round(opacity.rasterCO2 * 100)}%
               </div>

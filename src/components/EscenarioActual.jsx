@@ -3,6 +3,7 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
+import { color } from "framer-motion";
 
 // Función para descargar archivos raster
 const downloadRaster = async (filename, displayName) => {
@@ -32,261 +33,6 @@ const downloadGeoJSON = (data, filename) => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-};
-
-// Componente de leyenda para Precipitación
-const PrecipitacionLegend = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const legendStyle = {
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
-    zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    marginBottom: "8px",
-  };
-
-  const headerStyle = {
-    fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  // Rampa de colores para precipitación (azules)
-  const createColorRamp = () => {
-    const colors = [
-      "#ffffcc", // Amarillo muy claro (precipitación muy baja)
-      "#c7e9b4", // Verde claro
-      "#7fcdbb", // Verde azulado
-      "#41b6c4", // Azul claro
-      "#2c7fb8", // Azul
-      "#253494", // Azul oscuro (precipitación muy alta)
-    ];
-
-    return (
-      <div style={{ marginTop: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-            marginBottom: "4px",
-          }}
-        >
-          <span>Baja</span>
-          <span>Alta</span>
-        </div>
-        <div
-          style={{
-            height: "20px",
-            background: `linear-gradient(to right, ${colors.join(", ")})`,
-            border: "1px solid #666",
-            borderRadius: "2px",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            fontSize: "10px",
-            marginTop: "4px",
-            fontStyle: "italic",
-          }}
-        >
-          <span>Precipitación (mm/año)</span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Precipitación Total</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
-      </div>
-      {!isCollapsed && createColorRamp()}
-    </div>
-  );
-};
-
-// Componente de leyenda para Temperatura
-const TemperaturaLegend = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const legendStyle = {
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
-    zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    marginBottom: "8px",
-  };
-
-  const headerStyle = {
-    fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  // Rampa de colores para temperatura (cálidos)
-  const createColorRamp = () => {
-    const colors = [
-      "#ffffcc", // Amarillo muy claro (temperatura muy baja)
-      "#fed976", // Amarillo
-      "#feb24c", // Naranja claro
-      "#fd8d3c", // Naranja
-      "#fc4e2a", // Rojo naranja
-      "#e31a1c", // Rojo (temperatura muy alta)
-    ];
-
-    return (
-      <div style={{ marginTop: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-            marginBottom: "4px",
-          }}
-        >
-          <span>Fría</span>
-          <span>Cálida</span>
-        </div>
-        <div
-          style={{
-            height: "20px",
-            background: `linear-gradient(to right, ${colors.join(", ")})`,
-            border: "1px solid #666",
-            borderRadius: "2px",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            fontSize: "10px",
-            marginTop: "4px",
-            fontStyle: "italic",
-          }}
-        >
-          <span>Temperatura (°C)</span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Temperatura Media</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
-      </div>
-      {!isCollapsed && createColorRamp()}
-    </div>
-  );
-};
-
-// Componente de leyenda para Elevación
-const ElevacionLegend = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const legendStyle = {
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
-    zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    marginBottom: "8px",
-  };
-
-  const headerStyle = {
-    fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  };
-
-  // Rampa de colores para elevación (verdes-marrones)
-  const createColorRamp = () => {
-    const colors = [
-      "#f7fcfd", // Azul muy claro (elevación muy baja)
-      "#e5f5f9", // Azul claro
-      "#ccece6", // Verde azulado claro
-      "#99d8c9", // Verde claro
-      "#66c2a4", // Verde
-      "#2ca25f", // Verde oscuro (elevación muy alta)
-    ];
-
-    return (
-      <div style={{ marginTop: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-            marginBottom: "4px",
-          }}
-        >
-          <span>Baja</span>
-          <span>Alta</span>
-        </div>
-        <div
-          style={{
-            height: "20px",
-            background: `linear-gradient(to right, ${colors.join(", ")})`,
-            border: "1px solid #666",
-            borderRadius: "2px",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            fontSize: "10px",
-            marginTop: "4px",
-            fontStyle: "italic",
-          }}
-        >
-          <span>Elevación (msnm)</span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Elevación</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
-      </div>
-      {!isCollapsed && createColorRamp()}
-    </div>
-  );
 };
 
 // Componente para mostrar coordenadas
@@ -428,15 +174,13 @@ const LegendsControl = ({ activeLayers }) => {
         const ptLegend = document.createElement("div");
         ptLegend.innerHTML = `
           <div style="
-            background-color: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
+          color: white;
+            background-color: #1E3C20;
             padding: 15px;
             min-width: 180px;
             max-width: 220px;
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 12px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             margin-bottom: 8px;
           ">
             <div style="
@@ -461,8 +205,6 @@ const LegendsControl = ({ activeLayers }) => {
               <div style="
                 height: 20px;
                 background: linear-gradient(to right, #ffffcc, #c7e9b4, #7fcdbb, #41b6c4, #2c7fb8, #253494);
-                border: 1px solid #666;
-                border-radius: 2px;
               "></div>
               <div style="
                 display: flex;
@@ -483,15 +225,13 @@ const LegendsControl = ({ activeLayers }) => {
         const tempLegend = document.createElement("div");
         tempLegend.innerHTML = `
           <div style="
-            background-color: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
+            color: white;
+            background-color: #1E3C20;
             padding: 15px;
             min-width: 180px;
             max-width: 220px;
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 12px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             margin-bottom: 8px;
           ">
             <div style="
@@ -516,8 +256,6 @@ const LegendsControl = ({ activeLayers }) => {
               <div style="
                 height: 20px;
                 background: linear-gradient(to right, #ffffcc, #fed976, #feb24c, #fd8d3c, #fc4e2a, #e31a1c);
-                border: 1px solid #666;
-                border-radius: 2px;
               "></div>
               <div style="
                 display: flex;
@@ -538,15 +276,13 @@ const LegendsControl = ({ activeLayers }) => {
         const mdeLegend = document.createElement("div");
         mdeLegend.innerHTML = `
           <div style="
-            background-color: white;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 4px;
+          color: white;
+            background-color: #1E3C20;
             padding: 15px;
             min-width: 180px;
             max-width: 220px;
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
             font-size: 12px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             margin-bottom: 8px;
           ">
             <div style="
@@ -730,15 +466,14 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "#ffffffff",
     position: "absolute",
     top: "20px",
     right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
+    backgroundColor: "#1E3C20",
     padding: isCollapsed ? "6px" : "8px",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: isCollapsed ? "auto" : "220px",
     minWidth: isCollapsed ? "auto" : "200px",
@@ -818,7 +553,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="#ffffffff"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -829,7 +564,7 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="#ffffffff"
               />
             </svg>
           </button>
@@ -837,7 +572,9 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+          <div
+            style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -935,16 +672,23 @@ const GroupedLayerControl = ({
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#333"
+              stroke="#ffffffff"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+            <rect
+              x="3"
+              y="13"
+              width="10"
+              height="1.5"
+              rx="0.75"
+              fill="#ffffffff"
+            />
           </svg>
         </button>
       </div>
-      <div style={{ fontSize: "9px", color: "#666", marginBottom: "2px" }}>
+      <div style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}>
         Opacidad: {Math.round(opacity[layerKey] * 100)}%
       </div>
       <input
@@ -991,7 +735,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>{isCollapsed ? "Capas" : "Capas"}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (

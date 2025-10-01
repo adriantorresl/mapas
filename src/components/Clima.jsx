@@ -3,6 +3,7 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
+import { color } from "framer-motion";
 
 // Función para generar colores específicos para tipos de clima
 const generateClimaColorPalette = (values) => {
@@ -101,17 +102,16 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
   };
 
   const headerStyle = {
+    color: "white",
     padding: "8px 12px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -119,7 +119,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   // Orden específico para tipos de clima según la imagen (con acentos para la leyenda)
@@ -155,18 +155,18 @@ const ColorLegend = ({ colorMap, isVisible }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
         <div
           style={{
+            color: "white",
             padding: "8px",
             maxHeight: "500px",
             overflowY: "auto",
-            border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
             scrollbarWidth: "thin",
           }}
         >
@@ -186,8 +186,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
                   height: "14px",
                   backgroundColor: color,
                   marginRight: "8px",
-                  border: "1px solid #999",
-                  borderRadius: "2px",
+                  borderRadius: "0px",
                   flexShrink: 0,
                 }}
               ></div>
@@ -206,14 +205,13 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.bottom = "18px";
     coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "5px";
-    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.padding = "2px";
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font =
-      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.font = "10px, Inter, sans-serif";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -562,14 +560,15 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1e3c20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "300px",
   };
@@ -642,7 +641,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -653,7 +652,7 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="white"
               />
             </svg>
           </button>
@@ -661,7 +660,9 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+          <div
+            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
+          >
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -704,7 +705,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -719,7 +720,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
@@ -761,7 +762,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
@@ -805,7 +806,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "6px",
                 display: "block",
                 fontSize: "16px",
@@ -880,7 +881,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#333"
+                      stroke="white"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -891,13 +892,17 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#333"
+                      fill="white"
                     />
                   </svg>
                 </button>
               </div>
               <div
-                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+                style={{
+                  fontSize: "10px",
+                  color: "white",
+                  marginBottom: "5px",
+                }}
               >
                 Opacidad: {Math.round(opacity.precipitacion * 100)}%
               </div>
@@ -995,7 +1000,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#333"
+                      stroke="#ffffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1006,13 +1011,17 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#333"
+                      fill="#ffffffff"
                     />
                   </svg>
                 </button>
               </div>
               <div
-                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+                style={{
+                  fontSize: "10px",
+                  color: "#ffffffff",
+                  marginBottom: "5px",
+                }}
               >
                 Opacidad: {Math.round(opacity.tempMax * 100)}%
               </div>
@@ -1110,7 +1119,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#333"
+                      stroke="#ffffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1121,13 +1130,17 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#333"
+                      fill="#ffffffff"
                     />
                   </svg>
                 </button>
               </div>
               <div
-                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+                style={{
+                  fontSize: "10px",
+                  color: "#ffffffff",
+                  marginBottom: "5px",
+                }}
               >
                 Opacidad: {Math.round(opacity.tempMed * 100)}%
               </div>
@@ -1225,7 +1238,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#333"
+                      stroke="#ffffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1236,13 +1249,17 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#333"
+                      fill="#ffffffff"
                     />
                   </svg>
                 </button>
               </div>
               <div
-                style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}
+                style={{
+                  fontSize: "10px",
+                  color: "#ffffffff",
+                  marginBottom: "5px",
+                }}
               >
                 Opacidad: {Math.round(opacity.tempMin * 100)}%
               </div>
@@ -1324,17 +1341,16 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
   }
 
   const displayStyle = {
+    color: "white",
     position: "absolute",
     top: "120px", // Debajo del botón de información
     left: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "11px",
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
     padding: "8px 12px",
-    border: "2px solid rgba(0,0,0,0.2)",
     minWidth: "180px",
   };
 
@@ -1342,7 +1358,8 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
     fontWeight: "bold",
     marginBottom: "6px",
     fontSize: "12px",
-    color: "#2c3e50",
+    color: "white",
+    backgroundColor: "#1E3C20",
   };
 
   const valueStyle = {
@@ -1352,12 +1369,12 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
   };
 
   const labelStyle = {
-    color: "#666",
+    color: "white",
   };
 
   const valueNumberStyle = {
     fontWeight: "bold",
-    color: "#333",
+    color: "white",
   };
 
   const getLayerName = (key) => {

@@ -194,14 +194,15 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
     border: "2px solid rgba(0,0,0,0.2)",
+    color: "white",
   };
 
   const headerStyle = {
@@ -212,7 +213,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   // Crear gradiente CSS para la rampa
@@ -229,15 +230,14 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
     display: "flex",
     justifyContent: "space-between",
     fontSize: "10px",
-    color: "#666",
+    color: "white",
     marginTop: "4px",
   };
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
       </div>
 
       {!isCollapsed && (
@@ -245,7 +245,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
           style={{
             padding: "8px",
             border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
           }}
         >
           <div
@@ -253,6 +253,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
               fontWeight: "bold",
               marginBottom: "8px",
               fontSize: "11px",
+              color: "white",
             }}
           >
             {currentDataset === "poblacion" ? "Población Total" : "Valores"}
@@ -308,14 +309,15 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
     border: "2px solid rgba(0,0,0,0.2)",
+    color: "white",
   };
 
   const headerStyle = {
@@ -326,7 +328,7 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   const getDatasetTitle = () => {
@@ -345,8 +347,7 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
       </div>
 
       {!isCollapsed && (
@@ -354,7 +355,7 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
           style={{
             padding: "8px",
             border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
           }}
         >
           <div
@@ -362,6 +363,7 @@ const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
               fontWeight: "bold",
               marginBottom: "8px",
               fontSize: "11px",
+              color: "white",
             }}
           >
             {getDatasetTitle()}
@@ -422,14 +424,15 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
     border: "2px solid rgba(0,0,0,0.2)",
+    color: "white",
   };
 
   const headerStyle = {
@@ -440,7 +443,7 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   const getDatasetTitle = () => {
@@ -455,8 +458,7 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
       </div>
 
       {!isCollapsed && (
@@ -464,7 +466,7 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
           style={{
             padding: "8px",
             border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
           }}
         >
           <div
@@ -472,6 +474,7 @@ const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
               fontWeight: "bold",
               marginBottom: "8px",
               fontSize: "11px",
+              color: "white",
             }}
           >
             {getDatasetTitle()}
@@ -518,14 +521,15 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     position: "absolute",
     bottom: "50px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
     border: "2px solid rgba(0,0,0,0.2)",
+    color: "white",
   };
 
   const headerStyle = {
@@ -536,14 +540,13 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▲" : "▼"}</span>
+        <span>Simbología</span>
       </div>
 
       {!isCollapsed && (
@@ -553,7 +556,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
             maxHeight: "500px",
             overflowY: "auto",
             border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
             scrollbarWidth: "thin",
           }}
         >
@@ -1280,19 +1283,21 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "300px",
   };
 
   const headerStyle = {
+    fontSize: "12px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -1379,7 +1384,7 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "3px" }}>
+          <div style={{ fontSize: "10px", color: "white", marginBottom: "3px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -1422,7 +1427,6 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
       </div>
 
       {!isCollapsed && (
@@ -1437,7 +1441,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",
@@ -1523,7 +1527,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",

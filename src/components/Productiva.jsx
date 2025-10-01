@@ -50,17 +50,19 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
   const { min, max, colors, fieldName } = colorMap._range;
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "white",
+    bottom: "60px",
+    right: "20px",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    minWidth: isCollapsed ? "auto" : "180px",
+    maxWidth: "220px",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
 
   const headerStyle = {
@@ -71,7 +73,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#1E3C20",
   };
 
   // Crear gradiente CSS para la rampa
@@ -88,7 +90,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
     display: "flex",
     justifyContent: "space-between",
     fontSize: "10px",
-    color: "#666",
+    color: "white",
     marginTop: "4px",
   };
 
@@ -102,8 +104,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span>Simbología</span>
       </div>
 
       {!isCollapsed && (
@@ -111,7 +112,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
           style={{
             padding: "8px",
             border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
+            backgroundColor: "#1E3C20",
           }}
         >
           <div
@@ -119,6 +120,7 @@ const ColorRampLegend = ({ colorMap, isVisible, currentField }) => {
               fontWeight: "bold",
               marginBottom: "8px",
               fontSize: "11px",
+              color: "white",
             }}
           >
             {fieldLabels[fieldName] || "Valores"}
@@ -627,19 +629,21 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "white",
+    backgroundColor: "#1E3C20",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "300px",
   };
 
   const headerStyle = {
+    fontSize: "12px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -726,7 +730,7 @@ const GroupedLayerControl = ({
       </div>
       {showOpacity && (
         <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "3px" }}>
+          <div style={{ fontSize: "10px", color: "white", marginBottom: "3px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
           </div>
           <input
@@ -776,7 +780,6 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
       </div>
 
       {!isCollapsed && (
@@ -791,7 +794,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",
@@ -832,7 +835,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",
@@ -874,7 +877,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",
@@ -918,7 +921,7 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
+                color: "white",
                 marginBottom: "8px",
                 display: "block",
                 fontSize: "16px",

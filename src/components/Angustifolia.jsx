@@ -43,17 +43,17 @@ const AngustifoliaLegend = ({ isVisible, layerType }) => {
   }
 
   const legendStyle = {
+    color: "white",
     position: "absolute",
     bottom: "60px", // Subido un poco más arriba
     right: "20px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
+    backgroundColor: "#1E3C20",
+    borderRadius: "0px",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "180px",
     maxWidth: "220px",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
@@ -65,6 +65,8 @@ const AngustifoliaLegend = ({ isVisible, layerType }) => {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
   };
 
   const createColorRamp = () => {
@@ -177,7 +179,7 @@ const AngustifoliaLegend = ({ isVisible, layerType }) => {
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>{getTitle()}</span>
-        <span style={{ fontSize: "12px" }}>{isCollapsed ? " ▲" : " ▼"}</span>
+        <span style={{ fontSize: "12px" }}>{isCollapsed ? " " : " "}</span>
       </div>
       {!isCollapsed && createColorRamp()}
     </div>
@@ -377,15 +379,15 @@ const GroupedLayerControl = ({
   };
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
     top: "20px",
     right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
+    backgroundColor: "#1E3C20",
+    borderRadius: "0px",
     padding: isCollapsed ? "6px" : "8px",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: isCollapsed ? "auto" : "220px",
     minWidth: isCollapsed ? "auto" : "200px",
@@ -393,6 +395,7 @@ const GroupedLayerControl = ({
     maxHeight: isCollapsed ? "auto" : "85vh",
     overflowY: isCollapsed ? "visible" : "auto",
     overflowX: "hidden",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
   };
 
   const headerStyle = {
@@ -402,9 +405,10 @@ const GroupedLayerControl = ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    borderBottom: isCollapsed ? "none" : "1px solid #e0e0e0",
     fontSize: isCollapsed ? "12px" : "13px",
     whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
   };
 
   const LayerItem = ({ layerKey, title, data, showOpacity = true }) => (
@@ -489,12 +493,12 @@ const GroupedLayerControl = ({
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#333"
+              stroke="#ffffffff"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#ffffffff" />
           </svg>
         </button>
       </div>
@@ -543,7 +547,7 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>{isCollapsed ? "Capas" : "Capas"}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
@@ -563,7 +567,7 @@ const GroupedLayerControl = ({
               paddingBottom: "6px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
               Mapa Base
             </div>
             {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
@@ -598,7 +602,7 @@ const GroupedLayerControl = ({
               paddingBottom: "6px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
               Límites
             </div>
             <LayerItem
@@ -623,7 +627,7 @@ const GroupedLayerControl = ({
 
           {/* Grupo de Agave Angustifolia */}
           <div style={{ marginBottom: "0px" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <div style={{ fontWeight: "bold", marginBottom: "6px", color: "white" }}>
               Agave Angustifolia
             </div>
             <RasterLayerItem
