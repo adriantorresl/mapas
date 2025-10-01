@@ -193,14 +193,13 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "10px";
-    coordinateDiv.style.left = "10px"; // Posicionado a la izquierda
+    coordinateDiv.style.bottom = "18px";
+    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "5px";
-    coordinateDiv.style.border = "2px solid rgba(0,0,0,0.2)";
+    coordinateDiv.style.padding = "2px";
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font =
-      '11px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif';
+    coordinateDiv.style.font = "10px, Inter, sans-serif";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -245,6 +244,36 @@ const ScaleControl = () => {
   }, [map]);
 
   return null;
+};
+
+// Componente para mostrar el valor del pixel
+const PixelValueDisplay = ({ pixelValue }) => {
+  if (!pixelValue) return null;
+
+  const displayStyle = {
+    position: "absolute",
+    bottom: "18px",
+    left: "10px",
+    backgroundColor: "#1E3C20",
+    color: "white",
+    padding: "8px 12px",
+    borderRadius: "0px",
+    fontSize: "12px",
+    fontFamily: "Inter, sans-serif",
+    fontWeight: "bold",
+    zIndex: 1000,
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    minWidth: "120px",
+  };
+
+  return (
+    <div style={displayStyle}>
+      <div style={{ fontSize: "10px", marginBottom: "2px", opacity: 0.8 }}>
+        Valor del pixel:
+      </div>
+      <div>{pixelValue.toFixed(2)}</div>
+    </div>
+  );
 };
 
 // Componente de control de capas agrupadas
@@ -431,7 +460,7 @@ const GroupedLayerControl = ({
             min="0"
             max="1"
             step="0.1"
-            value={opacity[layerKey] || 0.7}
+            value={opacity[layerKey] ?? 0.7}
             onChange={(e) =>
               handleOpacityChange(layerKey, parseFloat(e.target.value))
             }
@@ -516,7 +545,7 @@ const GroupedLayerControl = ({
             min="0"
             max="1"
             step="0.1"
-            value={opacity[layerKey] || 0.7}
+            value={opacity[layerKey] ?? 0.7}
             onChange={(e) =>
               handleOpacityChange(layerKey, parseFloat(e.target.value))
             }
@@ -691,6 +720,9 @@ const Americana = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para el valor del pixel
+  const [pixelValue, setPixelValue] = useState(null);
+
   // Estado para el centro del mapa
   const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
   const [mapZoom, setMapZoom] = useState(10);
@@ -796,7 +828,7 @@ const Americana = () => {
             continuous={true}
             setError={setError}
             setLoading={setLoading}
-            onPixelValue={() => {}}
+            onPixelValue={setPixelValue}
             overlayOpacity={opacity.rasterAmericana}
           />
         )}
@@ -808,7 +840,7 @@ const Americana = () => {
             continuous={true}
             setError={setError}
             setLoading={setLoading}
-            onPixelValue={() => {}}
+            onPixelValue={setPixelValue}
             overlayOpacity={opacity.rasterAmericanaCC}
           />
         )}
@@ -820,7 +852,7 @@ const Americana = () => {
             continuous={true}
             setError={setError}
             setLoading={setLoading}
-            onPixelValue={() => {}}
+            onPixelValue={setPixelValue}
             overlayOpacity={opacity.rasterImpacto}
           />
         )}
@@ -880,6 +912,9 @@ const Americana = () => {
           isVisible={americanaLegendVisible}
           layerType={americanaLegendType}
         />
+
+        {/* Valor del pixel */}
+        <PixelValueDisplay pixelValue={pixelValue} />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />

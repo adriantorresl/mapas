@@ -170,16 +170,15 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "10px";
+    coordinateDiv.style.bottom = "18px";
     coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px 6px";
-    coordinateDiv.style.fontSize = "11px";
-    coordinateDiv.style.borderRadius = "3px";
-    coordinateDiv.style.border = "1px solid #ccc";
-    coordinateDiv.style.fontFamily = "monospace";
-    coordinateDiv.style.zIndex = "1000";
-    coordinateDiv.innerHTML = "Lat: 0.00000, Lng: 0.00000";
+    coordinateDiv.style.padding = "2px";
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
     // Agregar al contenedor del mapa
     const mapContainer = map.getContainer();
@@ -187,10 +186,9 @@ const CoordinateControl = () => {
 
     // Función para actualizar coordenadas
     const updateCoordinates = (e) => {
-      const { lat, lng } = e.latlng;
-      coordinateDiv.innerHTML = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(
-        5
-      )}`;
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
     };
 
     // Agregar listener de mouse move
@@ -286,7 +284,7 @@ const GroupedLayerControl = ({
   onColorMapChange,
 }) => {
   const map = useMap();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
 

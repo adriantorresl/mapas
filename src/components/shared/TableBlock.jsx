@@ -9,7 +9,6 @@ const TableBlock = ({ title, header, body }) => {
             marginBottom: "12px",
             padding: "8px 12px",
             // backgroundColor: "rgba(255, 193, 7, 0.1)",
-            borderRadius: "6px",
             // border: "1px solid rgba(255, 193, 7, 0.3)"
           }}
         >
@@ -34,7 +33,7 @@ const TableBlock = ({ title, header, body }) => {
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "8px",
+          borderRadius: "0px",
           overflow: "hidden",
           border: "1px solid rgba(0, 0, 0, 0.1)",
           marginLeft: "2px",
@@ -49,12 +48,12 @@ const TableBlock = ({ title, header, body }) => {
                     key={headerIndex}
                     style={{
                       padding: "12px 8px",
-                      backgroundColor: "#196b24",
-                      borderBottom: "2px solid #dee2e6",
+                      backgroundColor: "#FFE699",
+                      borderBottom: "2px solid #BF9000",
                       textAlign: "center",
                       fontWeight: "600",
                       fontSize: "0.8rem",
-                      color: "#FFFF",
+                      color: "#1E3620",
                     }}
                   >
                     {headerCell}
@@ -78,7 +77,7 @@ const TableBlock = ({ title, header, body }) => {
                       key={cellIndex}
                       style={{
                         padding: "10px 8px",
-                        borderBottom: "1px solid #dee2e6",
+                        borderBottom: "1px solid #BF9000",
                         textAlign: cellIndex === 0 ? "left" : "center",
                         fontSize: "0.7rem",
                         fontWeight: "normal",
