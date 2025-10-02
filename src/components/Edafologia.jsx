@@ -730,7 +730,7 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
+        marginBottom: "1px",
         padding: "0px",
         backgroundColor: "transparent",
         borderRadius: "0px",
@@ -740,8 +740,8 @@ const GroupedLayerControl = ({
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
-          gap: "8px",
+          marginBottom: "1px",
+          gap: "2px",
         }}
       >
         <input
