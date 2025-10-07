@@ -41,29 +41,41 @@ const downloadRaster = async (filename, displayName) => {
 };
 
 // Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible }) => {
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "280px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -76,19 +88,14 @@ const ColorLegend = ({ colorMap, isVisible }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
         <div
           style={{
-            padding: "8px",
-            maxHeight: "500px",
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
-            scrollbarWidth: "thin",
+            padding: "10px",
           }}
         >
           {Object.entries(colorMap)
@@ -99,22 +106,26 @@ const ColorLegend = ({ colorMap, isVisible }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "6px",
-                  fontSize: "10px",
+                  justifyContent: "space-between",
+                  padding: "5px 0",
                 }}
               >
-                <div
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    backgroundColor: color,
-                    marginRight: "8px",
-                    border: "1px solid #999",
-                    borderRadius: "2px",
-                    flexShrink: 0,
-                  }}
-                ></div>
-                <span style={{ lineHeight: "1.2" }}>{item}</span>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      backgroundColor: color,
+                      display: "inline-block",
+                      marginRight: "8px",
+                      borderRadius: "0px",
+                      verticalAlign: "middle",
+                    }}
+                  ></div>
+                  <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                    {item}
+                  </span>
+                </div>
               </div>
             ))}
         </div>
@@ -123,37 +134,152 @@ const ColorLegend = ({ colorMap, isVisible }) => {
   );
 };
 
-// Componente de leyenda para el raster de elevaciones
-const ElevationLegend = ({ isVisible }) => {
+// Componente de leyenda para escurrimientos por orden
+const EscurrimientosLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
-  // Colores del gradiente de elevación (mismo que en RasterOverlay)
-  const colors = ["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"];
-
-  // Valores aproximados de elevación para la zona (ajustar según tus datos)
-  const minElevation = 0; // metros
-  const maxElevation = 3000; // metros
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "350px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Definir colores y grosores para cada orden de escurrimiento
+  const ordenData = [
+    { orden: 1, color: "#B3F0FF", width: 1 },
+    { orden: 2, color: "#80E6FF", width: 1.5 },
+    { orden: 3, color: "#4DDDFF", width: 2 },
+    { orden: 4, color: "#1AD4FF", width: 2.5 },
+    { orden: 5, color: "#00BFFF", width: 3 },
+    { orden: 6, color: "#0099CC", width: 3.5 },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Escurrimientos (Orden)
+          </div>
+          {ordenData.map(({ orden, color, width }) => (
+            <div
+              key={orden}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "3px 0",
+              }}
+            >
+              <div
+                style={{
+                  width: "30px",
+                  height: `${width}px`,
+                  backgroundColor: color,
+                  marginRight: "8px",
+                  borderRadius: "1px",
+                }}
+              ></div>
+              <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                {orden}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda para el raster de pendientes
+const PendienteLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Colores del gradiente de pendiente (mismo que en RasterOverlay)
+  const colors = ["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"];
+
+  // Valores de pendiente para la zona (0° a 61°)
+  const minPendiente = 0; // grados
+  const maxPendiente = 61; // grados
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "230px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    borderRadius: "0px",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -191,23 +317,22 @@ const ElevationLegend = ({ isVisible }) => {
       {!isCollapsed && (
         <div
           style={{
-            padding: "8px",
-            backgroundColor: "#1E3C20",
+            padding: "10px",
           }}
         >
           <div
             style={{
               fontWeight: "bold",
               marginBottom: "8px",
-              fontSize: "11px",
+              fontSize: "12px",
             }}
           >
-            Elevación (msnm)
+            Pendiente (°)
           </div>
           <div style={rampStyle}></div>
           <div style={labelsStyle}>
-            <span>{minElevation.toLocaleString()}</span>
-            <span>{maxElevation.toLocaleString()}</span>
+            <span>{minPendiente}°</span>
+            <span>{maxPendiente}°</span>
           </div>
         </div>
       )}
@@ -221,13 +346,16 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -258,7 +386,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -273,49 +401,6 @@ const ScaleControl = () => {
   return null;
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "80px", // Bajado más abajo del botón de zoom
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
 // Componente para el control de capas agrupadas con funcionalidad extendida
 const GroupedLayerControl = ({
   area,
@@ -326,11 +411,11 @@ const GroupedLayerControl = ({
   rasterFile,
   onColorMapChange,
   onLegendVisibilityChange,
-  tooltipsEnabled,
   activeLayers,
   setActiveLayers,
   opacity,
   setOpacity,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -391,27 +476,9 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `<strong>Cuenca:</strong> ${
-                    props.NOMBRE || props.NAME || "N/A"
-                  }`,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
-            };
             layer.bindPopup(
               `<strong>Cuenca:</strong> ${props.NOMBRE || props.NAME || "N/A"}`
             );
-            bindTooltipIfEnabled();
-            layer.updateTooltip = bindTooltipIfEnabled;
           }
         },
       });
@@ -424,22 +491,27 @@ const GroupedLayerControl = ({
     if (escurrimientos) {
       newLayers.escurrimientos = L.geoJSON(escurrimientos, {
         style: (feature) => {
-          // Obtener el valor del campo ORD_FLOW para determinar el grosor
-          const ordFlow = feature.properties.ORD_FLOW || 5;
+          // Obtener el valor del campo ORD_FLOW para determinar el grosor y color
+          const ordFlow =
+            feature.properties.ORD_FLOW || feature.properties.ORD_CLAS || 1;
 
-          // Mapear valores específicos a grosores apropiados
-          let weight;
-          if (ordFlow <= 5) {
-            weight = 1.5; // Escurrimientos menores
-          } else if (ordFlow === 6) {
-            weight = 3.5; // Escurrimientos principales
-          } else {
-            weight = 2.5; // Valores intermedios si los hay
-          }
+          // Definir colores y grosores según el orden (los órdenes más altos = ríos principales = más gruesos)
+          const colorMap = {
+            1: { color: "#B3F0FF", weight: 1 },
+            2: { color: "#80E6FF", weight: 1.5 },
+            3: { color: "#4DDDFF", weight: 2 },
+            4: { color: "#1AD4FF", weight: 2.5 },
+            5: { color: "#00BFFF", weight: 3 },
+            6: { color: "#0099CC", weight: 3.5 },
+            7: { color: "#007399", weight: 4 },
+          };
+
+          // Obtener estilo según el orden o usar valor por defecto
+          const style = colorMap[ordFlow] || { color: "#00BFFF", weight: 2 };
 
           return {
-            color: "cyan",
-            weight: weight,
+            color: style.color,
+            weight: style.weight,
             fillOpacity: 0,
             opacity: 0.8,
           };
@@ -447,33 +519,18 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `<strong>Escurrimiento:</strong> ${
-                    props.NOMBRE || props.NAME || "N/A"
-                  }<br><strong>Orden:</strong> ${props.ORD_FLOW || "N/A"}`,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
-            };
             layer.bindPopup(
               `<strong>Escurrimiento:</strong> ${
                 props.NOMBRE || props.NAME || "N/A"
               }<br><strong>Orden:</strong> ${props.ORD_FLOW || "N/A"}`
             );
-            bindTooltipIfEnabled();
-            layer.updateTooltip = bindTooltipIfEnabled;
           }
         },
       });
-      newLayers.escurrimientos.addTo(map);
+      // Solo agregar al mapa si está activa en el estado
+      if (activeLayers.escurrimientos) {
+        newLayers.escurrimientos.addTo(map);
+      }
     }
 
     setLayers({ ...newLayers, baseLayers });
@@ -499,20 +556,16 @@ const GroupedLayerControl = ({
     escurrimientos,
     activeBaseLayer,
     activeLayers.cuencas,
+    activeLayers.escurrimientos,
   ]);
 
-  // Efecto para actualizar tooltips cuando cambie el estado
+  // Notificar cambios en el estado del control para posicionamiento dinámico
   useEffect(() => {
-    ["cuencas", "escurrimientos"].forEach((layerKey) => {
-      if (layers[layerKey]) {
-        layers[layerKey].eachLayer((layer) => {
-          if (layer.updateTooltip) {
-            layer.updateTooltip();
-          }
-        });
-      }
-    });
-  }, [tooltipsEnabled, layers]);
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = { ...activeLayers };
@@ -578,6 +631,7 @@ const GroupedLayerControl = ({
   };
 
   const headerStyle = {
+    fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -596,17 +650,18 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: " 2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
@@ -621,7 +676,6 @@ const GroupedLayerControl = ({
         {showDownload && data && (
           <button
             style={{
-              color: "white",
               backgroundColor: "transparent",
               border: "none",
               padding: "0px",
@@ -641,7 +695,7 @@ const GroupedLayerControl = ({
               width="16"
               height="16"
               viewBox="0 0 16 16"
-              fill="white"
+              fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
@@ -664,44 +718,64 @@ const GroupedLayerControl = ({
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -835,19 +909,21 @@ const GroupedLayerControl = ({
                 showOpacity={true}
               />
             )}
+            {/* Capa especial de Elevaciones con descarga de raster */}
             <div
               style={{
-                marginBottom: "6px",
-                padding: "0px",
+                marginBottom: "2px",
+                padding: " 2px 10px",
                 backgroundColor: "transparent",
-                borderRadius: "0px",
+                borderRadius: "4px",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
+                  alignContent: "center",
+                  marginBottom: "2px",
                   gap: "8px",
                 }}
               >
@@ -859,7 +935,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Elevaciones
+                  Pendiente
                 </span>
                 <button
                   style={{
@@ -905,47 +981,70 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "white",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
                 }}
               >
-                Opacidad: {Math.round(opacity.raster * 100)}%
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.raster * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.raster - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      raster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.raster <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.raster + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      raster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.raster >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.raster}
-                onChange={(e) =>
-                  setOpacity((prev) => ({
-                    ...prev,
-                    raster: parseFloat(e.target.value),
-                  }))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
           </div>
         </div>
@@ -976,13 +1075,12 @@ const MapView = () => {
   const [escurrimientos, setEscurrimientos] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(false);
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
   const [activeLayers, setActiveLayers] = useState({
     area: true,
     paisajes: true,
     municipios: true,
     cuencas: false,
-    escurrimientos: true,
+    escurrimientos: false,
     raster: true,
   });
   const [opacity, setOpacity] = useState({
@@ -994,8 +1092,14 @@ const MapView = () => {
     raster: 0.85,
   });
 
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
+  // Estado para controlar la posición dinámica de la leyenda
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
+
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
   };
 
   useEffect(() => {
@@ -1024,10 +1128,6 @@ const MapView = () => {
       dragging={false}
       style={{ height: "100vh", width: "100%" }}
     >
-      <InfoControl
-        onToggleTooltips={toggleTooltips}
-        tooltipsEnabled={tooltipsEnabled}
-      />
       <DraggingControl />
       <GroupedLayerControl
         area={area}
@@ -1038,11 +1138,11 @@ const MapView = () => {
         rasterFile="MDE.tif"
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
-        tooltipsEnabled={tooltipsEnabled}
         activeLayers={activeLayers}
         setActiveLayers={setActiveLayers}
         opacity={opacity}
         setOpacity={setOpacity}
+        onControlStateChange={handleControlStateChange}
       />
       {activeLayers.raster && (
         <RasterOverlay
@@ -1058,9 +1158,22 @@ const MapView = () => {
       )}
       <ColorLegend
         colorMap={colorMap}
-        isVisible={showLegend && !activeLayers.raster}
+        isVisible={
+          showLegend && !activeLayers.raster && !activeLayers.escurrimientos
+        }
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
       />
-      <ElevationLegend isVisible={activeLayers.raster} />
+      <EscurrimientosLegend
+        isVisible={activeLayers.escurrimientos && !activeLayers.raster}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+      />
+      <PendienteLegend
+        isVisible={activeLayers.raster}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+      />
       <CoordinateControl />
       <ScaleControl />
     </MapContainer>

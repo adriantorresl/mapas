@@ -19,6 +19,7 @@ import "leaflet/dist/leaflet.css";
 import * as GeoTIFF from "geotiff";
 import chroma from "chroma-js";
 import PropTypes from "prop-types";
+import rasterCache from "../utils/rasterCache";
 
 // 🔹 Convierte string de colorMap a objeto o array
 const parseColorMap = (input) => {
@@ -71,338 +72,428 @@ const hexToRgba = (hex) => {
 };
 
 // 🔹 Carga el raster y lo monta como imagen sobre Leaflet
-export const RasterOverlay = React.memo(({
-  fileName,
-  colorMap,
-  baseUrl,
-  setError = () => {},
-  setLoading = () => {},
-  continuous = false,
-  onPixelValue = () => {},
-  overlayOpacity = 0.8,
-  pane = "overlayPane",
-}) => {
-  // Validación defensiva
-  const safeSetError = typeof setError === 'function' ? setError : () => {};
-  const safeSetLoading = typeof setLoading === 'function' ? setLoading : () => {};
-  
-  const map = useMap();
-  const overlayRef = useRef(null);
-  const loadedRef = useRef(false);
-  const imageRef = useRef(null);
-  const onPixelValueRef = useRef(onPixelValue);
-  const imageDataRef = useRef({
-    data: null,
-    width: 0,
-    height: 0,
-    bounds: null,
-  });
+export const RasterOverlay = React.memo(
+  ({
+    fileName,
+    colorMap,
+    baseUrl,
+    setError = () => {},
+    setLoading = () => {},
+    continuous = false,
+    onPixelValue = () => {},
+    overlayOpacity = 0.8,
+    pane = "overlayPane",
+    visible = true,
+  }) => {
+    // Validación defensiva
+    const safeSetError = typeof setError === "function" ? setError : () => {};
+    const safeSetLoading =
+      typeof setLoading === "function" ? setLoading : () => {};
 
-  // Actualizar la ref cuando cambie la función
-  useEffect(() => {
-    onPixelValueRef.current = onPixelValue;
-  }, [onPixelValue]);
+    const map = useMap();
+    const overlayRef = useRef(null);
+    const loadedRef = useRef(false);
+    const imageRef = useRef(null);
+    const onPixelValueRef = useRef(onPixelValue);
+    const imageDataRef = useRef({
+      data: null,
+      width: 0,
+      height: 0,
+      bounds: null,
+    });
 
-  // Memorizar el colorMap parseado para evitar re-renders innecesarios
-  const parsedColorMap = useMemo(() => parseColorMap(colorMap), [colorMap]);
+    // Actualizar la ref cuando cambie la función
+    useEffect(() => {
+      onPixelValueRef.current = onPixelValue;
+    }, [onPixelValue]);
 
-  useEffect(() => {
-    let isMounted = true;
-    loadedRef.current = false;
+    // Memorizar el colorMap parseado para evitar re-renders innecesarios
+    const parsedColorMap = useMemo(() => parseColorMap(colorMap), [colorMap]);
 
-    const loadRaster = async () => {
-      try {
-        if (!isMounted) return;
+    useEffect(() => {
+      let isMounted = true;
+      loadedRef.current = false;
 
-        const fullUrl = `${baseUrl.replace(/\/$/, "")}/${fileName.replace(
-          /^\//,
-          ""
-        )}`;
-        console.log(`[RasterViewer] Loading raster from URL: ${fullUrl}`);
-        const tiff = await GeoTIFF.fromUrl(fullUrl);
-        if (!isMounted) return;
-        const image = await tiff.getImage();
-        if (!isMounted) return;
-        const rasters = await image.readRasters();
-        if (!isMounted) return;
-        const data = rasters[0];
-        const width = image.getWidth();
-        const height = image.getHeight();
-        const bounds = image.getBoundingBox();
+      const loadRaster = async () => {
+        try {
+          if (!isMounted) return;
 
-        imageDataRef.current = { data, width, height, bounds };
+          console.log(`[RasterViewer] Starting to load ${fileName}`);
 
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        const imgData = ctx.createImageData(width, height);
+          const fullUrl = `${baseUrl.replace(/\/$/, "")}/${fileName.replace(
+            /^\//,
+            ""
+          )}`;
 
-        let scale;
-        // hoist nodata/min/max para que estén disponibles fuera del bloque
-        let nodata = null;
-        let min = Infinity;
-        let max = -Infinity;
-        if (continuous) {
-          // Diagnóstico: log tipo y tamaño de data
-          console.log(
-            "[RasterViewer] data type:",
-            Object.prototype.toString.call(data),
-            "length:",
-            data.length
-          );
+          // Crear clave de cache basada en URL y colorMap
+          const cacheKey = `${fullUrl}_${JSON.stringify(
+            parsedColorMap
+          )}_${continuous}`;
 
-          // Intentar obtener nodata del TIFF (si está disponible)
-          try {
-            if (typeof image.getGDALNoData === "function") {
-              const nd = image.getGDALNoData();
-              if (nd != null) nodata = Number(nd);
+          // Verificar cache primero
+          const cachedData = rasterCache.get(cacheKey);
+          if (cachedData) {
+            console.log(`[RasterViewer] Using cached data for ${fileName}`);
+            imageDataRef.current = {
+              data: cachedData.data,
+              width: cachedData.width,
+              height: cachedData.height,
+              bounds: cachedData.bounds,
+            };
+
+            // Crear y agregar la capa con los datos cacheados
+            if (cachedData.canvas && map) {
+              const canvasLayer = L.imageOverlay(
+                canvas.toDataURL(),
+                rasterBounds,
+                { opacity: visible ? overlayOpacity : 0, pane }
+              );
+
+              // Siempre agregar al mapa, controlar visibilidad con opacidad
+              canvasLayer.addTo(map);
+
+              overlayRef.current = canvasLayer;
+              console.log(
+                `[RasterViewer] Cached layer created with opacity:`,
+                visible ? overlayOpacity : 0
+              );
             }
-            if (nodata == null && typeof image.getNoDataValue === "function") {
-              const nd2 = image.getNoDataValue();
-              if (nd2 != null) nodata = Number(nd2);
-            }
-          } catch (e) {
-            // ignore
-          }
 
-          // Calcular min y max ignorando NaN y valores nodata o extremadamente grandes
-          for (let i = 0; i < data.length; i++) {
-            const v = data[i];
-            if (v === null || v === undefined) continue;
-            if (Number.isNaN(v)) continue;
-            // ignorar valores idénticos a nodata
-            if (nodata != null && v === nodata) continue;
-            // ignorar valores absurdos (posible relleno)
-            if (!isFinite(v) || Math.abs(v) > 1e9) continue;
-            if (v < min) min = v;
-            if (v > max) max = v;
-          }
-          const colors = Array.isArray(parsedColorMap)
-            ? parsedColorMap
-            : Object.values(parsedColorMap);
-          console.log("[RasterViewer] colors:", colors);
-          console.log(
-            `[RasterViewer] min: ${min}, max: ${max}, nodata: ${nodata}`
-          );
-          if (!colors || colors.length < 2) {
-            safeSetError("colorMap debe tener al menos dos colores");
+            loadedRef.current = true;
             safeSetLoading(false);
             return;
           }
-          if (!isFinite(min) || !isFinite(max)) {
-            safeSetError("No se pudo calcular el rango de valores del raster");
-            safeSetLoading(false);
-            return;
-          }
-          if (min === max) {
-            safeSetError(
-              `El raster tiene un solo valor (${min}), no se puede generar escala de color.`
-            );
-            safeSetLoading(false);
-            return;
-          }
-          scale = chroma.scale(colors).domain([min, max]);
-        }
 
-        for (let i = 0; i < data.length; i++) {
-          const value = data[i];
-          let color = "#00000000"; // default transparent
+          console.log(`[RasterViewer] Loading raster from URL: ${fullUrl}`);
+          const tiff = await GeoTIFF.fromUrl(fullUrl);
+          if (!isMounted) return;
+          const image = await tiff.getImage();
+          if (!isMounted) return;
+          const rasters = await image.readRasters();
+          if (!isMounted) return;
+          const data = rasters[0];
+          const width = image.getWidth();
+          const height = image.getHeight();
+          const bounds = image.getBoundingBox();
 
+          imageDataRef.current = { data, width, height, bounds };
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          const imgData = ctx.createImageData(width, height);
+
+          let scale;
+          // hoist nodata/min/max para que estén disponibles fuera del bloque
+          let nodata = null;
+          let min = Infinity;
+          let max = -Infinity;
           if (continuous) {
-            // Excluir nodata / invalid
-            if (value == null || Number.isNaN(value)) {
-              color = "#00000000";
-            } else if (
-              typeof nodata !== "undefined" &&
-              nodata !== null &&
-              value === nodata
-            ) {
-              color = "#00000000";
-            } else if (!isFinite(value)) {
-              color = "#00000000";
-            } else {
-              // Clamp to domain to avoid chroma errors
-              const v = Math.max(min, Math.min(max, value));
-              try {
-                color = scale(v).hex();
-              } catch (e) {
+            // Diagnóstico: log tipo y tamaño de data
+            console.log(
+              "[RasterViewer] data type:",
+              Object.prototype.toString.call(data),
+              "length:",
+              data.length
+            );
+
+            // Intentar obtener nodata del TIFF (si está disponible)
+            try {
+              if (typeof image.getGDALNoData === "function") {
+                const nd = image.getGDALNoData();
+                if (nd != null) nodata = Number(nd);
+              }
+              if (
+                nodata == null &&
+                typeof image.getNoDataValue === "function"
+              ) {
+                const nd2 = image.getNoDataValue();
+                if (nd2 != null) nodata = Number(nd2);
+              }
+            } catch (e) {
+              // ignore
+            }
+
+            // Calcular min y max ignorando NaN y valores nodata o extremadamente grandes
+            for (let i = 0; i < data.length; i++) {
+              const v = data[i];
+              if (v === null || v === undefined) continue;
+              if (Number.isNaN(v)) continue;
+              // ignorar valores idénticos a nodata
+              if (nodata != null && v === nodata) continue;
+              // ignorar valores absurdos (posible relleno)
+              if (!isFinite(v) || Math.abs(v) > 1e9) continue;
+              if (v < min) min = v;
+              if (v > max) max = v;
+            }
+            const colors = Array.isArray(parsedColorMap)
+              ? parsedColorMap
+              : Object.values(parsedColorMap);
+            console.log("[RasterViewer] colors:", colors);
+            console.log(
+              `[RasterViewer] min: ${min}, max: ${max}, nodata: ${nodata}`
+            );
+            if (!colors || colors.length < 2) {
+              safeSetError("colorMap debe tener al menos dos colores");
+              safeSetLoading(false);
+              return;
+            }
+            if (!isFinite(min) || !isFinite(max)) {
+              safeSetError(
+                "No se pudo calcular el rango de valores del raster"
+              );
+              safeSetLoading(false);
+              return;
+            }
+            if (min === max) {
+              safeSetError(
+                `El raster tiene un solo valor (${min}), no se puede generar escala de color.`
+              );
+              safeSetLoading(false);
+              return;
+            }
+            scale = chroma.scale(colors).domain([min, max]);
+          }
+
+          for (let i = 0; i < data.length; i++) {
+            const value = data[i];
+            let color = "#00000000"; // default transparent
+
+            if (continuous) {
+              // Excluir nodata / invalid
+              if (value == null || Number.isNaN(value)) {
                 color = "#00000000";
+              } else if (
+                typeof nodata !== "undefined" &&
+                nodata !== null &&
+                value === nodata
+              ) {
+                color = "#00000000";
+              } else if (!isFinite(value)) {
+                color = "#00000000";
+              } else {
+                // Clamp to domain to avoid chroma errors
+                const v = Math.max(min, Math.min(max, value));
+                try {
+                  color = scale(v).hex();
+                } catch (e) {
+                  color = "#00000000";
+                }
+              }
+            } else {
+              if (Array.isArray(parsedColorMap)) {
+                const index = Math.round(value);
+                color = parsedColorMap[index] || "#00000000";
+              } else if (parsedColorMap && typeof parsedColorMap === "object") {
+                color = parsedColorMap[Math.round(value)] || "#00000000";
               }
             }
-          } else {
-            if (Array.isArray(parsedColorMap)) {
-              const index = Math.round(value);
-              color = parsedColorMap[index] || "#00000000";
-            } else if (parsedColorMap && typeof parsedColorMap === "object") {
-              color = parsedColorMap[Math.round(value)] || "#00000000";
-            }
+
+            const [r, g, b, a = 255] = hexToRgba(color);
+            imgData.data[i * 4] = r;
+            imgData.data[i * 4 + 1] = g;
+            imgData.data[i * 4 + 2] = b;
+            imgData.data[i * 4 + 3] = a;
           }
 
-          const [r, g, b, a = 255] = hexToRgba(color);
-          imgData.data[i * 4] = r;
-          imgData.data[i * 4 + 1] = g;
-          imgData.data[i * 4 + 2] = b;
-          imgData.data[i * 4 + 3] = a;
+          if (!isMounted) return;
+
+          try {
+            ctx.putImageData(imgData, 0, 0);
+          } catch (e) {
+            console.error("[RasterViewer] putImageData failed:", e);
+          }
+          const imageUrl = canvas.toDataURL();
+          console.log("[RasterViewer] imageUrl length:", imageUrl.length);
+
+          const southWest = L.latLng(bounds[1], bounds[0]);
+          const northEast = L.latLng(bounds[3], bounds[2]);
+          const rasterBounds = L.latLngBounds(southWest, northEast);
+          // Log bounds para depuración
+          console.log(
+            "[RasterViewer] bounds:",
+            bounds,
+            "rasterBounds:",
+            rasterBounds
+          );
+
+          if (overlayRef.current && map.hasLayer(overlayRef.current)) {
+            map.removeLayer(overlayRef.current);
+          }
+
+          let overlay;
+          try {
+            overlay = L.imageOverlay(imageUrl, rasterBounds, {
+              opacity: visible ? overlayOpacity : 0,
+              pane: pane,
+            });
+
+            // Siempre agregar al mapa, controlar visibilidad con opacidad
+            overlay.addTo(map);
+
+            console.log(
+              `[RasterViewer] Created overlay for ${fileName} with opacity:`,
+              visible ? overlayOpacity : 0
+            );
+            // Asegurar visibilidad y zIndex
+            try {
+              if (visible && typeof overlay.bringToFront === "function")
+                overlay.bringToFront();
+            } catch (err) {
+              /* ignore */
+            }
+          } catch (e) {
+            console.error("[RasterViewer] Failed to create overlay:", e);
+          }
+          // Usar panes en lugar de zIndex manual para mejor control
+          overlayRef.current = overlay;
+          imageRef.current = image;
+
+          // Guardar en cache para uso futuro
+          if (overlay && canvas) {
+            const cacheData = {
+              data,
+              width,
+              height,
+              bounds,
+              canvas: canvas.cloneNode(true), // Clonar el canvas para cache
+              imageUrl: canvas.toDataURL(),
+            };
+            rasterCache.set(cacheKey, cacheData);
+          }
+
+          // Solo hacer fitBounds si los bounds son válidos
+          if (
+            isFinite(bounds[0]) &&
+            isFinite(bounds[1]) &&
+            isFinite(bounds[2]) &&
+            isFinite(bounds[3]) &&
+            bounds[0] !== bounds[2] &&
+            bounds[1] !== bounds[3]
+          ) {
+            map.fitBounds(rasterBounds);
+          } else {
+            console.warn(
+              "[RasterViewer] Bounds inválidos, no se hace fitBounds"
+            );
+          }
+
+          if (isMounted && !loadedRef.current) {
+            loadedRef.current = true;
+            safeSetLoading(false);
+            safeSetError(null);
+          }
+        } catch (err) {
+          console.error("❌ Error cargando raster:", err);
+          if (isMounted && !loadedRef.current) {
+            loadedRef.current = true;
+            safeSetLoading(false);
+            safeSetError(
+              err
+                ? err.message || err.toString() || "Error al cargar el raster"
+                : "Error desconocido al cargar el raster"
+            );
+          }
         }
+      };
 
-        if (!isMounted) return;
+      safeSetLoading(true);
+      safeSetError(null);
+      loadRaster();
 
-        try {
-          ctx.putImageData(imgData, 0, 0);
-        } catch (e) {
-          console.error("[RasterViewer] putImageData failed:", e);
+      // Evento para mostrar valor del pixel con throttling
+      let lastUpdate = 0;
+      const throttleDelay = 50; // ms
+
+      function onMapMouseMove(e) {
+        const now = Date.now();
+        if (now - lastUpdate < throttleDelay) {
+          return; // Skip update si es muy reciente
         }
-        const imageUrl = canvas.toDataURL();
-        console.log("[RasterViewer] imageUrl length:", imageUrl.length);
+        lastUpdate = now;
 
-        const southWest = L.latLng(bounds[1], bounds[0]);
-        const northEast = L.latLng(bounds[3], bounds[2]);
-        const rasterBounds = L.latLngBounds(southWest, northEast);
-        // Log bounds para depuración
-        console.log(
-          "[RasterViewer] bounds:",
-          bounds,
-          "rasterBounds:",
-          rasterBounds
-        );
+        const { data, width, height, bounds } = imageDataRef.current;
+        if (!data || !bounds) {
+          onPixelValueRef.current(null);
+          return;
+        }
+        const [minX, minY, maxX, maxY] = bounds;
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        if (lng < minX || lng > maxX || lat < minY || lat > maxY) {
+          onPixelValueRef.current(null);
+          return;
+        }
+        // Convertir lat/lng a pixel
+        const x = Math.floor(((lng - minX) / (maxX - minX)) * (width - 1));
+        const y = Math.floor((1 - (lat - minY) / (maxY - minY)) * (height - 1));
+        const idx = y * width + x;
+        const value = data[idx];
+        onPixelValueRef.current(value);
+      }
 
+      map.on("mousemove", onMapMouseMove);
+      map.on("mouseout", () => onPixelValueRef.current(null));
+
+      return () => {
+        isMounted = false;
         if (overlayRef.current && map.hasLayer(overlayRef.current)) {
           map.removeLayer(overlayRef.current);
         }
+        map.off("mousemove", onMapMouseMove);
+        map.off("mouseout");
+      };
+    }, [
+      fileName,
+      parsedColorMap,
+      baseUrl,
+      continuous,
+      map,
+      setError,
+      setLoading,
+      overlayOpacity,
+      pane,
+      visible,
+    ]);
 
-        let overlay;
-        try {
-          overlay = L.imageOverlay(imageUrl, rasterBounds, {
-            opacity: 1.0, // Usar opacidad fija inicial
-            pane: pane, // Usar el pane especificado
-          });
-          overlay.addTo(map);
-          // Asegurar visibilidad y zIndex
-          try {
-            if (typeof overlay.setOpacity === "function")
-              overlay.setOpacity(overlayOpacity);
-            // No establecer zIndex manualmente si estamos usando panes
-            if (typeof overlay.bringToFront === "function")
-              overlay.bringToFront();
-          } catch (err) {
-            /* ignore */
-          }
-          console.log("[RasterViewer] overlay addedTo map:", !!overlay);
-        } catch (e) {
-          console.error("[RasterViewer] Failed to create/add overlay:", e);
-        }
-        // Usar panes en lugar de zIndex manual para mejor control
-        overlayRef.current = overlay;
-        imageRef.current = image;
-
-        // Solo hacer fitBounds si los bounds son válidos
-        if (
-          isFinite(bounds[0]) &&
-          isFinite(bounds[1]) &&
-          isFinite(bounds[2]) &&
-          isFinite(bounds[3]) &&
-          bounds[0] !== bounds[2] &&
-          bounds[1] !== bounds[3]
-        ) {
-          map.fitBounds(rasterBounds);
-        } else {
-          console.warn("[RasterViewer] Bounds inválidos, no se hace fitBounds");
+    // useEffect separado para manejar cambios de visibilidad y opacidad
+    useEffect(() => {
+      if (overlayRef.current) {
+        // Siempre mantener la capa en el mapa, solo cambiar opacidad
+        if (!map.hasLayer(overlayRef.current)) {
+          overlayRef.current.addTo(map);
         }
 
-        if (isMounted && !loadedRef.current) {
-          loadedRef.current = true;
-          safeSetLoading(false);
-          safeSetError(null);
+        // Controlar visibilidad solo con opacidad
+        const targetOpacity = visible ? overlayOpacity : 0;
+        if (typeof overlayRef.current.setOpacity === "function") {
+          overlayRef.current.setOpacity(targetOpacity);
         }
-      } catch (err) {
-        console.error("❌ Error cargando raster:", err);
-        if (isMounted && !loadedRef.current) {
-          loadedRef.current = true;
-          safeSetLoading(false);
-          safeSetError(err ? (err.message || err.toString() || "Error al cargar el raster") : "Error desconocido al cargar el raster");
-        }
+        console.log(
+          `[RasterViewer] ${fileName} opacity set to:`,
+          targetOpacity,
+          `(visible: ${visible})`
+        );
       }
-    };
+    }, [visible, overlayOpacity, fileName, map]);
 
-    safeSetLoading(true);
-    safeSetError(null);
-    loadRaster();
-
-    // Evento para mostrar valor del pixel con throttling
-    let lastUpdate = 0;
-    const throttleDelay = 50; // ms
-
-    function onMapMouseMove(e) {
-      const now = Date.now();
-      if (now - lastUpdate < throttleDelay) {
-        return; // Skip update si es muy reciente
-      }
-      lastUpdate = now;
-
-      const { data, width, height, bounds } = imageDataRef.current;
-      if (!data || !bounds) {
-        onPixelValueRef.current(null);
-        return;
-      }
-      const [minX, minY, maxX, maxY] = bounds;
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-      if (lng < minX || lng > maxX || lat < minY || lat > maxY) {
-        onPixelValueRef.current(null);
-        return;
-      }
-      // Convertir lat/lng a pixel
-      const x = Math.floor(((lng - minX) / (maxX - minX)) * (width - 1));
-      const y = Math.floor((1 - (lat - minY) / (maxY - minY)) * (height - 1));
-      const idx = y * width + x;
-      const value = data[idx];
-      onPixelValueRef.current(value);
-    }
-
-    map.on("mousemove", onMapMouseMove);
-    map.on("mouseout", () => onPixelValueRef.current(null));
-
-    return () => {
-      isMounted = false;
-      if (overlayRef.current && map.hasLayer(overlayRef.current)) {
-        map.removeLayer(overlayRef.current);
-      }
-      map.off("mousemove", onMapMouseMove);
-      map.off("mouseout");
-    };
-  }, [
-    fileName,
-    parsedColorMap,
-    baseUrl,
-    continuous,
-    map,
-    setError,
-    setLoading,
-  ]);
-
-  // useEffect separado para manejar solo cambios de opacidad sin recrear el overlay
-  useEffect(() => {
-    if (
-      overlayRef.current &&
-      typeof overlayRef.current.setOpacity === "function"
-    ) {
-      overlayRef.current.setOpacity(overlayOpacity);
-    }
-  }, [overlayOpacity]);
-
-  return null;
-}, (prevProps, nextProps) => {
-  // Solo re-renderizar si cambian props críticas para el overlay
-  return (
-    prevProps.fileName === nextProps.fileName &&
-    prevProps.overlayOpacity === nextProps.overlayOpacity &&
-    prevProps.pane === nextProps.pane &&
-    JSON.stringify(prevProps.colorMap) === JSON.stringify(nextProps.colorMap) &&
-    prevProps.continuous === nextProps.continuous &&
-    prevProps.baseUrl === nextProps.baseUrl
-  );
-});
+    return null;
+  },
+  (prevProps, nextProps) => {
+    // Solo re-renderizar si cambian props críticas para el overlay
+    return (
+      prevProps.fileName === nextProps.fileName &&
+      prevProps.overlayOpacity === nextProps.overlayOpacity &&
+      prevProps.visible === nextProps.visible &&
+      prevProps.pane === nextProps.pane &&
+      JSON.stringify(prevProps.colorMap) ===
+        JSON.stringify(nextProps.colorMap) &&
+      prevProps.continuous === nextProps.continuous &&
+      prevProps.baseUrl === nextProps.baseUrl
+    );
+  }
+);
 
 // Control de escala y coordenadas fuera del componente principal
 function MapExtraControls() {
@@ -464,14 +555,17 @@ const RasterViewer = ({
   }, []);
 
   // Crear funciones estables para evitar re-renders
-  const stableSetError = useCallback((err) => {
-    if (typeof setError === 'function') {
-      setError(err);
-    }
-  }, [setError]);
+  const stableSetError = useCallback(
+    (err) => {
+      if (typeof setError === "function") {
+        setError(err);
+      }
+    },
+    [setError]
+  );
   const stableSetLoading = useCallback(
     (isLoading) => {
-      if (typeof setLoading === 'function') {
+      if (typeof setLoading === "function") {
         setLoading(isLoading);
       }
     },
@@ -701,6 +795,7 @@ RasterOverlay.propTypes = {
   onPixelValue: PropTypes.func.isRequired,
   overlayOpacity: PropTypes.number,
   pane: PropTypes.string,
+  visible: PropTypes.bool,
 };
 
 RasterOverlay.defaultProps = {
@@ -708,6 +803,7 @@ RasterOverlay.defaultProps = {
   continuous: false,
   overlayOpacity: 0.8,
   pane: "overlayPane",
+  visible: true,
 };
 
 // Compatibilidad: exportar RasterOverlay también como GeoRasterLeaflet

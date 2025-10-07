@@ -54,28 +54,41 @@ const downloadGeoJSON = (data, filename) => {
 };
 
 // Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible }) => {
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "250px"; // Solo se mueve lo necesario para evitar superposición (300px del control + 20px de separación)
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -130,13 +143,16 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -166,7 +182,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -181,49 +197,6 @@ const ScaleControl = () => {
   return null;
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "180px", // Debajo del botón de mediciones (ahora con 3 botones)
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
 // Componente para el control de capas agrupadas con funcionalidad extendida
 const GroupedLayerControl = ({
   area,
@@ -231,7 +204,7 @@ const GroupedLayerControl = ({
   municipios,
   onColorMapChange,
   onLegendVisibilityChange,
-  tooltipsEnabled,
+  onControlStateChange, // Nueva prop para comunicar el estado
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -250,6 +223,17 @@ const GroupedLayerControl = ({
     paisajesBio: 0.7,
   });
   const [colorMap, setColorMap] = useState({});
+
+  // Efecto para notificar cambios del estado del control
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 80 : 300; // Ancho aproximado cuando collapsed vs expanded
+      onControlStateChange({
+        isCollapsed,
+        width,
+      });
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const newLayers = {};
@@ -280,21 +264,27 @@ const GroupedLayerControl = ({
       newLayers.area = L.geoJSON(area, {
         style: { color: "black", weight: 6, fillOpacity: 0 },
       });
-      newLayers.area.addTo(map); // Agregar por defecto
+      if (activeLayers.area) {
+        newLayers.area.addTo(map);
+      }
     }
 
     if (paisajes) {
       newLayers.paisajes = L.geoJSON(paisajes, {
-        style: { color: "white", weight: 3, fillOpacity: 0 },
+        style: { color: "white", weight: 4, fillOpacity: 0 },
       });
-      newLayers.paisajes.addTo(map); // Agregar por defecto
+      if (activeLayers.paisajes) {
+        newLayers.paisajes.addTo(map);
+      }
     }
 
     if (municipios) {
       newLayers.municipios = L.geoJSON(municipios, {
-        style: { color: "red", weight: 1, fillOpacity: 0 },
+        style: { color: "red", weight: 2, fillOpacity: 0 },
       });
-      newLayers.municipios.addTo(map); // Agregar por defecto
+      if (activeLayers.municipios) {
+        newLayers.municipios.addTo(map);
+      }
     }
 
     // Capas de Interés - Paisajes Bioculturales (usando municipios con colores por PAISAJE)
@@ -326,42 +316,18 @@ const GroupedLayerControl = ({
           if (feature.properties) {
             const props = feature.properties;
 
-            // Configurar tooltip al hacer hover si está habilitado
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
-                  <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
-                `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
-            };
-
-            // Configurar popup al hacer clic (siempre disponible)
+            // Configurar popup al hacer clic
             layer.bindPopup(`
               <strong>Municipio:</strong> ${props.NOM_MUN || "N/A"}<br>
               <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
               <strong>Hectáreas:</strong> ${props.HAS_MUN || "N/A"} 
             `);
-
-            // Configurar tooltip inicial
-            bindTooltipIfEnabled();
-
-            // Actualizar tooltip cuando cambie el estado
-            layer.updateTooltip = bindTooltipIfEnabled;
           }
         },
       });
-      newLayers.paisajesBio.addTo(map); // Agregar por defecto
+      if (activeLayers.paisajesBio) {
+        newLayers.paisajesBio.addTo(map);
+      }
     }
 
     setLayers({ ...newLayers, baseLayers });
@@ -378,18 +344,7 @@ const GroupedLayerControl = ({
         }
       });
     };
-  }, [map, area, paisajes, municipios, activeBaseLayer, tooltipsEnabled]);
-
-  // Efecto para actualizar tooltips cuando cambie el estado
-  useEffect(() => {
-    if (layers.paisajesBio) {
-      layers.paisajesBio.eachLayer((layer) => {
-        if (layer.updateTooltip) {
-          layer.updateTooltip();
-        }
-      });
-    }
-  }, [tooltipsEnabled, layers.paisajesBio]);
+  }, [map, area, paisajes, municipios, activeBaseLayer]);
 
   const toggleLayer = (layerKey) => {
     const layer = layers[layerKey];
@@ -447,12 +402,13 @@ const GroupedLayerControl = ({
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "300px",
   };
 
   const headerStyle = {
+    fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -472,7 +428,7 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "5px",
+        marginBottom: "2px",
         padding: " 2px 10px",
         backgroundColor: "transparent",
         borderRadius: "4px",
@@ -483,7 +439,7 @@ const GroupedLayerControl = ({
           display: "flex",
           alignItems: "center",
           alignContent: "center",
-          marginBottom: "4px",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
@@ -514,44 +470,64 @@ const GroupedLayerControl = ({
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -845,319 +821,16 @@ const MeasureControl = () => {
   return null;
 };
 
-// Control de medición personalizado mejorado
-const SimpleMeasureControl = () => {
-  const map = useMap();
-
-  useEffect(() => {
-    // Crear botones de medición
-    const controlDiv = L.DomUtil.create(
-      "div",
-      "leaflet-control-measure leaflet-bar"
-    );
-    controlDiv.style.position = "absolute";
-    controlDiv.style.top = "80px";
-    controlDiv.style.left = "10px";
-    controlDiv.style.zIndex = "1000";
-    controlDiv.style.backgroundColor = "white";
-    controlDiv.style.borderRadius = "5px";
-    controlDiv.style.boxShadow = "0 1px 5px rgba(0,0,0,0.4)";
-
-    // Botón de distancia
-    const distanceBtn = L.DomUtil.create("a", "", controlDiv);
-    distanceBtn.innerHTML = "📏";
-    distanceBtn.title = "Medir distancia";
-    distanceBtn.style.display = "block";
-    distanceBtn.style.width = "30px";
-    distanceBtn.style.height = "30px";
-    distanceBtn.style.lineHeight = "30px";
-    distanceBtn.style.textAlign = "center";
-    distanceBtn.style.textDecoration = "none";
-    distanceBtn.style.cursor = "pointer";
-    distanceBtn.href = "#";
-
-    // Botón de área
-    const areaBtn = L.DomUtil.create("a", "", controlDiv);
-    areaBtn.innerHTML = "▭";
-    areaBtn.title = "Medir área";
-    areaBtn.style.display = "block";
-    areaBtn.style.width = "30px";
-    areaBtn.style.height = "30px";
-    areaBtn.style.lineHeight = "30px";
-    areaBtn.style.textAlign = "center";
-    areaBtn.style.textDecoration = "none";
-    areaBtn.style.cursor = "pointer";
-    areaBtn.href = "#";
-
-    // Botón de limpiar
-    const clearBtn = L.DomUtil.create("a", "", controlDiv);
-    clearBtn.innerHTML = "🗑️";
-    clearBtn.title = "Limpiar mediciones";
-    clearBtn.style.display = "block";
-    clearBtn.style.width = "30px";
-    clearBtn.style.height = "30px";
-    clearBtn.style.lineHeight = "30px";
-    clearBtn.style.textAlign = "center";
-    clearBtn.style.textDecoration = "none";
-    clearBtn.style.cursor = "pointer";
-    clearBtn.href = "#";
-
-    // Agregar al mapa
-    map.getContainer().appendChild(controlDiv);
-
-    // Variables de medición
-    let measuring = false;
-    let measureType = null;
-    let points = [];
-    let measureLayers = [];
-    let currentPopup = null;
-
-    // Función para limpiar todas las mediciones
-    const clearAllMeasurements = () => {
-      measureLayers.forEach((layer) => {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer);
-        }
-      });
-      measureLayers = [];
-      if (currentPopup) {
-        map.closePopup(currentPopup);
-        currentPopup = null;
-      }
-    };
-
-    // Función para iniciar medición
-    const startMeasuring = (type) => {
-      clearAllMeasurements();
-      measuring = true;
-      measureType = type;
-      points = [];
-      map.getContainer().style.cursor = "crosshair";
-      map.dragging.disable();
-
-      // Cambiar estilo del botón activo
-      distanceBtn.style.backgroundColor =
-        type === "distance" ? "#4ECDC4" : "white";
-      areaBtn.style.backgroundColor = type === "area" ? "#4ECDC4" : "white";
-    };
-
-    // Función para finalizar medición
-    const stopMeasuring = () => {
-      measuring = false;
-      measureType = null;
-      points = [];
-      map.getContainer().style.cursor = "";
-      map.dragging.enable();
-
-      // Restaurar estilo de botones
-      distanceBtn.style.backgroundColor = "white";
-      areaBtn.style.backgroundColor = "white";
-    };
-
-    // Función para calcular área usando fórmula de Shoelace
-    const calculateArea = (latlngs) => {
-      if (latlngs.length < 3) return 0;
-
-      let area = 0;
-      const earthRadius = 6371000; // Radio de la Tierra en metros
-
-      // Convertir a radianes y usar fórmula de área esférica aproximada
-      for (let i = 0; i < latlngs.length; i++) {
-        const j = (i + 1) % latlngs.length;
-        const lat1 = (latlngs[i].lat * Math.PI) / 180;
-        const lng1 = (latlngs[i].lng * Math.PI) / 180;
-        const lat2 = (latlngs[j].lat * Math.PI) / 180;
-        const lng2 = (latlngs[j].lng * Math.PI) / 180;
-
-        area += (lng2 - lng1) * (2 + Math.sin(lat1) + Math.sin(lat2));
-      }
-
-      area = Math.abs((area * earthRadius * earthRadius) / 2);
-      return area;
-    };
-
-    // Eventos de botones
-    L.DomEvent.on(distanceBtn, "click", function (e) {
-      L.DomEvent.preventDefault(e);
-      L.DomEvent.stopPropagation(e);
-      if (measuring && measureType === "distance") {
-        stopMeasuring();
-      } else {
-        startMeasuring("distance");
-      }
-    });
-
-    L.DomEvent.on(areaBtn, "click", function (e) {
-      L.DomEvent.preventDefault(e);
-      L.DomEvent.stopPropagation(e);
-      if (measuring && measureType === "area") {
-        stopMeasuring();
-      } else {
-        startMeasuring("area");
-      }
-    });
-
-    L.DomEvent.on(clearBtn, "click", function (e) {
-      L.DomEvent.preventDefault(e);
-      L.DomEvent.stopPropagation(e);
-      clearAllMeasurements();
-      stopMeasuring();
-    });
-
-    // Evento de clic en el mapa
-    const onMapClick = (e) => {
-      if (!measuring) return;
-
-      L.DomEvent.stopPropagation(e);
-      L.DomEvent.preventDefault(e);
-
-      points.push(e.latlng);
-
-      if (measureType === "distance") {
-        // Agregar marcador
-        const marker = L.circleMarker(e.latlng, {
-          radius: 5,
-          color: "#4ECDC4",
-          fillColor: "#4ECDC4",
-          fillOpacity: 1,
-        }).addTo(map);
-        measureLayers.push(marker);
-
-        if (points.length > 1) {
-          // Crear línea
-          const line = L.polyline(points, {
-            color: "#4ECDC4",
-            weight: 3,
-          }).addTo(map);
-          measureLayers.push(line);
-
-          // Calcular distancia total
-          let totalDistance = 0;
-          for (let i = 1; i < points.length; i++) {
-            totalDistance += map.distance(points[i - 1], points[i]);
-          }
-
-          const distanceText =
-            totalDistance > 1000
-              ? `${(totalDistance / 1000).toFixed(2)} km`
-              : `${totalDistance.toFixed(2)} m`;
-
-          if (currentPopup) map.closePopup(currentPopup);
-          currentPopup = L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`Distancia: ${distanceText}`)
-            .openOn(map);
-        }
-      } else if (measureType === "area") {
-        // Agregar marcador
-        const marker = L.circleMarker(e.latlng, {
-          radius: 5,
-          color: "#FF6B6B",
-          fillColor: "#FF6B6B",
-          fillOpacity: 1,
-        }).addTo(map);
-        measureLayers.push(marker);
-
-        if (points.length > 2) {
-          // Crear polígono temporal
-          const polygon = L.polygon(points, {
-            color: "#FF6B6B",
-            weight: 2,
-            fillColor: "#FF6B6B",
-            fillOpacity: 0.2,
-          }).addTo(map);
-
-          // Remover polígono anterior si existe
-          const prevPolygon = measureLayers.find(
-            (layer) => layer instanceof L.Polygon
-          );
-          if (prevPolygon) {
-            map.removeLayer(prevPolygon);
-            measureLayers = measureLayers.filter(
-              (layer) => layer !== prevPolygon
-            );
-          }
-
-          measureLayers.push(polygon);
-
-          // Calcular área
-          const area = calculateArea(points);
-          const areaText =
-            area > 10000
-              ? `${(area / 10000).toFixed(2)} ha`
-              : `${area.toFixed(2)} m²`;
-
-          if (currentPopup) map.closePopup(currentPopup);
-          currentPopup = L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`Área: ${areaText}`)
-            .openOn(map);
-        }
-      }
-    };
-
-    // Evento de doble clic para finalizar
-    const onMapDblClick = (e) => {
-      if (measuring) {
-        L.DomEvent.stopPropagation(e);
-        L.DomEvent.preventDefault(e);
-        stopMeasuring();
-      }
-    };
-
-    map.on("click", onMapClick);
-    map.on("dblclick", onMapDblClick);
-
-    return () => {
-      if (controlDiv.parentNode) {
-        controlDiv.parentNode.removeChild(controlDiv);
-      }
-      map.off("click", onMapClick);
-      map.off("dblclick", onMapDblClick);
-      clearAllMeasurements();
-      stopMeasuring();
-    };
-  }, [map]);
-
-  return null;
-};
-
-//Componente para montar el minimapa
-const MiniMapControl = () => {
-  const map = useMap();
-  useEffect(() => {
-    const miniLayer = new L.TileLayer(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        minZoom: 0,
-        maxZoom: 13,
-      }
-    );
-    const miniMap = new L.Control.MiniMap(miniLayer, {
-      toggleDisplay: false,
-      minimized: false,
-      position: "bottomleft",
-    }).addTo(map);
-
-    return () => {
-      map.removeControl(miniMap);
-    };
-  }, [map]);
-
-  return null;
-};
-
 const MapView = () => {
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(true); // Mostrar leyenda por defecto
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false); // Tooltips desactivados por defecto
-
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
-  };
+  const [layerControlState, setLayerControlState] = useState({
+    isCollapsed: true,
+    width: 80,
+  });
 
   useEffect(() => {
     fetch("/AREA.geojson")
@@ -1179,10 +852,6 @@ const MapView = () => {
       dragging={false}
       style={{ height: "100vh", width: "100%" }}
     >
-      <InfoControl
-        onToggleTooltips={toggleTooltips}
-        tooltipsEnabled={tooltipsEnabled}
-      />
       <DraggingControl />
       <GroupedLayerControl
         area={area}
@@ -1190,11 +859,14 @@ const MapView = () => {
         municipios={municipios}
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
-        tooltipsEnabled={tooltipsEnabled}
+        onControlStateChange={setLayerControlState}
       />
-      <ColorLegend colorMap={colorMap} isVisible={showLegend} />
-      <SimpleMeasureControl />
-      <MiniMapControl />
+      <ColorLegend
+        colorMap={colorMap}
+        isVisible={showLegend}
+        layerControlCollapsed={layerControlState.isCollapsed}
+        layerControlWidth={layerControlState.width}
+      />
       <CoordinateControl />
       <ScaleControl />
     </MapContainer>

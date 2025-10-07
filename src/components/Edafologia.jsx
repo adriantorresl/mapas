@@ -122,30 +122,42 @@ const downloadGeoJSON = (data, filename) => {
   URL.revokeObjectURL(url);
 };
 
-// Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible }) => {
+// Componente de leyenda retráctil en esquina superior derecha
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "250px"; // Solo se mueve lo necesario para evitar superposición (300px del control + 20px de separación)
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -165,11 +177,9 @@ const ColorLegend = ({ colorMap, isVisible }) => {
       {!isCollapsed && (
         <div
           style={{
-            padding: "8px",
-            maxHeight: "500px", // Altura máxima aumentada para mostrar todos los elementos
-            overflowY: "auto", // Auto para que aparezca solo si es necesario
-            backgroundColor: "#1E3C20",
-            scrollbarWidth: "thin", // Para Firefox
+            padding: "10px",
+            maxHeight: "auto",
+            overflowY: "auto",
           }}
         >
           {Object.entries(colorMap)
@@ -228,22 +238,26 @@ const ColorLegend = ({ colorMap, isVisible }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "6px",
-                  fontSize: "12px",
+                  justifyContent: "space-between",
+                  padding: "5px 0",
                 }}
               >
-                <div
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    backgroundColor: color,
-                    marginRight: "8px",
-                    border: "1px solid #999",
-                    borderRadius: "2px",
-                    flexShrink: 0,
-                  }}
-                ></div>
-                <span style={{ lineHeight: "1.2" }}>{edafo}</span>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      backgroundColor: color,
+                      display: "inline-block",
+                      marginRight: "8px",
+                      borderRadius: "0px",
+                      verticalAlign: "middle",
+                    }}
+                  ></div>
+                  <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                    {edafo}
+                  </span>
+                </div>
               </div>
             ))}
         </div>
@@ -258,13 +272,16 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -295,7 +312,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -310,49 +327,6 @@ const ScaleControl = () => {
   return null;
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "80px", // Bajado más abajo del botón de zoom
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
 // Componente para el control de capas agrupadas con funcionalidad extendida
 const GroupedLayerControl = ({
   area,
@@ -362,7 +336,7 @@ const GroupedLayerControl = ({
   humedad,
   onColorMapChange,
   onLegendVisibilityChange,
-  tooltipsEnabled,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -374,9 +348,7 @@ const GroupedLayerControl = ({
     edafologia: true,
     humedad: false,
   });
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
   const [opacity, setOpacity] = useState({
     area: 1,
     paisajes: 1,
@@ -391,19 +363,17 @@ const GroupedLayerControl = ({
 
     // Capas base
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Topográfico (OSM)": L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          maxZoom: 17,
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }
       ),
       "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+          attribution: "Tiles &copy; Esri &mdash; Source: ESRI",
         }
       ),
     };
@@ -466,27 +436,6 @@ const GroupedLayerControl = ({
           if (feature.properties) {
             const props = feature.properties;
 
-            // Configurar tooltip al hacer hover si está habilitado
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
-                  <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
-                  <strong>Edafología:</strong> ${props.Edafo || "N/A"}
-                `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
-            };
-
             // Configurar popup al hacer clic (siempre disponible)
             layer.bindPopup(`
                 <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
@@ -494,12 +443,6 @@ const GroupedLayerControl = ({
                 <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
                 <strong>Edafología:</strong> ${props.Edafo || "N/A"}
             `);
-
-            // Configurar tooltip inicial
-            bindTooltipIfEnabled();
-
-            // Actualizar tooltip cuando cambie el estado
-            layer.updateTooltip = bindTooltipIfEnabled;
           }
         },
       });
@@ -529,27 +472,6 @@ const GroupedLayerControl = ({
           if (feature.properties) {
             const props = feature.properties;
 
-            // Configurar tooltip al hacer hover si está habilitado
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
-                  <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
-                  <strong>Humedad:</strong> ${props.HUMEDAD || "N/A"}
-                `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
-            };
-
             // Configurar popup al hacer clic (siempre disponible)
             layer.bindPopup(`
               <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
@@ -557,12 +479,6 @@ const GroupedLayerControl = ({
               <strong>Hectáreas:</strong> ${props.HAS_SUELO || "N/A"}<br> 
               <strong>Humedad:</strong> ${props.HUMEDAD || "N/A"}
             `);
-
-            // Configurar tooltip inicial
-            bindTooltipIfEnabled();
-
-            // Actualizar tooltip cuando cambie el estado
-            layer.updateTooltip = bindTooltipIfEnabled;
           }
         },
       });
@@ -585,27 +501,13 @@ const GroupedLayerControl = ({
     };
   }, [map, area, paisajes, municipios, edafologia, humedad, activeBaseLayer]);
 
-  // Efecto para actualizar tooltips cuando cambie el estado
+  // Notificar cambios en el estado del control para posicionamiento dinámico
   useEffect(() => {
-    if (layers.edafologia) {
-      layers.edafologia.eachLayer((layer) => {
-        if (layer.updateTooltip) {
-          layer.updateTooltip();
-        }
-      });
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
     }
-  }, [tooltipsEnabled, layers.edafologia]);
-
-  // Efecto para actualizar tooltips de humedad cuando cambie el estado
-  useEffect(() => {
-    if (layers.humedad) {
-      layers.humedad.eachLayer((layer) => {
-        if (layer.updateTooltip) {
-          layer.updateTooltip();
-        }
-      });
-    }
-  }, [tooltipsEnabled, layers.humedad]);
+  }, [isCollapsed, onControlStateChange]);
 
   const toggleLayer = (layerKey) => {
     const layer = layers[layerKey];
@@ -711,7 +613,7 @@ const GroupedLayerControl = ({
   };
 
   const headerStyle = {
-    fontSize: "12px",
+    fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -730,18 +632,19 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "1px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: " 2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "1px",
-          gap: "2px",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
         }}
       >
         <input
@@ -797,44 +700,64 @@ const GroupedLayerControl = ({
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -937,9 +860,8 @@ const GroupedLayerControl = ({
           {/* Capas de Interés */}
           <div
             style={{
-              borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "10px",
-              marginBottom: "20px",
+              paddingBottom: "2px",
+              marginBottom: "2px",
             }}
           >
             <strong
@@ -963,7 +885,7 @@ const GroupedLayerControl = ({
             {humedad && (
               <LayerItem
                 layerKey="humedad"
-                title="Meses de humedad"
+                title="Humedad de suelos"
                 data={humedad}
                 showOpacity={true}
               />
@@ -997,10 +919,13 @@ const MapView = () => {
   const [humedad, setHumedad] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(true); // Mostrar leyenda por defecto
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false); // Tooltips desactivados por defecto
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
 
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
+  // Handler para cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
   };
 
   useEffect(() => {
@@ -1029,10 +954,6 @@ const MapView = () => {
       dragging={false}
       style={{ height: "100vh", width: "100%" }}
     >
-      <InfoControl
-        onToggleTooltips={toggleTooltips}
-        tooltipsEnabled={tooltipsEnabled}
-      />
       <DraggingControl />
       <GroupedLayerControl
         area={area}
@@ -1042,9 +963,14 @@ const MapView = () => {
         humedad={humedad}
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
-        tooltipsEnabled={tooltipsEnabled}
+        onControlStateChange={handleControlStateChange}
       />
-      <ColorLegend colorMap={colorMap} isVisible={showLegend} />
+      <ColorLegend
+        colorMap={colorMap}
+        isVisible={showLegend}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+      />
       <CoordinateControl />
       <ScaleControl />
     </MapContainer>

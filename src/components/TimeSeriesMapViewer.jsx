@@ -28,10 +28,10 @@ const getConsecutiveClassification = (cusValue) => {
     console.warn("Valor CUS inválido:", cusValue);
     return "A"; // valor por defecto
   }
-  
+
   // Convert to uppercase and clean
   const cleanValue = cusValue.toString().toUpperCase().trim();
-  
+
   if (cleanValue.length === 0) {
     console.warn("Valor CUS vacío después de limpiar:", cusValue);
     return "A";
@@ -39,7 +39,12 @@ const getConsecutiveClassification = (cusValue) => {
 
   const firstChar = cleanValue.charAt(0);
   if (firstChar !== "A" && firstChar !== "V") {
-    console.warn("Valor CUS no empieza con A o V:", cusValue, "primer caracter:", firstChar);
+    console.warn(
+      "Valor CUS no empieza con A o V:",
+      cusValue,
+      "primer caracter:",
+      firstChar
+    );
     return "A"; // valor por defecto
   }
 
@@ -67,15 +72,20 @@ const getColorForCUSValue = (cusValue) => {
     console.warn("Valor CUS vacío o undefined:", cusValue);
     return "#CCCCCC";
   }
-  
+
   const classification = getConsecutiveClassification(cusValue);
   const color = CUS_CLASSIFICATIONS[classification];
-  
+
   if (!color) {
-    console.warn("Sin color para CUS:", cusValue, "clasificación:", classification);
+    console.warn(
+      "Sin color para CUS:",
+      cusValue,
+      "clasificación:",
+      classification
+    );
     return "#CCCCCC";
   }
-  
+
   return color;
 };
 
@@ -582,9 +592,7 @@ const LayerControlPanel = React.memo(
                         justifyContent: "center",
                       }}
                       title={
-                        activeLayers[layer.id]
-                          ? "Ocultar capa"
-                          : "Mostrar capa"
+                        activeLayers[layer.id] ? "Ocultar capa" : "Mostrar capa"
                       }
                     >
                       {activeLayers[layer.id] ? (
@@ -599,7 +607,13 @@ const LayerControlPanel = React.memo(
                 {/* Control de opacidad solo si está visible */}
                 {activeLayers[layer.id] && (
                   <>
-                    <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#666",
+                        marginBottom: "5px",
+                      }}
+                    >
                       Opacidad: {Math.round(layerOpacity[layer.id] * 100)}%
                     </div>
                     <input

@@ -9,7 +9,7 @@ const generateANPColorPalette = (values) => {
   const colorMap = {
     "Área de Protección de Flora y Fauna": "#4CAF50", // Verde
     "Área de Protección de Recursos Naturales": "#8BC34A", // Verde claro
-    "Monumento Nacional": "#FF9800", // Naranja
+    "Monumento Nacional": "#2196F3", // Naranja
     "Parque Nacional": "#2196F3", // Azul
     "Reserva de la Biosfera": "#9C27B0", // Púrpura
     ADVC: "#FFD700", // Dorado
@@ -92,30 +92,44 @@ const downloadRaster = async (filename, displayName) => {
 };
 
 // Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible }) => {
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "100px" // Posición normal cuando está colapsado
+    : "270px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "2px solid rgba(0,0,0,0.2)",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    color: "white",
+    minHeight: "auto", // Altura mínima para consistencia
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -133,27 +147,38 @@ const ColorLegend = ({ colorMap, isVisible }) => {
       </div>
 
       {!isCollapsed && (
-        <div style={{ padding: "10px" }}>
+        <div
+          style={{
+            padding: "15px",
+            maxHeight: "300px",
+            overflowY: "auto",
+          }}
+        >
           {Object.entries(colorMap).map(([value, color]) => (
             <div
               key={value}
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "5px",
+                justifyContent: "space-between",
+                padding: "5px 0",
               }}
             >
-              <div
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  backgroundColor: color,
-                  marginRight: "8px",
-                  border: "1px solid #ccc",
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ fontSize: "11px" }}>{value}</span>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {value}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -170,19 +195,21 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
-    // Agregar al contenedor del mapa
-    const mapContainer = map.getContainer();
-    mapContainer.appendChild(coordinateDiv);
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
 
     // Función para actualizar coordenadas
     const updateCoordinates = (e) => {
@@ -212,7 +239,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -282,6 +309,7 @@ const GroupedLayerControl = ({
   setOpacity,
   tooltipsEnabled,
   onColorMapChange,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -394,16 +422,15 @@ const GroupedLayerControl = ({
           };
         },
         onEachFeature: (feature, layer) => {
-          // Agregar tooltip
-          if (tooltipsEnabled && feature.properties) {
-            layer.bindTooltip(
+          // Agregar popup
+          if (feature.properties) {
+            layer.bindPopup(
               `<strong>Nombre:</strong> ${
                 feature.properties.NOMBRE || "N/A"
               }<br>
                <strong>Categoría:</strong> ${
                  feature.properties.CAT_MANEJO || "N/A"
-               }`,
-              { permanent: false, direction: "auto" }
+               }`
             );
           }
         },
@@ -436,9 +463,16 @@ const GroupedLayerControl = ({
     municipios,
     activeLayers,
     opacity,
-    tooltipsEnabled,
     onColorMapChange,
   ]);
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   // Cambiar capa base
   const changeBaseLayer = (newBaseLayerName) => {
@@ -518,7 +552,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="#ffffffff"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -529,51 +563,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="#ffffffff"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: "5px",
+            gap: "5px",
+          }}
+        >
+          <span style={{ fontSize: "10px", color: "white" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={() => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -629,51 +683,82 @@ const GroupedLayerControl = ({
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#333"
+              stroke="#ffffffff"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="#333" />
+            <rect
+              x="3"
+              y="13"
+              width="10"
+              height="1.5"
+              rx="0.75"
+              fill="#ffffffff"
+            />
           </svg>
         </button>
       </div>
-      <>
-        <div style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: "5px",
+          gap: "5px",
+        }}
+      >
+        <span style={{ fontSize: "10px", color: "white" }}>
           Opacidad: {Math.round((opacity[filename] || 0.7) * 100)}%
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={opacity[filename] || 0.7}
-          onChange={(e) =>
-            handleOpacityChange(filename, parseFloat(e.target.value))
-          }
-          onMouseDown={(e) => {
+        </span>
+        <button
+          onClick={(e) => {
             e.stopPropagation();
-            map.dragging.disable();
+            const currentOpacity = opacity[filename] || 0.7;
+            const newOpacity = Math.max(0, currentOpacity - 0.1);
+            handleOpacityChange(filename, newOpacity);
           }}
-          onMouseUp={(e) => {
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          disabled={(opacity[filename] || 0.7) <= 0}
+        >
+          -
+        </button>
+        <button
+          onClick={(e) => {
             e.stopPropagation();
-            map.dragging.enable();
+            const currentOpacity = opacity[filename] || 0.7;
+            const newOpacity = Math.min(1, currentOpacity + 0.1);
+            handleOpacityChange(filename, newOpacity);
           }}
-          onMouseLeave={() => {
-            map.dragging.enable();
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-          onClick={(e) => e.stopPropagation()}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            map.dragging.disable();
-          }}
-          onTouchEnd={(e) => {
-            e.stopPropagation();
-            map.dragging.enable();
-          }}
-          style={{ width: "100%" }}
-        />
-      </>
+          disabled={(opacity[filename] || 0.7) >= 1}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 
@@ -692,11 +777,12 @@ const GroupedLayerControl = ({
         fontFamily: "Inter, sans-serif",
         fontSize: "12px",
         maxWidth: "300px",
+        minHeight: "auto", // Altura mínima para consistencia
       }}
     >
       <div
         style={{
-          fontSize: "12px",
+          fontSize: "16px",
           padding: "10px 15px",
           fontWeight: "bold",
           cursor: "pointer",
@@ -800,13 +886,7 @@ const GroupedLayerControl = ({
           </div>
 
           {/* Áreas de Protección */}
-          <div
-            style={{
-              marginBottom: "20px",
-              borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "10px",
-            }}
-          >
+          <div style={{ marginBottom: "0px" }}>
             <strong
               style={{
                 color: "white",
@@ -846,7 +926,6 @@ const AreaProteccion = () => {
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [colorMap, setColorMap] = useState({});
   const [activeLayers, setActiveLayers] = useState({
@@ -865,6 +944,14 @@ const AreaProteccion = () => {
     "ZONA_CONFLICTO.tif": 0.7,
     "IMPORTANCIA_ECOLOGICA.tif": 0.7,
   });
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
+
+  // Handler para cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
+  };
 
   // Función para obtener el mapa de colores del raster activo
   const getRasterColorMap = () => {
@@ -951,6 +1038,7 @@ const AreaProteccion = () => {
     <MapContainer
       center={[19.5, -99.1]}
       zoom={8}
+      doubleClickZoom={false}
       style={{ height: "100vh", width: "100%" }}
     >
       <GroupedLayerControl
@@ -962,56 +1050,52 @@ const AreaProteccion = () => {
         setActiveLayers={setActiveLayers}
         opacity={opacity}
         setOpacity={setOpacity}
-        tooltipsEnabled={tooltipsEnabled}
+        tooltipsEnabled={true}
         onColorMapChange={setColorMap}
-      />
-
-      <InfoControl
-        onToggleTooltips={() => setTooltipsEnabled(!tooltipsEnabled)}
-        tooltipsEnabled={tooltipsEnabled}
+        onControlStateChange={handleControlStateChange}
       />
 
       {/* Capas raster con configuración específica de valores y colores */}
-      {activeLayers["ZONA_CONFLICTO.tif"] && (
-        <RasterOverlay
-          fileName="ZONA_CONFLICTO.tif"
-          colorMap={["#FFCCCC", "#FF9999", "#FF6666", "#FF3333", "#FF0000"]}
-          baseUrl="/"
-          continuous={false}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={() => {}}
-          overlayOpacity={opacity["ZONA_CONFLICTO.tif"] || 0.7}
-        />
-      )}
+      <RasterOverlay
+        fileName="ZONA_CONFLICTO.tif"
+        colorMap={["#FFCCCC", "#FF9999", "#FF6666", "#FF3333", "#FF0000"]}
+        baseUrl="/"
+        continuous={false}
+        setError={() => {}}
+        setLoading={() => {}}
+        onPixelValue={() => {}}
+        overlayOpacity={opacity["ZONA_CONFLICTO.tif"] || 0.7}
+        visible={activeLayers["ZONA_CONFLICTO.tif"]}
+      />
 
-      {activeLayers["IMPORTANCIA_ECOLOGICA.tif"] && (
-        <RasterOverlay
-          fileName="IMPORTANCIA_ECOLOGICA.tif"
-          colorMap={[
-            "#FFFFFF",
-            "#E6FFE6",
-            "#66CC66",
-            "#99FF99",
-            "#66CCCC",
-            "#6699CC",
-            "#9999FF",
-            "#6666CC",
-          ]}
-          baseUrl="/"
-          continuous={false}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={() => {}}
-          overlayOpacity={opacity["IMPORTANCIA_ECOLOGICA.tif"] || 0.7}
-        />
-      )}
+      <RasterOverlay
+        fileName="IMPORTANCIA_ECOLOGICA.tif"
+        colorMap={[
+          "#FFFFFF",
+          "#E6FFE6",
+          "#66CC66",
+          "#99FF99",
+          "#66CCCC",
+          "#6699CC",
+          "#9999FF",
+          "#6666CC",
+        ]}
+        baseUrl="/"
+        continuous={false}
+        setError={() => {}}
+        setLoading={() => {}}
+        onPixelValue={() => {}}
+        overlayOpacity={opacity["IMPORTANCIA_ECOLOGICA.tif"] || 0.7}
+        visible={activeLayers["IMPORTANCIA_ECOLOGICA.tif"]}
+      />
 
       <CoordinateControl />
       <ScaleControl />
       <ColorLegend
         colorMap={getRasterColorMap() || colorMap}
         isVisible={Object.keys(getRasterColorMap() || colorMap).length > 0}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
       />
     </MapContainer>
   );

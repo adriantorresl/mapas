@@ -3,7 +3,6 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
-import { color } from "framer-motion";
 
 // Función para generar colores específicos para tipos de clima
 const generateClimaColorPalette = (values) => {
@@ -55,6 +54,165 @@ const generateClimaColorPalette = (values) => {
   return { coloringMap, legendMap };
 };
 
+// Función para generar colores específicos para precipitación anual
+const generatePrecipitacionColorPalette = () => {
+  const precipitacionData = [
+    { rango: "313 - 400", color: "#FFFACD" }, // Amarillo muy claro
+    { rango: "400 - 600", color: "#F0E68C" }, // Amarillo khaki claro
+    { rango: "600 - 800", color: "#9ACD32" }, // Verde amarillento
+    { rango: "800 - 1,000", color: "#32CD32" }, // Verde lima
+    { rango: "1,000 - 1,100", color: "#228B22" }, // Verde bosque
+    { rango: "1,100 - 1,200", color: "#006400" }, // Verde oscuro
+    { rango: "1,200 - 1,600", color: "#87CEEB" }, // Azul cielo claro
+    { rango: "1,600 - 1,800", color: "#4169E1" }, // Azul real
+    { rango: "1,800 - 2,000", color: "#0000CD" }, // Azul medio
+  ];
+
+  return precipitacionData;
+};
+
+// Paleta unificada de colores para temperatura (de frío a cálido)
+const UNIFIED_TEMPERATURE_COLORS = [
+  "#2E4F8C", // Azul muy oscuro (más frío)
+  "#4A6FA5", // Azul oscuro
+  "#6B8DB5", // Azul medio oscuro
+  "#8BADD5", // Azul claro
+  "#A7CAE8", // Azul muy claro
+  "#C8E1F5", // Azul pálido
+  "#F0F0DC", // Beige muy claro (neutro)
+  "#F4E4A6", // Amarillo pálido
+  "#F4A460", // Naranja claro
+  "#E0873F", // Naranja medio
+  "#CD6F2E", // Naranja oscuro
+  "#B8541D", // Naranja muy oscuro (más cálido)
+];
+
+// Función para generar colorMap con valores específicos usando paleta unificada
+const generateUnifiedTemperatureColorMap = (ranges, colorCount = 12) => {
+  const colorMap = {};
+  const step = Math.floor(UNIFIED_TEMPERATURE_COLORS.length / colorCount);
+
+  ranges.forEach((range, index) => {
+    const colorIndex = Math.min(
+      index * step,
+      UNIFIED_TEMPERATURE_COLORS.length - 1
+    );
+    colorMap[range.min] = UNIFIED_TEMPERATURE_COLORS[colorIndex];
+  });
+
+  // Agregar el valor máximo del último rango
+  if (ranges.length > 0) {
+    const lastRange = ranges[ranges.length - 1];
+    colorMap[lastRange.max] =
+      UNIFIED_TEMPERATURE_COLORS[UNIFIED_TEMPERATURE_COLORS.length - 1];
+  }
+
+  return colorMap;
+};
+
+// Función para generar colores específicos para temperatura máxima
+const generateTemperaturaMaxColorPalette = () => {
+  const ranges = getTemperaturaMaxRanges();
+  const temperaturaData = ranges.map((range, index) => {
+    const colorIndex = Math.floor(
+      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
+    );
+    return {
+      rango: `${range.min} - ${range.max}`,
+      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
+    };
+  });
+  return temperaturaData;
+};
+
+// Función para generar colores específicos para temperatura media
+const generateTemperaturaMedColorPalette = () => {
+  const ranges = getTemperaturaMedRanges();
+  const temperaturaData = ranges.map((range, index) => {
+    const colorIndex = Math.floor(
+      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
+    );
+    return {
+      rango: `${range.min} - ${range.max}`,
+      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
+    };
+  });
+  return temperaturaData;
+};
+
+// Función para generar colores específicos para temperatura mínima
+const generateTemperaturaMinColorPalette = () => {
+  const ranges = getTemperaturaMinRanges();
+  const temperaturaData = ranges.map((range, index) => {
+    const colorIndex = Math.floor(
+      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
+    );
+    return {
+      rango: `${range.min} - ${range.max}`,
+      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
+    };
+  });
+  return temperaturaData;
+};
+
+// Función para obtener rangos de valores reales para precipitación
+const getPrecipitacionRanges = () => {
+  return [
+    { min: 313, max: 400 },
+    { min: 400, max: 600 },
+    { min: 600, max: 800 },
+    { min: 800, max: 1000 },
+    { min: 1000, max: 1100 },
+    { min: 1100, max: 1200 },
+    { min: 1200, max: 1600 },
+    { min: 1600, max: 1800 },
+    { min: 1800, max: 2000 },
+  ];
+};
+
+// Función para obtener rangos de valores reales para temperatura máxima
+const getTemperaturaMaxRanges = () => {
+  return [
+    { min: 16, max: 18 },
+    { min: 18, max: 20 },
+    { min: 20, max: 22 },
+    { min: 22, max: 24 },
+    { min: 24, max: 26 },
+    { min: 26, max: 28 },
+    { min: 28, max: 30 },
+    { min: 30, max: 32 },
+    { min: 32, max: 33 },
+  ];
+};
+
+// Función para obtener rangos de valores reales para temperatura media
+const getTemperaturaMedRanges = () => {
+  return [
+    { min: 10, max: 12 },
+    { min: 12, max: 14 },
+    { min: 14, max: 16 },
+    { min: 16, max: 18 },
+    { min: 18, max: 20 },
+    { min: 20, max: 22 },
+    { min: 22, max: 24 },
+    { min: 24, max: 26 },
+  ];
+};
+
+// Función para obtener rangos de valores reales para temperatura mínima
+const getTemperaturaMinRanges = () => {
+  return [
+    { min: 4, max: 6 },
+    { min: 6, max: 8 },
+    { min: 8, max: 10 },
+    { min: 10, max: 12 },
+    { min: 12, max: 14 },
+    { min: 14, max: 16 },
+    { min: 16, max: 18 },
+    { min: 18, max: 20 },
+  ];
+};
+
 // Función para descargar GeoJSON
 const downloadGeoJSON = (data, filename) => {
   const dataStr = JSON.stringify(data, null, 2);
@@ -91,28 +249,41 @@ const downloadRaster = async (filename, displayName) => {
 };
 
 // Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible }) => {
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  // Mantener una separación constante y razonable entre controles
+  const rightPosition = layerControlCollapsed
+    ? "90px" // Posición normal cuando está colapsado
+    : "250px"; // Solo se mueve lo necesario para evitar superposición (300px del control + 20px de separación)
+
   const legendStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    color: "white",
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -162,12 +333,7 @@ const ColorLegend = ({ colorMap, isVisible }) => {
       {!isCollapsed && (
         <div
           style={{
-            color: "white",
-            padding: "8px",
-            maxHeight: "500px",
-            overflowY: "auto",
-            backgroundColor: "#1E3C20",
-            scrollbarWidth: "thin",
+            padding: "10px",
           }}
         >
           {sortedEntries.map(([item, color]) => (
@@ -176,21 +342,26 @@ const ColorLegend = ({ colorMap, isVisible }) => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "6px",
-                fontSize: "12px",
+                justifyContent: "space-between",
+                padding: "5px 0",
               }}
             >
-              <div
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  backgroundColor: color,
-                  marginRight: "8px",
-                  borderRadius: "0px",
-                  flexShrink: 0,
-                }}
-              ></div>
-              <span style={{ lineHeight: "1.2" }}>{item}</span>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    borderRadius: "0px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {item}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -205,13 +376,16 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -242,7 +416,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -255,6 +429,211 @@ const ScaleControl = () => {
   }, [map]);
 
   return null;
+};
+
+// Componente de leyenda específico para precipitación anual
+const PrecipitacionLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed ? "90px" : "250px";
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    borderRadius: "0px",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  const precipitacionData = generatePrecipitacionColorPalette();
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div
+            style={{
+              marginBottom: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+            }}
+          >
+            Precipitación total anual actual (mm/año)
+          </div>
+          {precipitacionData.map(({ rango, color }) => (
+            <div
+              key={rango}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "3px 0",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    borderRadius: "0px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {rango}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda específico para temperatura
+const TemperaturaLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+  layerType, // "tempMax", "tempMed", "tempMin"
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed ? "90px" : "250px";
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    borderRadius: "0px",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  const temperaturaData =
+    layerType === "tempMax"
+      ? generateTemperaturaMaxColorPalette()
+      : layerType === "tempMed"
+      ? generateTemperaturaMedColorPalette()
+      : layerType === "tempMin"
+      ? generateTemperaturaMinColorPalette()
+      : generateTemperaturaMinColorPalette(); // fallback
+
+  // Títulos específicos para cada tipo de temperatura
+  const titles = {
+    tempMax: "Temperatura máxima anual actual (°C)",
+    tempMed: "Temperatura media anual actual (°C)",
+    tempMin: "Temperatura mínima anual actual (°C)",
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div
+            style={{
+              marginBottom: "8px",
+              fontSize: "12px",
+              fontWeight: "bold",
+            }}
+          >
+            {titles[layerType] || "Temperatura anual actual (°C)"}
+          </div>
+          {temperaturaData.map(({ rango, color }) => (
+            <div
+              key={rango}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "3px 0",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    borderRadius: "0px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {rango}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // Componente para el control de información (tooltips)
@@ -313,13 +692,12 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
 
   useEffect(() => {
     // Limpiar capas anteriores (excepto capas base)
@@ -348,12 +726,12 @@ const GroupedLayerControl = ({
 
     // Capas base
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Topográfico (OSM)": L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          maxZoom: 17,
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
         }
       ),
       "Satélite (ESRI)": L.tileLayer(
@@ -419,31 +797,25 @@ const GroupedLayerControl = ({
           if (feature.properties) {
             const props = feature.properties;
 
-            // Configurar tooltip al hacer hover si está habilitado
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
-                  <strong>Tipo de Clima:</strong> ${props.CLIMA || "N/A"}<br>
-                  <strong>Hectáreas:</strong> ${props.HECTARES || "N/A"}
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
-              }
+            // Configurar popup al hacer clic
+            const bindPopupOnClick = () => {
+              layer.bindPopup(
+                `
+                <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+                <strong>Paisaje:</strong> ${props.PAISAJE || "N/A"}<br>
+                <strong>Tipo de Clima:</strong> ${props.CLIMA || "N/A"}<br>
+                <strong>Hectáreas:</strong> ${props.HECTARES || "N/A"}
+                `,
+                {
+                  className: "custom-popup",
+                }
+              );
             };
 
-            bindTooltipIfEnabled();
+            bindPopupOnClick();
 
-            // Reconfigurar tooltip cuando cambie el estado
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+            // Reconfigurar popup cuando cambie el estado
+            layer.bindPopupOnClick = bindPopupOnClick;
           }
         },
       });
@@ -484,24 +856,31 @@ const GroupedLayerControl = ({
     clima,
     activeLayers,
     activeBaseLayer,
-    tooltipsEnabled,
     onColorMapChange,
     onLegendVisibilityChange,
     opacity.clima,
   ]);
 
-  // Actualizar tooltips cuando cambie el estado
+  // Actualizar popups cuando cambien las capas
   useEffect(() => {
     Object.values(layers).forEach((layer) => {
       if (layer && layer.eachLayer) {
         layer.eachLayer((subLayer) => {
-          if (subLayer.bindTooltipIfEnabled) {
-            subLayer.bindTooltipIfEnabled();
+          if (subLayer.bindPopupOnClick) {
+            subLayer.bindPopupOnClick();
           }
         });
       }
     });
-  }, [tooltipsEnabled, layers]);
+  }, [layers]);
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = {
@@ -574,6 +953,7 @@ const GroupedLayerControl = ({
   };
 
   const headerStyle = {
+    fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -659,44 +1039,64 @@ const GroupedLayerControl = ({
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: "5px",
+            gap: "5px",
+          }}
+        >
+          <span style={{ fontSize: "10px", color: "white" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -799,9 +1199,8 @@ const GroupedLayerControl = ({
           {/* Capas de Interés */}
           <div
             style={{
-              marginBottom: "15px",
-              borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "8px",
+              marginBottom: "0px",
+              paddingBottom: "0px",
             }}
           >
             <strong
@@ -899,47 +1298,68 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "white",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "5px",
+                  gap: "5px",
                 }}
               >
-                Opacidad: {Math.round(opacity.precipitacion * 100)}%
+                <span style={{ fontSize: "10px", color: "white" }}>
+                  Opacidad: {Math.round(opacity.precipitacion * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.precipitacion - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      precipitacion: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.precipitacion <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.precipitacion + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      precipitacion: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.precipitacion >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.precipitacion}
-                onChange={(e) =>
-                  setOpacity((prev) => ({
-                    ...prev,
-                    precipitacion: parseFloat(e.target.value),
-                  }))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
 
             {/* Temperatura máxima anual */}
@@ -1018,47 +1438,68 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "#ffffffff",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "5px",
+                  gap: "5px",
                 }}
               >
-                Opacidad: {Math.round(opacity.tempMax * 100)}%
+                <span style={{ fontSize: "10px", color: "#ffffffff" }}>
+                  Opacidad: {Math.round(opacity.tempMax * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.tempMax - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMax: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMax <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.tempMax + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMax: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMax >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.tempMax}
-                onChange={(e) =>
-                  setOpacity((prev) => ({
-                    ...prev,
-                    tempMax: parseFloat(e.target.value),
-                  }))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
 
             {/* Temperatura media anual */}
@@ -1137,47 +1578,68 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "#ffffffff",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "5px",
+                  gap: "5px",
                 }}
               >
-                Opacidad: {Math.round(opacity.tempMed * 100)}%
+                <span style={{ fontSize: "10px", color: "#ffffffff" }}>
+                  Opacidad: {Math.round(opacity.tempMed * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.tempMed - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMed: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMed <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.tempMed + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMed: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMed >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.tempMed}
-                onChange={(e) =>
-                  setOpacity((prev) => ({
-                    ...prev,
-                    tempMed: parseFloat(e.target.value),
-                  }))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
 
             {/* Temperatura mínima anual */}
@@ -1256,47 +1718,68 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "#ffffffff",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginTop: "5px",
+                  gap: "5px",
                 }}
               >
-                Opacidad: {Math.round(opacity.tempMin * 100)}%
+                <span style={{ fontSize: "10px", color: "#ffffffff" }}>
+                  Opacidad: {Math.round(opacity.tempMin * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.tempMin - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMin: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMin <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.tempMin + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      tempMin: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.tempMin >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.tempMin}
-                onChange={(e) =>
-                  setOpacity((prev) => ({
-                    ...prev,
-                    tempMin: parseFloat(e.target.value),
-                  }))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
           </div>
         </div>
@@ -1343,7 +1826,7 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
   const displayStyle = {
     color: "white",
     position: "absolute",
-    top: "120px", // Debajo del botón de información
+    bottom: "45px", // Arriba de la escala y coordenadas
     left: "10px",
     backgroundColor: "#1E3C20",
     borderRadius: "0px",
@@ -1397,6 +1880,51 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
     return units[key] || "";
   };
 
+  // Función para obtener el rango correspondiente al valor del píxel
+  const getValueRange = (key, value) => {
+    if (value === null || typeof value !== "number") return null;
+
+    if (key === "precipitacion") {
+      const ranges = getPrecipitacionRanges();
+      for (let range of ranges) {
+        if (value >= range.min && value < range.max) {
+          return `${range.min} - ${range.max}`;
+        }
+      }
+      // Para el último rango
+      if (value >= 1800) return "1,800 - 2,000";
+    } else if (key === "tempMax") {
+      const ranges = getTemperaturaMaxRanges();
+      for (let range of ranges) {
+        if (value >= range.min && value < range.max) {
+          return `${range.min} - ${range.max}`;
+        }
+      }
+      // Para el último rango
+      if (value >= 32) return "32 - 33";
+    } else if (key === "tempMed") {
+      const ranges = getTemperaturaMedRanges();
+      for (let range of ranges) {
+        if (value >= range.min && value < range.max) {
+          return `${range.min} - ${range.max}`;
+        }
+      }
+      // Para el último rango
+      if (value >= 24) return "24 - 26";
+    } else if (key === "tempMin") {
+      const ranges = getTemperaturaMinRanges();
+      for (let range of ranges) {
+        if (value >= range.min && value < range.max) {
+          return `${range.min} - ${range.max}`;
+        }
+      }
+      // Para el último rango
+      if (value >= 18) return "18 - 20";
+    }
+
+    return null;
+  };
+
   return (
     <div style={displayStyle}>
       <div style={headerStyle}>Valores del Pixel</div>
@@ -1408,13 +1936,36 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
       {Object.entries(pixelValues).map(([key, value]) => {
         if (!activeLayers[key] || value === null) return null;
 
+        const range = getValueRange(key, value);
+
         return (
           <div key={key} style={valueStyle}>
-            <span style={labelStyle}>{getLayerName(key)}:</span>
-            <span style={valueNumberStyle}>
-              {typeof value === "number" ? value.toFixed(1) : value}{" "}
-              {getUnit(key)}
-            </span>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "2px",
+                }}
+              >
+                <span style={labelStyle}>{getLayerName(key)}:</span>
+                <span style={valueNumberStyle}>
+                  {typeof value === "number" ? value.toFixed(1) : value}{" "}
+                  {getUnit(key)}
+                </span>
+              </div>
+              {range && (
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "#ccc",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Rango: {range} {getUnit(key)}
+                </div>
+              )}
+            </div>
           </div>
         );
       })}
@@ -1429,7 +1980,6 @@ const Clima = () => {
   const [clima, setClima] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(false);
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
   const [pixelValues, setPixelValues] = useState({
     precipitacion: null,
     tempMax: null,
@@ -1456,9 +2006,13 @@ const Clima = () => {
     tempMed: 0.7,
     tempMin: 0.7,
   });
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
 
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
+  // Handler para cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
   };
 
   // Limpiar valores de píxeles cuando se desactivan capas raster
@@ -1523,10 +2077,6 @@ const Clima = () => {
       dragging={true}
       style={{ height: "100vh", width: "100%" }}
     >
-      <InfoControl
-        onToggleTooltips={toggleTooltips}
-        tooltipsEnabled={tooltipsEnabled}
-      />
       <DraggingControl />
       <PixelValueDisplay
         pixelValues={pixelValues}
@@ -1539,72 +2089,104 @@ const Clima = () => {
         clima={clima}
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
-        tooltipsEnabled={tooltipsEnabled}
+        tooltipsEnabled={true}
         activeLayers={activeLayers}
         setActiveLayers={setActiveLayers}
         opacity={opacity}
         setOpacity={setOpacity}
+        onControlStateChange={handleControlStateChange}
       />
       <CoordinateControl />
       <ScaleControl />
-      <ColorLegend colorMap={colorMap} isVisible={showLegend} />
+      <ColorLegend
+        colorMap={colorMap}
+        isVisible={showLegend}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+      />
+      <PrecipitacionLegend
+        isVisible={activeLayers.precipitacion}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+      />
+      <TemperaturaLegend
+        isVisible={activeLayers.tempMax}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+        layerType="tempMax"
+      />
+      <TemperaturaLegend
+        isVisible={activeLayers.tempMed}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+        layerType="tempMed"
+      />
+      <TemperaturaLegend
+        isVisible={activeLayers.tempMin}
+        layerControlCollapsed={layerControlCollapsed}
+        layerControlWidth={layerControlWidth}
+        layerType="tempMin"
+      />
 
-      {/* Capas raster con overlays condicionales */}
-      {activeLayers.precipitacion && (
-        <RasterOverlay
-          fileName="PREC_TOTAL_ANUAL.tif"
-          colorMap={["#d4edff", "#7fcdff", "#43a2ca", "#1e78b4", "#08519c"]} // Rampa azul claro a oscuro
-          baseUrl="/"
-          continuous={true}
-          setError={handleError}
-          setLoading={handleLoading}
-          onPixelValue={onPrecipitacionPixelValue}
-          overlayOpacity={opacity.precipitacion}
-          pane="rasterPane"
-        />
-      )}
+      {/* Capas raster con control de visibilidad */}
+      <RasterOverlay
+        fileName="PREC_TOTAL_ANUAL.tif"
+        colorMap={{
+          313: "#FFFACD",
+          400: "#F0E68C",
+          600: "#9ACD32",
+          800: "#32CD32",
+          1000: "#228B22",
+          1100: "#006400",
+          1200: "#87CEEB",
+          1600: "#4169E1",
+          1800: "#0000CD",
+          2000: "#0000CD",
+        }}
+        baseUrl="/"
+        continuous={true}
+        setError={handleError}
+        setLoading={handleLoading}
+        onPixelValue={onPrecipitacionPixelValue}
+        overlayOpacity={opacity.precipitacion}
+        visible={activeLayers.precipitacion}
+      />
 
-      {activeLayers.tempMax && (
-        <RasterOverlay
-          fileName="TEMP_MAX_ANUAL.tif"
-          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
-          baseUrl="/"
-          continuous={true}
-          setError={handleError}
-          setLoading={handleLoading}
-          onPixelValue={onTempMaxPixelValue}
-          overlayOpacity={opacity.tempMax}
-          pane="rasterPane"
-        />
-      )}
+      <RasterOverlay
+        fileName="TEMP_MAX_ANUAL.tif"
+        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMaxRanges())}
+        baseUrl="/"
+        continuous={true}
+        setError={handleError}
+        setLoading={handleLoading}
+        onPixelValue={onTempMaxPixelValue}
+        overlayOpacity={opacity.tempMax}
+        visible={activeLayers.tempMax}
+      />
 
-      {activeLayers.tempMed && (
-        <RasterOverlay
-          fileName="TEMP_MED_ANUAL.tif"
-          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
-          baseUrl="/"
-          continuous={true}
-          setError={handleError}
-          setLoading={handleLoading}
-          onPixelValue={onTempMedPixelValue}
-          overlayOpacity={opacity.tempMed}
-          pane="rasterPane"
-        />
-      )}
+      <RasterOverlay
+        fileName="TEMP_MED_ANUAL.tif"
+        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMedRanges())}
+        baseUrl="/"
+        continuous={true}
+        setError={handleError}
+        setLoading={handleLoading}
+        onPixelValue={onTempMedPixelValue}
+        overlayOpacity={opacity.tempMed}
+        visible={activeLayers.tempMed}
+      />
 
-      {activeLayers.tempMin && (
-        <RasterOverlay
-          fileName="TEMP_MIN_ANUAL.tif"
-          colorMap={["#ffe5e5", "#ffb3b3", "#ff8080", "#ff4d4d", "#cc0000"]} // Rampa rojo claro a oscuro
-          baseUrl="/"
-          continuous={true}
-          setError={handleError}
-          setLoading={handleLoading}
-          onPixelValue={onTempMinPixelValue}
-          overlayOpacity={opacity.tempMin}
-          pane="rasterPane"
-        />
-      )}
+      <RasterOverlay
+        fileName="TEMP_MIN_ANUAL.tif"
+        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMinRanges())}
+        baseUrl="/"
+        continuous={true}
+        setError={handleError}
+        setLoading={handleLoading}
+        onPixelValue={onTempMinPixelValue}
+        overlayOpacity={opacity.tempMin}
+        visible={activeLayers.tempMin}
+      />
     </MapContainer>
   );
 };
