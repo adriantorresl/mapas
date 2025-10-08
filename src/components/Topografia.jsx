@@ -1144,18 +1144,17 @@ const MapView = () => {
         setOpacity={setOpacity}
         onControlStateChange={handleControlStateChange}
       />
-      {activeLayers.raster && (
-        <RasterOverlay
-          fileName="MDE.tif"
-          colorMap={["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"]}
-          baseUrl="/"
-          continuous={true}
-          setError={() => {}}
-          setLoading={() => {}}
-          onPixelValue={() => {}}
-          overlayOpacity={opacity.raster}
-        />
-      )}
+      <RasterOverlay
+        fileName="MDE.tif"
+        colorMap={["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"]}
+        baseUrl="/"
+        continuous={true}
+        setError={() => {}}
+        setLoading={() => {}}
+        onPixelValue={() => {}}
+        overlayOpacity={opacity.raster}
+        visible={activeLayers.raster}
+      />
       <ColorLegend
         colorMap={colorMap}
         isVisible={
