@@ -157,8 +157,8 @@ const ColorLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   // Mantener una separación constante y razonable entre controles
   const rightPosition = layerControlCollapsed
-    ? "90px" // Posición normal cuando está colapsado
-    : "310px"; // Espacio suficiente para evitar superposición con el control expandido
+    ? "105px" // Posición normal cuando está colapsado (más espacio)
+    : "330px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
 
   const legendStyle = {
     color: "white",
@@ -168,6 +168,7 @@ const ColorLegend = ({
     backgroundColor: "#1E3C20",
     border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
@@ -683,6 +684,8 @@ const GroupedLayerControl = ({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({

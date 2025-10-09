@@ -107,8 +107,8 @@ const ColorLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   // Mantener una separación constante y razonable entre controles
   const rightPosition = layerControlCollapsed
-    ? "100px" // Posición normal cuando está colapsado
-    : "270px"; // Espacio suficiente para evitar superposición con el control expandido
+    ? "105px" // Posición normal cuando está colapsado (más espacio)
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
 
   const legendStyle = {
     color: "white",

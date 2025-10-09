@@ -264,8 +264,8 @@ const ColorLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   // Mantener una separación constante y razonable entre controles
   const rightPosition = layerControlCollapsed
-    ? "90px" // Posición normal cuando está colapsado
-    : "250px"; // Solo se mueve lo necesario para evitar superposición (300px del control + 20px de separación)
+    ? "105px" // Posición normal cuando está colapsado (más espacio)
+    : "270px"; // Solo se mueve lo necesario para evitar superposición (más espacio)
 
   const legendStyle = {
     color: "white",
@@ -275,6 +275,7 @@ const ColorLegend = ({
     backgroundColor: "#1E3C20",
     border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
@@ -445,7 +446,7 @@ const PrecipitacionLegend = ({
   }
 
   // Calcular posición dinámica basada en el estado del control de capas
-  const rightPosition = layerControlCollapsed ? "90px" : "250px";
+  const rightPosition = layerControlCollapsed ? "105px" : "270px";
 
   const legendStyle = {
     color: "white",
@@ -455,6 +456,7 @@ const PrecipitacionLegend = ({
     backgroundColor: "#1E3C20",
     border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
@@ -542,7 +544,7 @@ const TemperaturaLegend = ({
   }
 
   // Calcular posición dinámica basada en el estado del control de capas
-  const rightPosition = layerControlCollapsed ? "90px" : "250px";
+  const rightPosition = layerControlCollapsed ? "105px" : "270px";
 
   const legendStyle = {
     color: "white",
@@ -552,6 +554,7 @@ const TemperaturaLegend = ({
     backgroundColor: "#1E3C20",
     border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
@@ -965,6 +968,8 @@ const GroupedLayerControl = ({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
