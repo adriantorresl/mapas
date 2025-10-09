@@ -950,7 +950,7 @@ const MapView = () => {
 
   return (
     <MapContainer
-      center={[16.67566, -96.28311]}
+      center={[16.67566, -95.96711]}
       zoom={10}
       scrollWheelZoom={true}
       dragging={false}
