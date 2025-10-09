@@ -78,6 +78,7 @@ const ColorLegend = ({
     top: "10px",
     right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1.5px solid white",
     borderRadius: "0px",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
@@ -92,6 +93,7 @@ const ColorLegend = ({
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
+    border: "1px solid white",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
@@ -399,6 +401,7 @@ const GroupedLayerControl = ({
     top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
@@ -408,6 +411,7 @@ const GroupedLayerControl = ({
   };
 
   const headerStyle = {
+    border: "1px solid white",
     fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
@@ -415,7 +419,6 @@ const GroupedLayerControl = ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid #e0e0e0",
     paddingBottom: "10px",
   };
 
