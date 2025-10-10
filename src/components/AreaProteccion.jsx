@@ -1036,7 +1036,7 @@ const AreaProteccion = () => {
 
   return (
     <MapContainer
-      center={[19.5, -99.1]}
+      center={[19.5, -95.96711]}
       zoom={8}
       doubleClickZoom={false}
       style={{ height: "100vh", width: "100%" }}

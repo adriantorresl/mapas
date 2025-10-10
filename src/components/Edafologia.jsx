@@ -42,9 +42,9 @@ const generateEdafologiaColorPalette = (values) => {
   const colorMap = {
     "Acrisol - Fina": "#eeb156ff",
     "Acrisol - Media": "#e28800ff",
-    "Cambisol - Fina": "#9eb5f3ff",
-    "Cambisol - Media": "#5d65daff",
-    "Cambisol - Gruesa": "#000dcab0",
+    "Cambisol - Fina": "#d4dffe",
+    "Cambisol - Media": "#99b7fc",
+    "Cambisol - Gruesa": "#4b90fa",
     "Calcisol - Media": "#fffb00ff",
     "Fluvisol - Media": "#aeeb9fff",
     "Fluvisol - Gruesa": "#5ef365ff",

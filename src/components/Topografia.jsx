@@ -183,12 +183,12 @@ const EscurrimientosLegend = ({
 
   // Definir colores y grosores para cada orden de escurrimiento
   const ordenData = [
-    { orden: 1, color: "#B3F0FF", width: 1 },
-    { orden: 2, color: "#80E6FF", width: 1.5 },
-    { orden: 3, color: "#4DDDFF", width: 2 },
-    { orden: 4, color: "#1AD4FF", width: 2.5 },
-    { orden: 5, color: "#00BFFF", width: 3 },
-    { orden: 6, color: "#0099CC", width: 3.5 },
+    { orden: 1, color: "#d2f7f9", width: 1 },
+    { orden: 2, color: "#a1bdc6", width: 1.5 },
+    { orden: 3, color: "#708397", width: 2 },
+    { orden: 4, color: "#3f4962", width: 2.5 },
+    { orden: 5, color: "#0f0f30", width: 3 },
+    { orden: 6, color: "#000000", width: 3.5 },
   ];
 
   return (
@@ -254,12 +254,12 @@ const PendienteLegend = ({
     return null;
   }
 
-  // Colores del gradiente de pendiente (mismo que en RasterOverlay)
-  const colors = ["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"];
+  // Colores del gradiente de pendiente (extraídos del archivo Pendiente.sld)
+  const colors = ["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"];
 
-  // Valores de pendiente para la zona (0° a 61°)
+  // Valores de pendiente según el archivo SLD (0° a 61.82°)
   const minPendiente = 0; // grados
-  const maxPendiente = 61; // grados
+  const maxPendiente = 61.82; // grados (valor exacto del SLD)
 
   // Calcular posición dinámica basada en el estado del control de capas
   // Mantener una separación constante y razonable entre controles
@@ -426,21 +426,19 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
 
   useEffect(() => {
     const newLayers = {};
 
     // Capas base
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Topográfico (OSM)": L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
           attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          maxZoom: 17,
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
         }
       ),
       "Satélite (ESRI)": L.tileLayer(
@@ -499,17 +497,16 @@ const GroupedLayerControl = ({
         style: (feature) => {
           // Obtener el valor del campo ORD_FLOW para determinar el grosor y color
           const ordFlow =
-            feature.properties.ORD_FLOW || feature.properties.ORD_CLAS || 1;
+            feature.properties.ORD_STRA || feature.properties.ORD_CLAS || 1;
 
           // Definir colores y grosores según el orden (los órdenes más altos = ríos principales = más gruesos)
           const colorMap = {
-            1: { color: "#B3F0FF", weight: 1 },
-            2: { color: "#80E6FF", weight: 1.5 },
-            3: { color: "#4DDDFF", weight: 2 },
-            4: { color: "#1AD4FF", weight: 2.5 },
-            5: { color: "#00BFFF", weight: 3 },
-            6: { color: "#0099CC", weight: 3.5 },
-            7: { color: "#007399", weight: 4 },
+            1: { color: "#d2f7f9", weight: 1 },
+            2: { color: "#a1bdc6", weight: 1.5 },
+            3: { color: "#708397", weight: 2 },
+            4: { color: "#3f4962", weight: 2.5 },
+            5: { color: "#0f0f30", weight: 3 },
+            6: { color: "#000000", weight: 3.5 },
           };
 
           // Obtener estilo según el orden o usar valor por defecto
@@ -1098,7 +1095,7 @@ const MapView = () => {
     municipios: 1,
     cuencas: 1,
     escurrimientos: 1,
-    raster: 0.85,
+    raster: 0.6, // Opacidad del archivo SLD
   });
 
   // Estado para controlar la posición dinámica de la leyenda
@@ -1131,7 +1128,7 @@ const MapView = () => {
 
   return (
     <MapContainer
-      center={[16.67566, -96.28311]}
+      center={[16.67566, -95.96711]}
       zoom={10}
       scrollWheelZoom={true}
       dragging={false}
@@ -1155,7 +1152,7 @@ const MapView = () => {
       />
       <RasterOverlay
         fileName="MDE.tif"
-        colorMap={["#ffff80", "#ffcc66", "#ff9999", "#cc66cc", "#9933cc"]}
+        colorMap={["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"]}
         baseUrl="/"
         continuous={true}
         setError={() => {}}
