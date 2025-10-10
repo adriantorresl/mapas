@@ -376,17 +376,14 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   useEffect(() => {
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
       ),
       "Satelital (ESRI)": L.tileLayer(
@@ -793,28 +790,26 @@ const GroupedLayerControl = ({
             <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
               Capa Base
             </div>
-            {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
-              (layerName) => (
-                <div
-                  key={layerName}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "3px",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="baseLayer"
-                    checked={activeBaseLayer === layerName}
-                    onChange={() => changeBaseLayer(layerName)}
-                  />
-                  <span style={{ marginLeft: "8px", fontSize: "11px" }}>
-                    {layerName}
-                  </span>
-                </div>
-              )
-            )}
+            {["Hillshade (ESRI)", "Satelital (ESRI)"].map((layerName) => (
+              <div
+                key={layerName}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "3px",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="baseLayer"
+                  checked={activeBaseLayer === layerName}
+                  onChange={() => changeBaseLayer(layerName)}
+                />
+                <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                  {layerName}
+                </span>
+              </div>
+            ))}
           </div>
 
           {/* Límites */}

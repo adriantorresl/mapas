@@ -349,17 +349,14 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   useEffect(() => {
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
       ),
       "Satelital (ESRI)": L.tileLayer(
@@ -709,7 +706,7 @@ const GroupedLayerControl = ({
               Mapa Base
             </div>
             {[
-              "Topográfico (OpenTopoMap)",
+              "Hillshade (ESRI)",
               "Satelital (ESRI)",
               "Calles (OpenStreetMap)",
             ].map((layerName) => (
