@@ -613,8 +613,8 @@ const RasterViewer = ({
         </div>
       )}
       <MapContainer
-        center={[23.5, -102.5]}
-        zoom={5}
+        center={[216.67566, -95.96711]}
+        zoom={10}
         style={{ height: "500px", width: "100%" }}
         scrollWheelZoom={true}
         zoomControl={false}

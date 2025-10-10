@@ -57,7 +57,7 @@ const ColorLegend = ({
   // Mantener una separación constante y razonable entre controles
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado (más espacio)
-    : "300px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
 
   const legendStyle = {
     color: "white",
@@ -151,7 +151,7 @@ const EscurrimientosLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado (más espacio)
-    : "370px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido (más espacio)
 
   const legendStyle = {
     color: "white",
@@ -428,7 +428,19 @@ const GroupedLayerControl = ({
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
 
+  // useEffect para crear capas (solo cuando cambian los datos, NO cuando cambia activeLayers)
   useEffect(() => {
+    // Limpiar capas anteriores (excepto capas base)
+    Object.entries(layers).forEach(([key, layer]) => {
+      if (key !== "baseLayers" && layer && layer.remove) {
+        try {
+          map.removeLayer(layer);
+        } catch (e) {
+          // La capa podría no estar en el mapa, ignorar error
+        }
+      }
+    });
+
     const newLayers = {};
 
     // Capas base
@@ -457,21 +469,18 @@ const GroupedLayerControl = ({
       newLayers.area = L.geoJSON(area, {
         style: { color: "black", weight: 6, fillOpacity: 0 },
       });
-      newLayers.area.addTo(map);
     }
 
     if (paisajes) {
       newLayers.paisajes = L.geoJSON(paisajes, {
         style: { color: "white", weight: 3, fillOpacity: 0 },
       });
-      newLayers.paisajes.addTo(map);
     }
 
     if (municipios) {
       newLayers.municipios = L.geoJSON(municipios, {
         style: { color: "black", weight: 1, fillOpacity: 0 },
       });
-      newLayers.municipios.addTo(map);
     }
 
     if (cuencas) {
@@ -486,10 +495,6 @@ const GroupedLayerControl = ({
           }
         },
       });
-      // No agregar automáticamente al mapa - se controlará por activeLayers
-      if (activeLayers.cuencas) {
-        newLayers.cuencas.addTo(map);
-      }
     }
 
     if (escurrimientos) {
@@ -530,26 +535,16 @@ const GroupedLayerControl = ({
           }
         },
       });
-      // Solo agregar al mapa si está activa en el estado
-      if (activeLayers.escurrimientos) {
-        newLayers.escurrimientos.addTo(map);
-      }
     }
 
-    setLayers({ ...newLayers, baseLayers });
+    newLayers.baseLayers = baseLayers;
+    setLayers(newLayers);
 
-    return () => {
-      Object.values(newLayers).forEach((layer) => {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer);
-        }
-      });
-      Object.values(baseLayers).forEach((layer) => {
-        if (map.hasLayer(layer)) {
-          map.removeLayer(layer);
-        }
-      });
-    };
+    // Configurar el zoom inicial basado en el área
+    if (area && area.features && area.features.length > 0) {
+      const layer = L.geoJSON(area);
+      map.fitBounds(layer.getBounds());
+    }
   }, [
     map,
     area,
@@ -558,9 +553,25 @@ const GroupedLayerControl = ({
     cuencas,
     escurrimientos,
     activeBaseLayer,
-    activeLayers.cuencas,
-    activeLayers.escurrimientos,
   ]);
+
+  // useEffect separado para manejar la activación/desactivación de capas
+  useEffect(() => {
+    Object.entries(layers).forEach(([layerKey, layer]) => {
+      if (layerKey === "baseLayers") return;
+
+      if (layer) {
+        const isActive = activeLayers[layerKey];
+        const isOnMap = map.hasLayer(layer);
+
+        if (isActive && !isOnMap) {
+          layer.addTo(map);
+        } else if (!isActive && isOnMap) {
+          map.removeLayer(layer);
+        }
+      }
+    });
+  }, [activeLayers, layers, map]);
 
   // Notificar cambios en el estado del control para posicionamiento dinámico
   useEffect(() => {
@@ -572,25 +583,7 @@ const GroupedLayerControl = ({
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = { ...activeLayers };
-
-    if (layerKey === "raster") {
-      // Manejo especial para la capa raster
-      newActiveLayers[layerKey] = !activeLayers[layerKey];
-      setActiveLayers(newActiveLayers);
-      return;
-    }
-
-    const layer = layers[layerKey];
-    if (!layer) return;
-
-    if (activeLayers[layerKey]) {
-      map.removeLayer(layer);
-      newActiveLayers[layerKey] = false;
-    } else {
-      layer.addTo(map);
-      newActiveLayers[layerKey] = true;
-    }
-
+    newActiveLayers[layerKey] = !activeLayers[layerKey];
     setActiveLayers(newActiveLayers);
   };
 

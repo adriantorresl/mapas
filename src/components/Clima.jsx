@@ -703,7 +703,7 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   useEffect(() => {
     // Limpiar capas anteriores (excepto capas base)
@@ -742,6 +742,12 @@ const GroupedLayerControl = ({
       ),
       "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
@@ -1256,7 +1262,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Precipitación anual
+                  Precipitación total anual
                 </span>
                 <button
                   style={{
