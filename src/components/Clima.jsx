@@ -71,87 +71,186 @@ const generatePrecipitacionColorPalette = () => {
   return precipitacionData;
 };
 
-// Paleta unificada de colores para temperatura (de frío a cálido)
-const UNIFIED_TEMPERATURE_COLORS = [
-  "#2E4F8C", // Azul muy oscuro (más frío)
-  "#4A6FA5", // Azul oscuro
-  "#6B8DB5", // Azul medio oscuro
-  "#8BADD5", // Azul claro
-  "#A7CAE8", // Azul muy claro
-  "#C8E1F5", // Azul pálido
-  "#F0F0DC", // Beige muy claro (neutro)
-  "#F4E4A6", // Amarillo pálido
-  "#F4A460", // Naranja claro
-  "#E0873F", // Naranja medio
-  "#CD6F2E", // Naranja oscuro
-  "#B8541D", // Naranja muy oscuro (más cálido)
+// Paleta de colores para temperatura basada en los archivos SLD
+const SLD_TEMPERATURE_COLORS = [
+  "#143180", // 4°C - Azul muy oscuro (más frío)
+  "#234b89", // 6°C - Azul oscuro
+  "#326491", // 8°C - Azul medio oscuro
+  "#5098a2", // 10°C - Azul verdoso
+  "#6eccb3", // 12°C - Verde azulado
+  "#75e38f", // 14°C - Verde
+  "#7cfa6b", // 16°C - Verde claro
+  "#bdfa8c", // 18°C - Verde amarillento
+  "#fffbae", // 20°C - Amarillo muy claro
+  "#ffe17f", // 22°C - Amarillo
+  "#ffc750", // 24°C - Amarillo naranja
+  "#ffad21", // 26°C - Naranja claro
+  "#e8651f", // 28°C - Naranja
+  "#d21d1d", // 30°C - Rojo
+  "#4a2121", // 34°C - Rojo oscuro (más cálido)
 ];
 
-// Función para generar colorMap con valores específicos usando paleta unificada
-const generateUnifiedTemperatureColorMap = (ranges, colorCount = 12) => {
-  const colorMap = {};
-  const step = Math.floor(UNIFIED_TEMPERATURE_COLORS.length / colorCount);
+// Valores de temperatura correspondientes a cada color del SLD
+const SLD_TEMPERATURE_VALUES = [
+  4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34,
+];
 
-  ranges.forEach((range, index) => {
-    const colorIndex = Math.min(
-      index * step,
-      UNIFIED_TEMPERATURE_COLORS.length - 1
-    );
-    colorMap[range.min] = UNIFIED_TEMPERATURE_COLORS[colorIndex];
+// Función para interpolar color entre dos colores hexadecimales
+const interpolateColor = (color1, color2, factor) => {
+  // Convertir hex a RGB
+  const hex1 = color1.replace("#", "");
+  const hex2 = color2.replace("#", "");
+
+  const r1 = parseInt(hex1.substr(0, 2), 16);
+  const g1 = parseInt(hex1.substr(2, 2), 16);
+  const b1 = parseInt(hex1.substr(4, 2), 16);
+
+  const r2 = parseInt(hex2.substr(0, 2), 16);
+  const g2 = parseInt(hex2.substr(2, 2), 16);
+  const b2 = parseInt(hex2.substr(4, 2), 16);
+
+  // Interpolar cada componente
+  const r = Math.round(r1 + (r2 - r1) * factor);
+  const g = Math.round(g1 + (g2 - g1) * factor);
+  const b = Math.round(b1 + (b2 - b1) * factor);
+
+  // Convertir de vuelta a hex
+  const rHex = r.toString(16).padStart(2, "0");
+  const gHex = g.toString(16).padStart(2, "0");
+  const bHex = b.toString(16).padStart(2, "0");
+
+  return `#${rHex}${gHex}${bHex}`;
+};
+
+// Función para generar colorMap basado en los archivos SLD de temperatura
+const generateSldTemperatureColorMap = () => {
+  const colorMap = {};
+
+  // Generar valores cada 0.1°C desde 4°C hasta 34°C para cubrir todos los píxeles
+  for (let temp = 4; temp <= 34; temp += 0.1) {
+    const roundedTemp = Math.round(temp * 10) / 10; // Redondear a 1 decimal
+
+    // Encontrar los dos valores SLD más cercanos para interpolar
+    let lowerIndex = -1;
+    let upperIndex = -1;
+
+    for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+      if (
+        roundedTemp >= SLD_TEMPERATURE_VALUES[i] &&
+        roundedTemp <= SLD_TEMPERATURE_VALUES[i + 1]
+      ) {
+        lowerIndex = i;
+        upperIndex = i + 1;
+        break;
+      }
+    }
+
+    // Si está fuera del rango, usar los valores extremos
+    if (lowerIndex === -1) {
+      if (roundedTemp < SLD_TEMPERATURE_VALUES[0]) {
+        colorMap[roundedTemp] = SLD_TEMPERATURE_COLORS[0];
+      } else {
+        colorMap[roundedTemp] =
+          SLD_TEMPERATURE_COLORS[SLD_TEMPERATURE_COLORS.length - 1];
+      }
+    } else {
+      // Interpolar entre los dos colores más cercanos
+      const lowerTemp = SLD_TEMPERATURE_VALUES[lowerIndex];
+      const upperTemp = SLD_TEMPERATURE_VALUES[upperIndex];
+      const lowerColor = SLD_TEMPERATURE_COLORS[lowerIndex];
+      const upperColor = SLD_TEMPERATURE_COLORS[upperIndex];
+
+      const factor = (roundedTemp - lowerTemp) / (upperTemp - lowerTemp);
+      colorMap[roundedTemp] = interpolateColor(lowerColor, upperColor, factor);
+    }
+  }
+
+  // Debug: Mostrar algunos valores clave
+  console.log("🎨 ColorMap SLD denso generado (muestra de valores clave):");
+  [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34].forEach((temp) => {
+    console.log(`${temp}°C = ${colorMap[temp]}`);
   });
 
-  // Agregar el valor máximo del último rango
-  if (ranges.length > 0) {
-    const lastRange = ranges[ranges.length - 1];
-    colorMap[lastRange.max] =
-      UNIFIED_TEMPERATURE_COLORS[UNIFIED_TEMPERATURE_COLORS.length - 1];
-  }
+  console.log(
+    `\n📊 Total de colores generados: ${Object.keys(colorMap).length}`
+  );
+  console.log("🔍 Verificación para valores intermedios:");
+  console.log("25.3°C =", colorMap[25.3]);
+  console.log("26.2°C =", colorMap[26.2]);
+  console.log("27.8°C =", colorMap[27.8]);
 
   return colorMap;
 };
 
-// Función para generar colores específicos para temperatura máxima
+// Función para generar colores específicos para temperatura máxima basado en SLD
 const generateTemperaturaMaxColorPalette = () => {
-  const ranges = getTemperaturaMaxRanges();
-  const temperaturaData = ranges.map((range, index) => {
-    const colorIndex = Math.floor(
-      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
-    );
-    return {
-      rango: `${range.min} - ${range.max}`,
-      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
-    };
+  const temperaturaData = [];
+
+  // Crear rangos basados en los valores del SLD
+  for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+    const minValue = SLD_TEMPERATURE_VALUES[i];
+    const maxValue = SLD_TEMPERATURE_VALUES[i + 1];
+    temperaturaData.push({
+      rango: `${minValue} - ${maxValue}`,
+      color: SLD_TEMPERATURE_COLORS[i],
+    });
+  }
+
+  // Agregar el último rango
+  const lastValue = SLD_TEMPERATURE_VALUES[SLD_TEMPERATURE_VALUES.length - 1];
+  temperaturaData.push({
+    rango: `${lastValue}+`,
+    color: SLD_TEMPERATURE_COLORS[SLD_TEMPERATURE_COLORS.length - 1],
   });
+
   return temperaturaData;
 };
 
-// Función para generar colores específicos para temperatura media
+// Función para generar colores específicos para temperatura media basado en SLD
 const generateTemperaturaMedColorPalette = () => {
-  const ranges = getTemperaturaMedRanges();
-  const temperaturaData = ranges.map((range, index) => {
-    const colorIndex = Math.floor(
-      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
-    );
-    return {
-      rango: `${range.min} - ${range.max}`,
-      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
-    };
+  const temperaturaData = [];
+
+  // Crear rangos basados en los valores del SLD
+  for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+    const minValue = SLD_TEMPERATURE_VALUES[i];
+    const maxValue = SLD_TEMPERATURE_VALUES[i + 1];
+    temperaturaData.push({
+      rango: `${minValue} - ${maxValue}`,
+      color: SLD_TEMPERATURE_COLORS[i],
+    });
+  }
+
+  // Agregar el último rango
+  const lastValue = SLD_TEMPERATURE_VALUES[SLD_TEMPERATURE_VALUES.length - 1];
+  temperaturaData.push({
+    rango: `${lastValue}+`,
+    color: SLD_TEMPERATURE_COLORS[SLD_TEMPERATURE_COLORS.length - 1],
   });
+
   return temperaturaData;
 };
 
-// Función para generar colores específicos para temperatura mínima
+// Función para generar colores específicos para temperatura mínima basado en SLD
 const generateTemperaturaMinColorPalette = () => {
-  const ranges = getTemperaturaMinRanges();
-  const temperaturaData = ranges.map((range, index) => {
-    const colorIndex = Math.floor(
-      (index / (ranges.length - 1)) * (UNIFIED_TEMPERATURE_COLORS.length - 1)
-    );
-    return {
-      rango: `${range.min} - ${range.max}`,
-      color: UNIFIED_TEMPERATURE_COLORS[colorIndex],
-    };
+  const temperaturaData = [];
+
+  // Crear rangos basados en los valores del SLD
+  for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+    const minValue = SLD_TEMPERATURE_VALUES[i];
+    const maxValue = SLD_TEMPERATURE_VALUES[i + 1];
+    temperaturaData.push({
+      rango: `${minValue} - ${maxValue}`,
+      color: SLD_TEMPERATURE_COLORS[i],
+    });
+  }
+
+  // Agregar el último rango
+  const lastValue = SLD_TEMPERATURE_VALUES[SLD_TEMPERATURE_VALUES.length - 1];
+  temperaturaData.push({
+    rango: `${lastValue}+`,
+    color: SLD_TEMPERATURE_COLORS[SLD_TEMPERATURE_COLORS.length - 1],
   });
+
   return temperaturaData;
 };
 
@@ -170,6 +269,10 @@ const getPrecipitacionRanges = () => {
   ];
 };
 
+// NOTA: Las siguientes funciones han sido reemplazadas por los valores SLD
+// Se mantienen comentadas como referencia de los rangos originales
+
+/* 
 // Función para obtener rangos de valores reales para temperatura máxima
 const getTemperaturaMaxRanges = () => {
   return [
@@ -212,6 +315,7 @@ const getTemperaturaMinRanges = () => {
     { min: 18, max: 20 },
   ];
 };
+*/
 
 // Función para descargar GeoJSON
 const downloadGeoJSON = (data, filename) => {
@@ -1908,33 +2012,19 @@ const PixelValueDisplay = ({ pixelValues, activeLayers }) => {
       }
       // Para el último rango
       if (value >= 1800) return "1,800 - 2,000";
-    } else if (key === "tempMax") {
-      const ranges = getTemperaturaMaxRanges();
-      for (let range of ranges) {
-        if (value >= range.min && value < range.max) {
-          return `${range.min} - ${range.max}`;
+    } else if (key === "tempMax" || key === "tempMed" || key === "tempMin") {
+      // Usar los rangos del SLD para todas las capas de temperatura
+      for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+        const minValue = SLD_TEMPERATURE_VALUES[i];
+        const maxValue = SLD_TEMPERATURE_VALUES[i + 1];
+        if (value >= minValue && value < maxValue) {
+          return `${minValue} - ${maxValue}`;
         }
       }
       // Para el último rango
-      if (value >= 32) return "32 - 33";
-    } else if (key === "tempMed") {
-      const ranges = getTemperaturaMedRanges();
-      for (let range of ranges) {
-        if (value >= range.min && value < range.max) {
-          return `${range.min} - ${range.max}`;
-        }
-      }
-      // Para el último rango
-      if (value >= 24) return "24 - 26";
-    } else if (key === "tempMin") {
-      const ranges = getTemperaturaMinRanges();
-      for (let range of ranges) {
-        if (value >= range.min && value < range.max) {
-          return `${range.min} - ${range.max}`;
-        }
-      }
-      // Para el último rango
-      if (value >= 18) return "18 - 20";
+      const lastValue =
+        SLD_TEMPERATURE_VALUES[SLD_TEMPERATURE_VALUES.length - 1];
+      if (value >= lastValue) return `${lastValue}+`;
     }
 
     return null;
@@ -2049,6 +2139,33 @@ const Clima = () => {
   }, []);
 
   const onTempMaxPixelValue = useCallback((value) => {
+    // Debug: Mostrar el valor del píxel y qué color debería tener
+    if (value !== null && value !== undefined) {
+      console.log(`Valor del píxel de temperatura máxima: ${value}°C`);
+
+      // Verificar qué rango corresponde según nuestro SLD
+      for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+        const minVal = SLD_TEMPERATURE_VALUES[i];
+        const maxVal = SLD_TEMPERATURE_VALUES[i + 1];
+        if (value >= minVal && value < maxVal) {
+          console.log(
+            `Debería estar en rango ${minVal}-${maxVal}°C con color ${SLD_TEMPERATURE_COLORS[i]}`
+          );
+          break;
+        }
+      }
+
+      // Caso especial para valor exacto de 26.2°C
+      if (Math.abs(value - 26.2) < 0.1) {
+        console.log(
+          `🚨 CASO PROBLEMÁTICO: 26.2°C debería ser NARANJA CLARO (#ffad21), NO azul`
+        );
+        console.log(
+          `Está en rango 26-28°C = ${SLD_TEMPERATURE_COLORS[11]} (naranja claro)`
+        );
+      }
+    }
+
     setPixelValues((prev) => ({ ...prev, tempMax: value }));
   }, []);
 
@@ -2057,6 +2174,23 @@ const Clima = () => {
   }, []);
 
   const onTempMinPixelValue = useCallback((value) => {
+    // Debug: Mostrar el valor del píxel y qué color debería tener
+    if (value !== null && value !== undefined) {
+      console.log(`Valor del píxel de temperatura mínima: ${value}°C`);
+
+      // Verificar qué rango corresponde según nuestro SLD
+      for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
+        const minVal = SLD_TEMPERATURE_VALUES[i];
+        const maxVal = SLD_TEMPERATURE_VALUES[i + 1];
+        if (value >= minVal && value < maxVal) {
+          console.log(
+            `Debería estar en rango ${minVal}-${maxVal}°C con color ${SLD_TEMPERATURE_COLORS[i]}`
+          );
+          break;
+        }
+      }
+    }
+
     setPixelValues((prev) => ({ ...prev, tempMin: value }));
   }, []);
 
@@ -2169,9 +2303,9 @@ const Clima = () => {
 
       <RasterOverlay
         fileName="TEMP_MAX_ANUAL.tif"
-        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMaxRanges())}
+        colorMap={generateSldTemperatureColorMap()}
         baseUrl="/"
-        continuous={true}
+        continuous={false}
         setError={handleError}
         setLoading={handleLoading}
         onPixelValue={onTempMaxPixelValue}
@@ -2181,9 +2315,9 @@ const Clima = () => {
 
       <RasterOverlay
         fileName="TEMP_MED_ANUAL.tif"
-        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMedRanges())}
+        colorMap={generateSldTemperatureColorMap()}
         baseUrl="/"
-        continuous={true}
+        continuous={false}
         setError={handleError}
         setLoading={handleLoading}
         onPixelValue={onTempMedPixelValue}
@@ -2193,9 +2327,9 @@ const Clima = () => {
 
       <RasterOverlay
         fileName="TEMP_MIN_ANUAL.tif"
-        colorMap={generateUnifiedTemperatureColorMap(getTemperaturaMinRanges())}
+        colorMap={generateSldTemperatureColorMap()}
         baseUrl="/"
-        continuous={true}
+        continuous={false}
         setError={handleError}
         setLoading={handleLoading}
         onPixelValue={onTempMinPixelValue}
