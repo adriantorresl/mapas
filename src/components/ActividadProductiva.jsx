@@ -20,18 +20,18 @@ const generateProductivityStyles = (data, layerType) => {
         { min: 50, max: 100, color: "#4bc2ad", label: "50 - 100" },
         { min: 100, max: 200, color: "#357ba3", label: "100 - 200" },
         { min: 200, max: 500, color: "#3e356b", label: "200 - 500" },
-        { min: 500, max: 1771, color: "#0b0405", label: "500 - 1771" },
+        { min: 500, max: 1772, color: "#0b0405", label: "500 - 1772" },
       ],
     },
     maiz: {
       field: "Maiz",
       title: "Superficie Maíz (ha)",
       ranges: [
-        { min: 156, max: 250, color: "#d2de49", label: "156 - 250" },
-        { min: 250, max: 500, color: "#9fc66e", label: "250 - 500" },
-        { min: 500, max: 1000, color: "#6fad93", label: "500 - 1000" },
-        { min: 1000, max: 2000, color: "#3e94b9", label: "1000 - 2000" },
-        { min: 2000, max: 6000, color: "#0e7cde", label: "2000 - 6000" },
+        { min: 150, max: 250, color: "#d2de49", label: "150 - 250" },
+        { min: 250, max: 500, color: "#b2b844", label: "250 - 500" },
+        { min: 500, max: 1000, color: "#92923e", label: "500 - 1000" },
+        { min: 1000, max: 1500, color: "#726d38", label: "1000 - 1500" },
+        { min: 1500, max: 7212, color: "#534733", label: "1500 - 7212" },
       ],
     },
     riego: {
@@ -39,32 +39,32 @@ const generateProductivityStyles = (data, layerType) => {
       title: "Superficie Riego (ha)",
       ranges: [
         { min: 0, max: 20, color: "#f7fbff", label: "0 - 20" },
-        { min: 20, max: 40, color: "#deebf7", label: "20 - 40" },
-        { min: 40, max: 60, color: "#c6dbef", label: "40 - 60" },
-        { min: 60, max: 80, color: "#9ecae1", label: "60 - 80" },
-        { min: 80, max: 300, color: "#6baed6", label: "80 - 300" },
+        { min: 20, max: 40, color: "#c8dcf0", label: "20 - 40" },
+        { min: 40, max: 80, color: "#73b2d8", label: "40 - 80" },
+        { min: 80, max: 160, color: "#2979b9", label: "80 - 160" },
+        { min: 160, max: 700, color: "#08306b", label: "160 - 700" },
       ],
     },
     temporal: {
       field: "Temporal",
       title: "Superficie Temporal (ha)",
       ranges: [
-        { min: 400, max: 800, color: "#ffffcc", label: "400 - 800" },
-        { min: 800, max: 1200, color: "#c7e9b4", label: "800 - 1200" },
-        { min: 1200, max: 1600, color: "#7fcdbb", label: "1200 - 1600" },
-        { min: 1600, max: 2000, color: "#41b6c4", label: "1600 - 2000" },
-        { min: 2000, max: 6000, color: "#2c7fb8", label: "2000 - 6000" },
+        { min: 100, max: 500, color: "#f7fcf5", label: "100 - 500" },
+        { min: 500, max: 750, color: "#c9eac2", label: "500 - 750" },
+        { min: 750, max: 1000, color: "#7bc77c", label: "750 - 1000" },
+        { min: 1000, max: 2000, color: "#2a924b", label: "1000 - 2000" },
+        { min: 2000, max: 10000, color: "#00441b", label: "2000 - 10000" },
       ],
     },
     sembrada: {
       field: "Sup_Semb",
       title: "Superficie Sembrada Total (ha)",
       ranges: [
-        { min: 400, max: 1000, color: "#f7fcf0", label: "400 - 1000" },
-        { min: 1000, max: 1500, color: "#e0f3db", label: "1000 - 1500" },
-        { min: 1500, max: 2000, color: "#ccebc5", label: "1500 - 2000" },
-        { min: 2000, max: 3000, color: "#a8ddb5", label: "2000 - 3000" },
-        { min: 3000, max: 6000, color: "#7bccc4", label: "3000 - 6000" },
+        { min: 260, max: 500, color: "#ffea46", label: "260 - 500" },
+        { min: 500, max: 750, color: "#beaf6f", label: "500 - 750" },
+        { min: 750, max: 1000, color: "#7d7c78", label: "750 - 1000" },
+        { min: 1000, max: 2000, color: "#414d6b", label: "1000 - 2000" },
+        { min: 2000, max: 10000, color: "#00204d", label: "2000 - 10000" },
       ],
     },
   };
@@ -478,7 +478,7 @@ const GroupedLayerControl = ({
 
                 layer.bindPopup(`
                   <strong>Municipio:</strong> ${
-                    props.NOMGEO || props.NOMBRE || "N/A"
+                    props.NOMGEO || props.NOM_MUN || "N/A"
                   }<br>
                   <strong>${config.title}:</strong> ${
                   props[config.field] || "N/A"
