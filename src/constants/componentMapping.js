@@ -103,7 +103,7 @@ export const componentMapping = {
 
   // 1.2.2 - Actividades productivas
   "1.2.2": {
-    component: Productiva,
+    component: ActividadProductiva,
     props: {},
   },
 

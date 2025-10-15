@@ -1,30 +1,121 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, useMap } from "react-leaflet";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Función para generar colores para actividad económica usando valores numéricos
-const generateActividadColorPalette = (values) => {
-  if (!values || values.length === 0) return {};
+// Función para generar estilos basados en los archivos SLD para las 5 capas de productividad
+const generateProductivityStyles = (data, layerType) => {
+  const layerConfigs = {
+    agave: {
+      field: "Agave",
+      title: "Superficie Agave (ha)",
+      ranges: [
+        { min: 0, max: 50, color: "#def5e5", label: "0 - 50" },
+        { min: 50, max: 100, color: "#4bc2ad", label: "50 - 100" },
+        { min: 100, max: 200, color: "#357ba3", label: "100 - 200" },
+        { min: 200, max: 500, color: "#3e356b", label: "200 - 500" },
+        { min: 500, max: 1771, color: "#0b0405", label: "500 - 1771" },
+      ],
+    },
+    maiz: {
+      field: "Maiz",
+      title: "Superficie Maíz (ha)",
+      ranges: [
+        { min: 156, max: 250, color: "#d2de49", label: "156 - 250" },
+        { min: 250, max: 500, color: "#9fc66e", label: "250 - 500" },
+        { min: 500, max: 1000, color: "#6fad93", label: "500 - 1000" },
+        { min: 1000, max: 2000, color: "#3e94b9", label: "1000 - 2000" },
+        { min: 2000, max: 6000, color: "#0e7cde", label: "2000 - 6000" },
+      ],
+    },
+    riego: {
+      field: "Riego",
+      title: "Superficie Riego (ha)",
+      ranges: [
+        { min: 0, max: 20, color: "#f7fbff", label: "0 - 20" },
+        { min: 20, max: 40, color: "#deebf7", label: "20 - 40" },
+        { min: 40, max: 60, color: "#c6dbef", label: "40 - 60" },
+        { min: 60, max: 80, color: "#9ecae1", label: "60 - 80" },
+        { min: 80, max: 300, color: "#6baed6", label: "80 - 300" },
+      ],
+    },
+    temporal: {
+      field: "Temporal",
+      title: "Superficie Temporal (ha)",
+      ranges: [
+        { min: 400, max: 800, color: "#ffffcc", label: "400 - 800" },
+        { min: 800, max: 1200, color: "#c7e9b4", label: "800 - 1200" },
+        { min: 1200, max: 1600, color: "#7fcdbb", label: "1200 - 1600" },
+        { min: 1600, max: 2000, color: "#41b6c4", label: "1600 - 2000" },
+        { min: 2000, max: 6000, color: "#2c7fb8", label: "2000 - 6000" },
+      ],
+    },
+    sembrada: {
+      field: "Sup_Semb",
+      title: "Superficie Sembrada Total (ha)",
+      ranges: [
+        { min: 400, max: 1000, color: "#f7fcf0", label: "400 - 1000" },
+        { min: 1000, max: 1500, color: "#e0f3db", label: "1000 - 1500" },
+        { min: 1500, max: 2000, color: "#ccebc5", label: "1500 - 2000" },
+        { min: 2000, max: 3000, color: "#a8ddb5", label: "2000 - 3000" },
+        { min: 3000, max: 6000, color: "#7bccc4", label: "3000 - 6000" },
+      ],
+    },
+  };
 
-  const numericValues = values
-    .filter((v) => v != null && !isNaN(v))
-    .map(Number);
-  if (numericValues.length === 0) return {};
+  const config = layerConfigs[layerType] || layerConfigs.agave;
 
-  const min = Math.min(...numericValues);
-  const max = Math.max(...numericValues);
-  const colors = ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"];
+  // Generar mapa de colores para la leyenda
+  const colorMap = generateLegendColorMap(config.ranges);
 
-  const result = {};
-  numericValues.forEach((value) => {
-    const normalizedValue = (value - min) / (max - min);
-    const colorIndex = Math.floor(normalizedValue * (colors.length - 1));
-    result[value] =
-      colors[Math.max(0, Math.min(colorIndex, colors.length - 1))];
+  // Función de estilo para las features
+  const styleFunction = (feature) => {
+    const value = feature.properties[config.field];
+    const color = getColorFromRanges(value, config.ranges);
+
+    return {
+      fillColor: color,
+      weight: 0.5,
+      opacity: 1,
+      color: "white",
+      fillOpacity: 0.8,
+    };
+  };
+
+  return {
+    colorMap,
+    styleFunction,
+    config,
+  };
+};
+
+// Función para obtener el color basado en el valor y los rangos del SLD
+const getColorFromRanges = (value, ranges) => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return "#CCCCCC"; // Color por defecto para valores nulos
+  }
+
+  for (const range of ranges) {
+    if (value >= range.min && value <= range.max) {
+      return range.color;
+    }
+  }
+  return "#CCCCCC"; // Color por defecto si no encuentra rango
+};
+
+// Función para generar mapa de colores para leyenda basado en rangos
+const generateLegendColorMap = (ranges) => {
+  const colorMap = {};
+  ranges.forEach((range) => {
+    colorMap[range.label] = range.color;
   });
-
-  return result;
+  return colorMap;
 };
 
 // Función para descargar GeoJSON
@@ -41,146 +132,177 @@ const downloadGeoJSON = (data, filename) => {
   URL.revokeObjectURL(url);
 };
 
-// Componente de leyenda retráctil en esquina inferior derecha
-const ColorLegend = ({ colorMap, isVisible, currentField }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+// Componente de simbología retráctil en esquina superior derecha (memoizado)
+const ColorLegend = React.memo(
+  ({
+    colorMap,
+    isVisible,
+    currentLayer,
+    layerControlCollapsed,
+    layerControlWidth,
+  }) => {
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
-  if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
-    return null;
-  }
-
-  const fieldNames = {
-    PEA: "Población Económicamente Activa",
-    PE_INAC: "Población Económicamente Inactiva",
-    POCUPADA: "Población Ocupada",
-    PDESOCUP: "Población Desocupada",
-  };
-
-  const legendStyle = {
-    position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "white",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#f8f9fa",
-  };
-
-  // Ordenar valores numéricamente
-  const sortedEntries = Object.entries(colorMap).sort(([a], [b]) => {
-    const numA = parseFloat(a);
-    const numB = parseFloat(b);
-    if (!isNaN(numA) && !isNaN(numB)) {
-      return numA - numB;
+    if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
+      return null;
     }
-    return a.localeCompare(b);
-  });
 
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Leyenda</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "▼" : "▲"}</span>
-      </div>
+    const layerTitles = {
+      agave: "Superficie Agave (ha)",
+      maiz: "Superficie Maíz (ha)",
+      riego: "Superficie Riego (ha)",
+      temporal: "Superficie Temporal (ha)",
+      sembrada: "Superficie Sembrada Total (ha)",
+    };
 
-      {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            maxHeight: "300px",
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            backgroundColor: "#fafafa",
-            scrollbarWidth: "thin",
-          }}
-        >
+    // Calcular posición dinámica basada en el estado del control de capas
+    const rightPosition = layerControlCollapsed
+      ? "105px" // Posición normal cuando está colapsado
+      : "270px"; // Se mueve para evitar superposición
+
+    const legendStyle = {
+      color: "white",
+      position: "absolute",
+      top: "10px",
+      right: rightPosition,
+      backgroundColor: "#1E3C20",
+      border: "1px solid white",
+      borderRadius: "0px",
+      boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+      zIndex: 1000,
+      fontFamily: "Inter, sans-serif",
+      fontSize: "12px",
+      maxWidth: "200px",
+      transition: "right 0.3s ease", // Animación suave
+    };
+
+    const headerStyle = {
+      padding: "10px 15px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderBottom: isCollapsed ? "none" : "1px solid #eee",
+      backgroundColor: "#1E3C20",
+    };
+
+    // Ordenar valores por rango (extraer el número inicial del label)
+    const sortedEntries = Object.entries(colorMap).sort(([a], [b]) => {
+      const getFirstNumber = (str) => {
+        const match = str.match(/\d+/);
+        return match ? parseInt(match[0]) : 0;
+      };
+      return getFirstNumber(a) - getFirstNumber(b);
+    });
+
+    return (
+      <div style={legendStyle}>
+        <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+          <span>Simbología</span>
+          <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+        </div>
+
+        {!isCollapsed && (
           <div
-            style={{
-              fontWeight: "bold",
-              marginBottom: "8px",
-              fontSize: "11px",
-            }}
+            style={{ padding: "10px", maxHeight: "300px", overflowY: "auto" }}
           >
-            {fieldNames[currentField] || currentField}
-          </div>
-          {sortedEntries.map(([value, color]) => (
             <div
-              key={value}
               style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "6px",
-                fontSize: "11px",
+                fontWeight: "bold",
+                marginBottom: "8px",
+                fontSize: "12px",
               }}
             >
-              <div
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  backgroundColor: color,
-                  marginRight: "8px",
-                  border: "1px solid #ddd",
-                  borderRadius: "2px",
-                }}
-              />
-              <span style={{ color: "#333" }}>
-                {parseFloat(value).toLocaleString()}
-              </span>
+              {layerTitles[currentLayer] || currentLayer}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            {sortedEntries.map(([range, color]) => (
+              <div
+                key={range}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                  fontSize: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: color,
+                    marginRight: "8px",
+                    border: "1px solid #999",
+                    borderRadius: "2px",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ lineHeight: "1.2" }}>{range}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+// Control de dragging (igual que en Localizacion.jsx)
+const DraggingControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Habilitar dragging por defecto después de que se monte el mapa
+    setTimeout(() => {
+      map.dragging.enable();
+    }, 100);
+  }, [map]);
+
+  return null;
 };
 
 // Control de coordenadas en la esquina inferior izquierda
 const CoordinateControl = () => {
   const map = useMap();
-  const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCoordinates({ lat: e.latlng.lat, lng: e.latlng.lng });
+    // Crear el div de coordenadas con posicionamiento absoluto
+    const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
+    coordinateDiv.style.position = "absolute";
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
+    coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
+    coordinateDiv.style.borderRadius = "0px";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif";
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
+    coordinateDiv.style.zIndex = "999";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+
+    // Agregar directamente al contenedor del mapa
+    map.getContainer().appendChild(coordinateDiv);
+
+    const updateCoordinates = (e) => {
+      const lat = e.latlng.lat.toFixed(5);
+      const lng = e.latlng.lng.toFixed(5);
+      coordinateDiv.innerHTML = `Lat: ${lat}, Lon: ${lng}`;
     };
 
-    map.on("mousemove", handleMouseMove);
-    return () => map.off("mousemove", handleMouseMove);
+    map.on("mousemove", updateCoordinates);
+
+    return () => {
+      if (coordinateDiv.parentNode) {
+        coordinateDiv.parentNode.removeChild(coordinateDiv);
+      }
+      map.off("mousemove", updateCoordinates);
+    };
   }, [map]);
 
-  const controlStyle = {
-    position: "absolute",
-    bottom: "10px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "5px 10px",
-    borderRadius: "3px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "monospace",
-    fontSize: "12px",
-  };
-
-  return (
-    <div style={controlStyle}>
-      Lat: {coordinates.lat.toFixed(6)}, Lng: {coordinates.lng.toFixed(6)}
-    </div>
-  );
+  return null;
 };
 
 // Control de escala
@@ -188,163 +310,408 @@ const ScaleControl = () => {
   const map = useMap();
 
   useEffect(() => {
-    const scale = L.control.scale({ position: "bottomleft" });
-    scale.addTo(map);
-    return () => map.removeControl(scale);
+    const scaleControl = L.control.scale({
+      position: "bottomleft",
+      metric: true,
+      imperial: false,
+    });
+
+    map.addControl(scaleControl);
+
+    return () => {
+      map.removeControl(scaleControl);
+    };
   }, [map]);
 
   return null;
 };
 
-// Control de información en la esquina superior izquierda
-const InfoControl = ({ currentField }) => {
-  const fieldNames = {
-    PEA: "Población Económicamente Activa",
-    PE_INAC: "Población Económicamente Inactiva",
-    POCUPADA: "Población Ocupada",
-    PDESOCUP: "Población Desocupada",
-  };
-
-  const controlStyle = {
-    position: "absolute",
-    top: "80px",
-    left: "10px",
-    backgroundColor: "white",
-    padding: "10px",
-    borderRadius: "5px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "14px",
-    maxWidth: "300px",
-  };
-
-  return (
-    <div style={controlStyle}>
-      <h4 style={{ margin: "0 0 10px 0", fontSize: "16px" }}>
-        Actividad Productiva
-      </h4>
-      <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#666" }}>
-        Datos económicos ITER 2020: {fieldNames[currentField] || currentField}
-      </p>
-      <div style={{ fontSize: "11px", color: "#007bff", fontWeight: "bold" }}>
-        Fuente: INEGI - ITER 2020
-      </div>
-    </div>
-  );
-};
-
-// Control de arrastre en la esquina superior derecha
-const DraggingControl = () => {
-  const map = useMap();
-  const [isDraggingEnabled, setIsDraggingEnabled] = useState(true);
-
-  const toggleDragging = () => {
-    if (isDraggingEnabled) {
-      map.dragging.disable();
-    } else {
-      map.dragging.enable();
-    }
-    setIsDraggingEnabled(!isDraggingEnabled);
-  };
-
-  const controlStyle = {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: "5px",
-    cursor: "pointer",
-    zIndex: 1000,
-  };
-
-  return (
-    <div
-      style={controlStyle}
-      onClick={toggleDragging}
-      title={isDraggingEnabled ? "Deshabilitar arrastre" : "Habilitar arrastre"}
-    >
-      <span style={{ fontSize: "18px" }}>
-        {isDraggingEnabled ? "🔓" : "🔒"}
-      </span>
-    </div>
-  );
-};
-
-// Control de capas siguiendo el formato exacto de Población
-const LayerControl = ({
-  layers,
-  activeLayers,
-  toggleLayer,
-  opacity,
-  handleOpacityChange,
-  tooltipsEnabled,
-  toggleTooltips,
-  activeBaseLayer,
-  changeBaseLayer,
-  currentField,
-  onFieldChange,
+// Control de capas agrupadas siguiendo el formato exacto de Localización
+const GroupedLayerControl = ({
+  area,
+  paisajes,
+  municipios,
+  productividadData,
+  onColorMapChange,
+  onLegendVisibilityChange,
+  onControlStateChange,
   onZoomToData,
   onDownloadData,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const map = useMap();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [activeLayers, setActiveLayers] = useState({
+    area: true,
+    paisajes: true,
+    municipios: true,
+    agave: false,
+    maiz: false,
+    riego: false,
+    temporal: false,
+    sembrada: false,
+  });
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+  const [opacity, setOpacity] = useState({
+    area: 1,
+    paisajes: 1,
+    municipios: 1,
+    agave: 0.7,
+    maiz: 0.7,
+    riego: 0.7,
+    temporal: 0.7,
+    sembrada: 0.7,
+  });
+
+  // Refs para evitar recrear capas constantemente
+  const layersRef = useRef({});
+  const baseLayersRef = useRef(null);
+  const lastActiveBaseLayerRef = useRef(activeBaseLayer);
+
+  // Efecto para notificar cambios del estado del control
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 80 : 300; // Ancho aproximado cuando collapsed vs expanded
+      onControlStateChange({
+        isCollapsed,
+        width,
+      });
+    }
+  }, [isCollapsed, onControlStateChange]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Capas base - crear si no existen
+    if (!baseLayersRef.current) {
+      baseLayersRef.current = {
+        "Topográfico (OSM)": L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            attribution:
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }
+        ),
+        "Satélite (ESRI)": L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution:
+              "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+          }
+        ),
+      };
+    }
+
+    // Agregar capa base activa
+    const activeBaseLayerObj = baseLayersRef.current[activeBaseLayer];
+    if (activeBaseLayerObj && !map.hasLayer(activeBaseLayerObj)) {
+      activeBaseLayerObj.addTo(map);
+    }
+
+    // Zona de Estudio - crear cuando los datos estén disponibles
+    if (area && !layersRef.current.area) {
+      layersRef.current.area = L.geoJSON(area, {
+        style: { color: "black", weight: 6, fillOpacity: 0 },
+      });
+    }
+    // Agregar al mapa si está activa
+    if (
+      layersRef.current.area &&
+      activeLayers.area &&
+      !map.hasLayer(layersRef.current.area)
+    ) {
+      layersRef.current.area.addTo(map);
+    }
+
+    if (paisajes && !layersRef.current.paisajes) {
+      layersRef.current.paisajes = L.geoJSON(paisajes, {
+        style: { color: "white", weight: 4, fillOpacity: 0 },
+      });
+    }
+    // Agregar al mapa si está activa
+    if (
+      layersRef.current.paisajes &&
+      activeLayers.paisajes &&
+      !map.hasLayer(layersRef.current.paisajes)
+    ) {
+      layersRef.current.paisajes.addTo(map);
+    }
+
+    if (municipios && !layersRef.current.municipios) {
+      layersRef.current.municipios = L.geoJSON(municipios, {
+        style: { color: "black", weight: 2, fillOpacity: 0 },
+      });
+    }
+    // Agregar al mapa si está activa
+    if (
+      layersRef.current.municipios &&
+      activeLayers.municipios &&
+      !map.hasLayer(layersRef.current.municipios)
+    ) {
+      layersRef.current.municipios.addTo(map);
+    }
+
+    // Capas de Productividad - crear cuando los datos estén disponibles
+    if (productividadData) {
+      const productivityLayers = [
+        "agave",
+        "maiz",
+        "riego",
+        "temporal",
+        "sembrada",
+      ];
+
+      productivityLayers.forEach((layerType) => {
+        if (!layersRef.current[layerType]) {
+          const styles = generateProductivityStyles(
+            productividadData,
+            layerType
+          );
+
+          layersRef.current[layerType] = L.geoJSON(productividadData, {
+            style: (feature) => {
+              return styles.styleFunction(feature);
+            },
+            onEachFeature: (feature, layer) => {
+              if (feature.properties) {
+                const props = feature.properties;
+                const config = styles.config;
+
+                layer.bindPopup(`
+                  <strong>Municipio:</strong> ${
+                    props.NOMGEO || props.NOMBRE || "N/A"
+                  }<br>
+                  <strong>${config.title}:</strong> ${
+                  props[config.field] || "N/A"
+                } ha
+                `);
+              }
+            },
+          });
+        }
+
+        // Agregar al mapa si está activa
+        if (
+          layersRef.current[layerType] &&
+          activeLayers[layerType] &&
+          !map.hasLayer(layersRef.current[layerType])
+        ) {
+          layersRef.current[layerType].addTo(map);
+        }
+      });
+
+      // Actualizar colorMap solo si hay cambios en las capas activas
+      const activeProductivityLayer = productivityLayers.find(
+        (layer) => activeLayers[layer]
+      );
+      if (activeProductivityLayer && onColorMapChange) {
+        const styles = generateProductivityStyles(
+          productividadData,
+          activeProductivityLayer
+        );
+        onColorMapChange(styles.colorMap, activeProductivityLayer);
+      }
+    }
+
+    // Solo ejecutar limpieza cuando el componente se desmonte
+    return () => {
+      // Limpiar todas las capas al desmontar
+      Object.values(layersRef.current).forEach((layer) => {
+        if (layer && layer._leaflet_id && map.hasLayer(layer)) {
+          map.removeLayer(layer);
+        }
+      });
+
+      // Limpiar capas base
+      if (baseLayersRef.current) {
+        Object.values(baseLayersRef.current).forEach((layer) => {
+          if (layer && layer._leaflet_id && map.hasLayer(layer)) {
+            map.removeLayer(layer);
+          }
+        });
+      }
+    };
+  }, [
+    map,
+    area,
+    paisajes,
+    municipios,
+    productividadData,
+    activeLayers,
+    activeBaseLayer,
+    onColorMapChange,
+  ]); // Agregar dependencias necesarias
+
+  // useEffect separado para cambios de capa base
+  useEffect(() => {
+    if (!map || !baseLayersRef.current) return;
+
+    // Remover capa base anterior
+    if (lastActiveBaseLayerRef.current !== activeBaseLayer) {
+      const oldLayer = baseLayersRef.current[lastActiveBaseLayerRef.current];
+      if (oldLayer && map.hasLayer(oldLayer)) {
+        map.removeLayer(oldLayer);
+      }
+    }
+
+    // Agregar nueva capa base
+    const newLayer = baseLayersRef.current[activeBaseLayer];
+    if (newLayer && !map.hasLayer(newLayer)) {
+      newLayer.addTo(map);
+    }
+
+    lastActiveBaseLayerRef.current = activeBaseLayer;
+  }, [map, activeBaseLayer]);
+
+  const toggleLayer = useCallback(
+    (layerKey) => {
+      const layer = layersRef.current[layerKey];
+      if (!layer) return;
+
+      setActiveLayers((prev) => {
+        const newActiveLayers = { ...prev };
+        newActiveLayers[layerKey] = !prev[layerKey];
+
+        // Aplicar cambio inmediatamente en el mapa
+        if (newActiveLayers[layerKey]) {
+          if (!map.hasLayer(layer)) {
+            layer.addTo(map);
+          }
+        } else {
+          if (map.hasLayer(layer)) {
+            map.removeLayer(layer);
+          }
+        }
+
+        // Actualizar simbología para capas de productividad
+        const productivityLayers = [
+          "agave",
+          "maiz",
+          "riego",
+          "temporal",
+          "sembrada",
+        ];
+        if (productivityLayers.includes(layerKey)) {
+          const activeProductivityLayer = productivityLayers.find(
+            (layer) => newActiveLayers[layer]
+          );
+
+          if (
+            activeProductivityLayer &&
+            productividadData &&
+            onColorMapChange
+          ) {
+            const styles = generateProductivityStyles(
+              productividadData,
+              activeProductivityLayer
+            );
+            onColorMapChange(styles.colorMap, activeProductivityLayer);
+          } else if (!activeProductivityLayer && onColorMapChange) {
+            onColorMapChange({}, null);
+          }
+
+          // Controlar visibilidad de la simbología
+          if (onLegendVisibilityChange) {
+            const hasActiveProductivityLayer = productivityLayers.some(
+              (layer) => newActiveLayers[layer]
+            );
+            onLegendVisibilityChange(
+              hasActiveProductivityLayer,
+              activeProductivityLayer
+            );
+          }
+        }
+
+        return newActiveLayers;
+      });
+    },
+    [map, productividadData, onColorMapChange, onLegendVisibilityChange]
+  );
+
+  const changeBaseLayer = useCallback((newBaseLayer) => {
+    setActiveBaseLayer(newBaseLayer);
+  }, []);
+
+  const handleOpacityChange = useCallback(
+    (layerKey, newOpacity) => {
+      setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+      const layer = layersRef.current[layerKey];
+      if (layer && map.hasLayer(layer)) {
+        if (
+          ["agave", "maiz", "riego", "temporal", "sembrada"].includes(layerKey)
+        ) {
+          // Para capas de productividad
+          layer.setStyle({
+            fillOpacity: newOpacity * 0.8,
+            opacity: newOpacity,
+          });
+        } else {
+          // Para otras capas
+          layer.setStyle({
+            fillOpacity: newOpacity * 0.7,
+            opacity: newOpacity,
+          });
+        }
+      }
+    },
+    [map]
+  );
 
   const controlStyle = {
+    color: "white",
     position: "absolute",
-    top: "80px",
+    top: "10px",
     right: "10px",
-    backgroundColor: "white",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
-    zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "300px",
-    maxWidth: "350px",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "13px",
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
-  // Componente para elementos de capa
   const LayerItem = ({
     layerKey,
     title,
     data,
-    showOpacity = false,
     showDownload = true,
+    showOpacity = true,
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: " 2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
         <input
           type="checkbox"
           checked={activeLayers[layerKey] || false}
-          onChange={(e) => toggleLayer(layerKey)}
+          onChange={() => toggleLayer(layerKey)}
         />
         <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
@@ -354,31 +721,25 @@ const LayerControl = ({
             style={{
               backgroundColor: "transparent",
               border: "none",
-              padding: "0px",
               borderRadius: "3px",
               cursor: "pointer",
-              marginLeft: "2px",
-              width: "18px",
-              height: "18px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              marginLeft: "4px",
+              width: "32px",
+              height: "24px",
             }}
             title={`Descargar ${title}`}
-            onClick={() =>
-              downloadGeoJSON(data, title.toLowerCase().replace(/\s+/g, "_"))
-            }
+            onClick={() => downloadGeoJSON(data, title)}
           >
             <svg
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -389,568 +750,359 @@ const LayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
-      {showOpacity && activeLayers[layerKey] && (
-        <>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "5px" }}>
+      {showOpacity && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
 
-  if (isCollapsed) {
-    return (
-      <div style={controlStyle}>
-        <div style={headerStyle} onClick={() => setIsCollapsed(false)}>
-          <span>Capas</span>
-          <span style={{ fontSize: "10px" }}>▼</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={controlStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(true)}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
-        <span style={{ fontSize: "10px" }}>▲</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
-      <div style={{ padding: "15px" }}>
-        {/* Capas Base */}
-        <div
-          style={{
-            marginBottom: "20px",
-            borderBottom: "1px solid #e0e0e0",
-            paddingBottom: "10px",
-          }}
-        >
-          <strong
+      {!isCollapsed && (
+        <div style={{ padding: "15px" }}>
+          {/* Capas Base */}
+          <div
             style={{
-              color: "#2c3e50",
-              marginBottom: "10px",
-              display: "block",
-              fontSize: "16px",
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
             }}
           >
-            Capas Base
-          </strong>
-          <div style={{ marginLeft: "10px" }}>
-            {layers.baseLayers &&
-              Object.keys(layers.baseLayers).map((baseLayerName) => (
-                <div key={baseLayerName} style={{ marginBottom: "5px" }}>
-                  <input
-                    type="radio"
-                    name="baseLayer"
-                    checked={activeBaseLayer === baseLayerName}
-                    onChange={() => changeBaseLayer(baseLayerName)}
-                  />
-                  <span
-                    style={{
-                      marginLeft: "8px",
-                      fontSize: "12px",
-                      fontWeight: "normal",
-                    }}
-                  >
-                    {baseLayerName}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Zona de Estudio */}
-        <div
-          style={{
-            marginBottom: "20px",
-            borderBottom: "1px solid #e0e0e0",
-            paddingBottom: "10px",
-          }}
-        >
-          <strong
-            style={{
-              color: "#2c3e50",
-              marginBottom: "10px",
-              display: "block",
-              fontSize: "16px",
-            }}
-          >
-            Límites
-          </strong>
-          {layers.area && (
-            <LayerItem
-              layerKey="area"
-              title="Área de estudio"
-              data={layers.area}
-              showOpacity={false}
-              showDownload={true}
-            />
-          )}
-          {layers.paisajes && (
-            <LayerItem
-              layerKey="paisajes"
-              title="Paisajes bioculturales"
-              data={layers.paisajes}
-              showOpacity={false}
-              showDownload={true}
-            />
-          )}
-          {layers.municipios && (
-            <LayerItem
-              layerKey="municipios"
-              title="Municipios"
-              data={layers.municipios}
-              showOpacity={false}
-              showDownload={true}
-            />
-          )}
-        </div>
-
-        {/* Actividad Productiva */}
-        <div
-          style={{
-            marginBottom: "20px",
-            borderBottom: "1px solid #e0e0e0",
-            paddingBottom: "10px",
-          }}
-        >
-          <strong
-            style={{
-              color: "#2c3e50",
-              marginBottom: "10px",
-              display: "block",
-              fontSize: "16px",
-            }}
-          >
-            Actividad Productiva
-          </strong>
-
-          {/* Selector de campo */}
-          <div style={{ marginBottom: "10px" }}>
-            <label
+            <strong
               style={{
+                color: "white",
+                marginBottom: "10px",
                 display: "block",
-                fontSize: "11px",
-                marginBottom: "5px",
-                fontWeight: "bold",
+                fontSize: "16px",
+                fontWeight: "600",
               }}
             >
-              Variable a mostrar:
-            </label>
-            <select
-              value={currentField}
-              onChange={(e) => onFieldChange(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "5px",
-                fontSize: "11px",
-                border: "1px solid #ccc",
-                borderRadius: "3px",
-              }}
-            >
-              <option value="PEA">Población Económicamente Activa</option>
-              <option value="PE_INAC">Población Económicamente Inactiva</option>
-              <option value="POCUPADA">Población Ocupada</option>
-              <option value="PDESOCUP">Población Desocupada</option>
-            </select>
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {baseLayersRef.current &&
+                Object.keys(baseLayersRef.current).map((baseLayerName) => (
+                  <div key={baseLayerName} style={{ marginBottom: "5px" }}>
+                    <input
+                      type="radio"
+                      name="baseLayer"
+                      checked={activeBaseLayer === baseLayerName}
+                      onChange={() => changeBaseLayer(baseLayerName)}
+                    />
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "12px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      {baseLayerName}
+                    </span>
+                  </div>
+                ))}
+            </div>
           </div>
 
-          {layers.iter2020 && (
-            <LayerItem
-              layerKey="iter2020"
-              title="Datos económicos ITER 2020"
-              data={layers.iter2020}
-              showOpacity={true}
-              showDownload={true}
-            />
-          )}
-        </div>
-
-        {/* Controles adicionales */}
-        <div style={{ marginTop: "10px", display: "flex", gap: "5px" }}>
-          <button
-            onClick={onZoomToData}
+          {/* Zona de Estudio */}
+          <div
             style={{
-              padding: "8px 12px",
-              fontSize: "11px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "3px",
-              cursor: "pointer",
-              flex: "1",
+              marginBottom: "20px",
+              borderBottom: "1px solid #e0e0e0",
+              paddingBottom: "10px",
             }}
           >
-            Zoom a datos
-          </button>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+                fontWeight: "600",
+              }}
+            >
+              Límites
+            </strong>
+            {area && (
+              <LayerItem
+                layerKey="area"
+                title="Área de estudio"
+                data={area}
+                showOpacity={false}
+              />
+            )}
+            {paisajes && (
+              <LayerItem
+                layerKey="paisajes"
+                title="Paisajes bioculturales"
+                data={paisajes}
+                showOpacity={false}
+              />
+            )}
+            {municipios && (
+              <LayerItem
+                layerKey="municipios"
+                title="Municipios"
+                data={municipios}
+                showOpacity={false}
+              />
+            )}
+          </div>
+
+          {/* Actividad Productiva */}
+          <div>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+                fontWeight: "600",
+              }}
+            >
+              Actividad Productiva
+            </strong>
+
+            {productividadData && (
+              <>
+                <LayerItem
+                  layerKey="agave"
+                  title="Superficie Agave (ha)"
+                  data={productividadData}
+                  showOpacity={true}
+                />
+                <LayerItem
+                  layerKey="maiz"
+                  title="Superficie Maíz (ha)"
+                  data={productividadData}
+                  showOpacity={true}
+                />
+                <LayerItem
+                  layerKey="riego"
+                  title="Superficie Riego (ha)"
+                  data={productividadData}
+                  showOpacity={true}
+                />
+                <LayerItem
+                  layerKey="temporal"
+                  title="Superficie Temporal (ha)"
+                  data={productividadData}
+                  showOpacity={true}
+                />
+                <LayerItem
+                  layerKey="sembrada"
+                  title="Superficie Sembrada Total (ha)"
+                  data={productividadData}
+                  showOpacity={true}
+                />
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
 // Componente principal
-const ActividadProductiva = ({ geojsonUrl = "/ITER_2020.geojson" }) => {
+const ActividadProductiva = () => {
   // Estados para datos
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
-  const [iter2020, setIter2020] = useState(null);
+  const [productividadData, setProductividadData] = useState(null);
 
-  // Estados para controles
-  const [activeLayers, setActiveLayers] = useState({
-    area: true,
+  // Estados para control de simbología
+  const [colorMap, setColorMap] = useState({});
+  const [isLegendVisible, setIsLegendVisible] = useState(true);
+  const [layerControlState, setLayerControlState] = useState({
+    isCollapsed: true,
+    width: 80,
+  });
+  const [currentLegendLayer, setCurrentLegendLayer] = useState(null);
+
+  // Ref para evitar cargas repetitivas de datos
+  const dataLoadedRef = useRef({
+    area: false,
     paisajes: false,
     municipios: false,
-    iter2020: true,
+    productividad: false,
   });
 
-  const [opacity, setOpacity] = useState({
-    area: 1,
-    paisajes: 1,
-    municipios: 1,
-    iter2020: 0.8,
-  });
-
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(true);
-  const [activeBaseLayer, setActiveBaseLayer] = useState("OpenStreetMap");
-  const [currentField, setCurrentField] = useState("PEA");
-  const [colorMap, setColorMap] = useState({});
-
-  // Cargar datos
+  // Cargar datos optimizado - una sola vez
   useEffect(() => {
-    fetch("/AREA.geojson")
-      .then((res) => res.json())
-      .then(setArea)
-      .catch(console.error);
-    fetch("/PAISAJES.geojson")
-      .then((res) => res.json())
-      .then(setPaisajes)
-      .catch(console.error);
-    fetch("/MUNICIPIOS.geojson")
-      .then((res) => res.json())
-      .then(setMunicipios)
-      .catch(console.error);
-    fetch(geojsonUrl)
-      .then((res) => res.json())
-      .then(setIter2020)
-      .catch(console.error);
-  }, [geojsonUrl]);
+    const loadData = async () => {
+      try {
+        // Cargar AREA solo una vez
+        if (!dataLoadedRef.current.area) {
+          const areaResponse = await fetch("/AREA.geojson");
+          const areaData = await areaResponse.json();
+          setArea(areaData);
+          dataLoadedRef.current.area = true;
+        }
 
-  // Generar mapa de colores cuando cambien los datos o el campo
-  useEffect(() => {
-    if (iter2020 && currentField) {
-      const values = iter2020.features
-        .map((f) => f.properties[currentField])
-        .filter((val) => val !== null && val !== undefined && !isNaN(val));
+        // Cargar PAISAJES solo una vez
+        if (!dataLoadedRef.current.paisajes) {
+          const paisajesResponse = await fetch("/PAISAJES.geojson");
+          const paisajesData = await paisajesResponse.json();
+          setPaisajes(paisajesData);
+          dataLoadedRef.current.paisajes = true;
+        }
 
-      const newColorMap = generateActividadColorPalette(values);
-      setColorMap(newColorMap);
+        // Cargar MUNICIPIOS solo una vez
+        if (!dataLoadedRef.current.municipios) {
+          const municipiosResponse = await fetch("/MUNICIPIOS.geojson");
+          const municipiosData = await municipiosResponse.json();
+          setMunicipios(municipiosData);
+          dataLoadedRef.current.municipios = true;
+        }
+
+        // Cargar PRODUCTIVIDAD solo una vez
+        if (!dataLoadedRef.current.productividad) {
+          const productividadResponse = await fetch("/Productividad.geojson");
+          const productividadDataResponse = await productividadResponse.json();
+          setProductividadData(productividadDataResponse);
+          dataLoadedRef.current.productividad = true;
+        }
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+
+    loadData();
+  }, []); // Solo ejecutar una vez
+
+  const handleColorMapChange = useCallback((newColorMap, layerType = null) => {
+    setColorMap(newColorMap);
+    if (layerType) {
+      setCurrentLegendLayer(layerType);
     }
-  }, [iter2020, currentField]);
+  }, []);
 
-  // Control del mapa usando el patrón exacto de Población
-  const MapController = () => {
-    const map = useMap();
-
-    useEffect(() => {
-      // Limpiar capas anteriores (excepto base)
-      map.eachLayer((layer) => {
-        try {
-          if (layer.options && (layer.options.id || layer._customId)) {
-            map.removeLayer(layer);
-          }
-        } catch (e) {
-          // La capa podría no estar en el mapa, ignorar error
-        }
-      });
-
-      const newLayers = {};
-
-      // Crear panes personalizados para controlar el orden de las capas
-      if (!map.getPane("vectorPane")) {
-        map.createPane("vectorPane");
-        map.getPane("vectorPane").style.zIndex = 400; // Capas vectoriales debajo
+  const handleLegendVisibilityChange = useCallback(
+    (isVisible, layerType = null) => {
+      setIsLegendVisible(isVisible);
+      if (layerType) {
+        setCurrentLegendLayer(layerType);
       }
-
-      // Capas base
-      const baseLayers = {
-        OpenStreetMap: L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 18,
-          }
-        ),
-        "Topográfico (OpenTopoMap)": L.tileLayer(
-          "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-          {
-            attribution:
-              'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-            maxZoom: 17,
-          }
-        ),
-      };
-
-      // Agregar capa base activa por defecto
-      baseLayers[activeBaseLayer].addTo(map);
-
-      // Zona de Estudio
-      if (area) {
-        newLayers.area = L.geoJSON(area, {
-          style: { color: "black", weight: 6, fillOpacity: 0 },
-        });
-        if (activeLayers.area) {
-          newLayers.area.addTo(map);
-        }
-      }
-
-      if (paisajes) {
-        newLayers.paisajes = L.geoJSON(paisajes, {
-          style: { color: "white", weight: 3, fillOpacity: 0 },
-        });
-        if (activeLayers.paisajes) {
-          newLayers.paisajes.addTo(map);
-        }
-      }
-
-      if (municipios) {
-        newLayers.municipios = L.geoJSON(municipios, {
-          style: { color: "black", weight: 1, fillOpacity: 0 },
-        });
-        if (activeLayers.municipios) {
-          newLayers.municipios.addTo(map);
-        }
-      }
-
-      // Capas de Interés - ITER 2020 con coloreado por campo
-      if (iter2020 && Object.keys(colorMap).length > 0) {
-        newLayers.iter2020 = L.geoJSON(iter2020, {
-          pane: "vectorPane",
-          style: (feature) => {
-            const value = feature.properties[currentField];
-            return {
-              fillColor: colorMap[value] || "#CCCCCC",
-              weight: 0,
-              opacity: 1,
-              color: "white",
-              fillOpacity: opacity.iter2020 || 0.8,
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature.properties) {
-              const props = feature.properties;
-              const fieldNames = {
-                PEA: "Población Económicamente Activa",
-                PE_INAC: "Población Económicamente Inactiva",
-                POCUPADA: "Población Ocupada",
-                PDESOCUP: "Población Desocupada",
-              };
-
-              // Configurar tooltip al hacer hover si está habilitado
-              const bindTooltipIfEnabled = () => {
-                if (tooltipsEnabled) {
-                  layer.bindTooltip(
-                    `
-                    <strong>${
-                      props.NOMGEO || props.NOMBRE || "Área"
-                    }:</strong><br>
-                    <strong>${fieldNames[currentField]}:</strong> ${
-                      props[currentField] || "N/A"
-                    }
-                    `,
-                    {
-                      permanent: false,
-                      direction: "auto",
-                      className: "custom-tooltip",
-                    }
-                  );
-                } else {
-                  layer.unbindTooltip();
-                }
-              };
-
-              bindTooltipIfEnabled();
-
-              // Configurar popup al hacer clic
-              layer.on("click", (e) => {
-                const content = `
-                  <div style="font-family: Arial, sans-serif; font-size: 12px;">
-                    <h4 style="margin: 0 0 8px 0;">${
-                      props.NOMGEO || props.NOMBRE || "Área"
-                    }</h4>
-                    <div><strong>PEA:</strong> ${props.PEA || "N/A"}</div>
-                    <div><strong>PE Inactiva:</strong> ${
-                      props.PE_INAC || "N/A"
-                    }</div>
-                    <div><strong>Población Ocupada:</strong> ${
-                      props.POCUPADA || "N/A"
-                    }</div>
-                    <div><strong>Población Desocupada:</strong> ${
-                      props.PDESOCUP || "N/A"
-                    }</div>
-                  </div>
-                `;
-                layer.bindPopup(content).openPopup();
-              });
-            }
-          },
-        });
-        if (activeLayers.iter2020) {
-          newLayers.iter2020.addTo(map);
-        }
-      }
-
-      // Guardar referencia de capas
-      window.mapLayers = newLayers;
-      window.mapBaseLayers = baseLayers;
-    }, [
-      area,
-      paisajes,
-      municipios,
-      iter2020,
-      activeLayers,
-      activeBaseLayer,
-      opacity,
-      tooltipsEnabled,
-      currentField,
-      colorMap,
-    ]);
-
-    return null;
-  };
-
-  // Funciones de control
-  const toggleLayer = (layerKey) => {
-    setActiveLayers((prev) => ({
-      ...prev,
-      [layerKey]: !prev[layerKey],
-    }));
-  };
-
-  const handleOpacityChange = (layerKey, newOpacity) => {
-    setOpacity((prev) => ({
-      ...prev,
-      [layerKey]: newOpacity,
-    }));
-  };
-
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
-  };
-
-  const changeBaseLayer = (layerName) => {
-    setActiveBaseLayer(layerName);
-  };
-
-  const handleZoomToData = () => {
-    if (iter2020 && window.mapLayers && window.mapLayers.iter2020) {
-      const bounds = window.mapLayers.iter2020.getBounds();
-      if (window.mapInstance) {
-        window.mapInstance.fitBounds(bounds);
-      }
-    }
-  };
-
-  const handleDownloadData = () => {
-    if (iter2020) {
-      downloadGeoJSON(iter2020, "ITER_2020_actividad_productiva");
-    }
-  };
-
-  // Datos para el control de capas
-  const layers = {
-    baseLayers: {
-      OpenStreetMap: null,
-      "Topográfico (OpenTopoMap)": null,
     },
-    area,
-    paisajes,
-    municipios,
-    iter2020,
-  };
+    []
+  );
+
+  const handleZoomToData = useCallback(() => {
+    if (productividadData) {
+      // Implementar zoom a datos si es necesario
+      console.log("Zoom a datos de productividad");
+    }
+  }, [productividadData]);
+
+  const handleDownloadData = useCallback(() => {
+    if (productividadData) {
+      downloadGeoJSON(productividadData, "productividad_agricola");
+    }
+  }, [productividadData]);
 
   return (
-    <div style={{ height: "100vh", width: "100%", position: "relative" }}>
-      <MapContainer
-        center={[19.5, -99.0]}
-        zoom={8}
-        style={{ height: "100%", width: "100%" }}
-        ref={(mapInstance) => {
-          if (mapInstance) {
-            window.mapInstance = mapInstance;
-          }
-        }}
-      >
-        <MapController />
-
-        {/* Controles */}
-        <InfoControl currentField={currentField} />
-        <DraggingControl />
-        <CoordinateControl />
-        <ScaleControl />
-
-        <LayerControl
-          layers={layers}
-          activeLayers={activeLayers}
-          toggleLayer={toggleLayer}
-          opacity={opacity}
-          handleOpacityChange={handleOpacityChange}
-          tooltipsEnabled={tooltipsEnabled}
-          toggleTooltips={toggleTooltips}
-          activeBaseLayer={activeBaseLayer}
-          changeBaseLayer={changeBaseLayer}
-          currentField={currentField}
-          onFieldChange={setCurrentField}
-          onZoomToData={handleZoomToData}
-          onDownloadData={handleDownloadData}
-        />
-
-        <ColorLegend
-          colorMap={colorMap}
-          isVisible={activeLayers.iter2020 && Object.keys(colorMap).length > 0}
-          currentField={currentField}
-        />
-      </MapContainer>
-    </div>
+    <MapContainer
+      center={[16.67566, -95.96711]}
+      zoom={10}
+      scrollWheelZoom={true}
+      dragging={false}
+      style={{ height: "100vh", width: "100%" }}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <DraggingControl />
+      <GroupedLayerControl
+        area={area}
+        paisajes={paisajes}
+        municipios={municipios}
+        productividadData={productividadData}
+        onColorMapChange={handleColorMapChange}
+        onLegendVisibilityChange={handleLegendVisibilityChange}
+        onControlStateChange={setLayerControlState}
+        onZoomToData={handleZoomToData}
+        onDownloadData={handleDownloadData}
+      />
+      <ColorLegend
+        colorMap={colorMap}
+        isVisible={isLegendVisible}
+        currentLayer={currentLegendLayer}
+        layerControlCollapsed={layerControlState.isCollapsed}
+        layerControlWidth={layerControlState.width}
+      />
+      <CoordinateControl />
+      <ScaleControl />
+    </MapContainer>
   );
 };
 
