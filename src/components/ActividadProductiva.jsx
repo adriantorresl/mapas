@@ -158,7 +158,7 @@ const ColorLegend = React.memo(
     // Calcular posición dinámica basada en el estado del control de capas
     const rightPosition = layerControlCollapsed
       ? "105px" // Posición normal cuando está colapsado
-      : "270px"; // Se mueve para evitar superposición
+      : "310px"; // Se mueve para evitar superposición
 
     const legendStyle = {
       color: "white",

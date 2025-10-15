@@ -180,360 +180,44 @@ const downloadRaster = async (filename, displayName) => {
   }
 };
 
-// Componente de leyenda con rampa continua para población
-const ColorRampLegend = ({ colorMap, isVisible, currentDataset }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  if (!isVisible || !colorMap || !colorMap._range) {
-    return null;
-  }
-
-  const { min, max, colors } = colorMap._range;
-
-  const legendStyle = {
-    position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "#1E3C20",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Inter, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    color: "white",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#1E3C20",
-  };
-
-  // Crear gradiente CSS para la rampa
-  const gradientColors = colors.join(", ");
-  const rampStyle = {
-    height: "20px",
-    background: `linear-gradient(to right, ${gradientColors})`,
-    border: "1px solid #999",
-    borderRadius: "2px",
-    margin: "8px 0",
-  };
-
-  const labelsStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "10px",
-    color: "white",
-    marginTop: "4px",
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Simbología</span>
-      </div>
-
-      {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            border: "1px solid #ddd",
-            backgroundColor: "#1E3C20",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: "bold",
-              marginBottom: "8px",
-              fontSize: "11px",
-              color: "white",
-            }}
-          >
-            {currentDataset === "poblacion" ? "Población Total" : "Valores"}
-          </div>
-          <div style={rampStyle}></div>
-          <div style={labelsStyle}>
-            <span>{min.toLocaleString()}</span>
-            <span>{max.toLocaleString()}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Componente de leyenda para rangos de porcentaje (pobreza)
-const PercentageRangeLegend = ({ colorMap, isVisible, currentDataset }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  console.log("PercentageRangeLegend called:", {
-    colorMap,
-    isVisible,
-    currentDataset,
-  });
-
-  console.log("PercentageRangeLegend conditions:", {
-    isVisible,
-    colorMapExists: !!colorMap,
-    hasRange: !!(colorMap && colorMap._range),
-    rangeType: colorMap && colorMap._range && colorMap._range.type,
-    isPercentageType:
-      colorMap && colorMap._range && colorMap._range.type === "percentage",
-  });
-
-  if (
-    !isVisible ||
-    !colorMap ||
-    !colorMap._range ||
-    colorMap._range.type !== "percentage"
-  ) {
-    console.log("PercentageRangeLegend: Not rendering due to conditions");
-    return null;
-  }
-
-  const { percentageRanges } = colorMap._range;
-
-  console.log(
-    "PercentageRangeLegend: About to render with ranges:",
-    percentageRanges
-  );
-
-  const legendStyle = {
-    position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "#1E3C20",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Inter, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    color: "white",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#1E3C20",
-  };
-
-  const getDatasetTitle = () => {
-    switch (currentDataset) {
-      case "pobreza":
-        return "Pobreza";
-      case "pobrezaModerada":
-        return "Pobreza Moderada";
-      case "pobrezaExtrema":
-        return "Pobreza Extrema";
-      default:
-        return "Porcentaje";
-    }
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Simbología</span>
-      </div>
-
-      {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            border: "1px solid #ddd",
-            backgroundColor: "#1E3C20",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: "bold",
-              marginBottom: "8px",
-              fontSize: "11px",
-              color: "white",
-            }}
-          >
-            {getDatasetTitle()}
-          </div>
-          {percentageRanges.map((range, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "6px",
-                fontSize: "11px",
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "14px",
-                  backgroundColor: range.color,
-                  marginRight: "8px",
-                  border: "1px solid #999",
-                  borderRadius: "2px",
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ color: "#333" }}>{range.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Componente de leyenda para categorías (marginación)
-const CategoricalLegend = ({ colorMap, isVisible, currentDataset }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  console.log("CategoricalLegend called:", {
-    colorMap,
-    isVisible,
-    currentDataset,
-  });
-
-  if (
-    !isVisible ||
-    !colorMap ||
-    !colorMap._range ||
-    colorMap._range.type !== "categorical"
-  ) {
-    console.log("CategoricalLegend: Not rendering due to conditions");
-    return null;
-  }
-
-  const { categories } = colorMap._range;
-
-  const legendStyle = {
-    position: "absolute",
-    bottom: "50px",
-    right: "10px",
-    backgroundColor: "#1E3C20",
-    borderRadius: "0px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 1000,
-    fontFamily: "Inter, sans-serif",
-    fontSize: "12px",
-    maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    color: "white",
-  };
-
-  const headerStyle = {
-    padding: "8px 12px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    backgroundColor: "#1E3C20",
-  };
-
-  const getDatasetTitle = () => {
-    switch (currentDataset) {
-      case "marginacion":
-        return "Grado de Marginación";
-      default:
-        return "Categorías";
-    }
-  };
-
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Simbología</span>
-      </div>
-
-      {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            border: "1px solid #ddd",
-            backgroundColor: "#1E3C20",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: "bold",
-              marginBottom: "8px",
-              fontSize: "11px",
-              color: "white",
-            }}
-          >
-            {getDatasetTitle()}
-          </div>
-          {categories.map((category, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "6px",
-                fontSize: "11px",
-              }}
-            >
-              <div
-                style={{
-                  width: "20px",
-                  height: "14px",
-                  backgroundColor: category.color,
-                  marginRight: "8px",
-                  border: "1px solid #999",
-                  borderRadius: "2px",
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ color: "#333" }}>{category.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Componente de leyenda retráctil en esquina inferior derecha (para otros datasets)
-const ColorLegend = ({ colorMap, isVisible }) => {
+// Componente de simbología retráctil en esquina superior derecha (formato Localización)
+const ColorLegend = ({
+  colorMap,
+  isVisible,
+  currentDataset,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible || !colorMap || Object.keys(colorMap).length === 0) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "270px"; // Se mueve para evitar superposición
+
   const legendStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "50px",
-    right: "10px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
     maxWidth: "200px",
-    border: "2px solid rgba(0,0,0,0.2)",
-    color: "white",
+    transition: "right 0.3s ease", // Animación suave
   };
 
   const headerStyle = {
-    padding: "8px 12px",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
@@ -543,25 +227,159 @@ const ColorLegend = ({ colorMap, isVisible }) => {
     backgroundColor: "#1E3C20",
   };
 
-  return (
-    <div style={legendStyle}>
-      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Simbología</span>
-      </div>
+  const getDatasetTitle = () => {
+    switch (currentDataset) {
+      case "poblacion":
+        return "Población Total";
+      case "pobreza":
+        return "Pobreza";
+      case "pobrezaModerada":
+        return "Pobreza Moderada";
+      case "pobrezaExtrema":
+        return "Pobreza Extrema";
+      case "marginacion":
+        return "Grado de Marginación";
+      default:
+        return "Valores";
+    }
+  };
 
-      {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            maxHeight: "500px",
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            backgroundColor: "#1E3C20",
-            scrollbarWidth: "thin",
-          }}
-        >
+  const renderLegendContent = () => {
+    if (colorMap._range) {
+      if (colorMap._range.type === "percentage") {
+        // Leyenda de rangos de porcentaje (pobreza)
+        const { percentageRanges } = colorMap._range;
+        return (
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {getDatasetTitle()}
+            </div>
+            {percentageRanges.map((range, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                  fontSize: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: range.color,
+                    marginRight: "8px",
+                    border: "1px solid #999",
+                    borderRadius: "2px",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ lineHeight: "1.2" }}>{range.label}</span>
+              </div>
+            ))}
+          </div>
+        );
+      } else if (colorMap._range.type === "categorical") {
+        // Leyenda categórica (marginación)
+        const { categories } = colorMap._range;
+        return (
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {getDatasetTitle()}
+            </div>
+            {categories.map((category, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                  fontSize: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: category.color,
+                    marginRight: "8px",
+                    border: "1px solid #999",
+                    borderRadius: "2px",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ lineHeight: "1.2" }}>{category.label}</span>
+              </div>
+            ))}
+          </div>
+        );
+      } else {
+        // Leyenda de rampa continua (población)
+        const { min, max, colors } = colorMap._range;
+        const gradientColors = colors.join(", ");
+        return (
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {getDatasetTitle()}
+            </div>
+            <div
+              style={{
+                height: "20px",
+                background: `linear-gradient(to right, ${gradientColors})`,
+                border: "1px solid #999",
+                borderRadius: "2px",
+                margin: "8px 0",
+              }}
+            ></div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "10px",
+                color: "white",
+                marginTop: "4px",
+              }}
+            >
+              <span>{min.toLocaleString()}</span>
+              <span>{max.toLocaleString()}</span>
+            </div>
+          </div>
+        );
+      }
+    } else {
+      // Leyenda por defecto (discreta)
+      return (
+        <div>
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            {getDatasetTitle()}
+          </div>
           {Object.entries(colorMap)
-            .filter(([key]) => key !== "_range") // Excluir metadatos de rango
+            .filter(([key]) => key !== "_range")
             .map(([item, color]) => (
               <div
                 key={item}
@@ -587,6 +405,21 @@ const ColorLegend = ({ colorMap, isVisible }) => {
               </div>
             ))}
         </div>
+      );
+    }
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "10px", maxHeight: "300px", overflowY: "auto" }}>
+          {renderLegendContent()}
+        </div>
       )}
     </div>
   );
@@ -598,13 +431,16 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif";
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -635,7 +471,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -650,48 +486,7 @@ const ScaleControl = () => {
   return null;
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "80px", // Bajado más abajo del botón de zoom
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
+// Componente removido - popups ahora funcionan por defecto con clic
 
 // Componente para el control de capas agrupadas con funcionalidad extendida
 const GroupedLayerControl = ({
@@ -705,7 +500,7 @@ const GroupedLayerControl = ({
   marginacion,
   onColorMapChange,
   onLegendVisibilityChange,
-  tooltipsEnabled,
+  onControlStateChange,
   activeLayers,
   setActiveLayers,
   opacity,
@@ -715,6 +510,17 @@ const GroupedLayerControl = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+
+  // Efecto para notificar cambios del estado del control
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 80 : 300; // Ancho aproximado cuando collapsed vs expanded
+      onControlStateChange({
+        isCollapsed,
+        width,
+      });
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     // Limpiar capas anteriores (excepto capas base)
@@ -814,29 +620,16 @@ const GroupedLayerControl = ({
           if (feature.properties) {
             const props = feature.properties;
 
-            // Configurar tooltip al hacer hover si está habilitado
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Población Total:</strong> ${props.POB_TOT || "N/A"}
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
+            // Configurar popup al hacer clic
+            layer.bindPopup(
+              `
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Población Total:</strong> ${props.POB_TOT || "N/A"}
+              `,
+              {
+                className: "custom-popup",
               }
-            };
-
-            bindTooltipIfEnabled();
-
-            // Reconfigurar tooltip cuando cambie el estado
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+            );
           }
         },
       });
@@ -875,25 +668,15 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Pobreza 2020:</strong> ${props.POBR20 || "N/A"}
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
+            layer.bindPopup(
+              `
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Pobreza 2020:</strong> ${props.POBR20 || "N/A"}
+              `,
+              {
+                className: "custom-popup",
               }
-            };
-            bindTooltipIfEnabled();
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+            );
           }
         },
       });
@@ -925,27 +708,17 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Pobreza Moderada 2020:</strong> ${
-                    props.POB_M20 || "N/A"
-                  }
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
+            layer.bindPopup(
+              `
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Pobreza Moderada 2020:</strong> ${
+                props.POB_M20 || "N/A"
               }
-            };
-            bindTooltipIfEnabled();
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+              `,
+              {
+                className: "custom-popup",
+              }
+            );
           }
         },
       });
@@ -977,27 +750,17 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Pobreza Extrema 2020:</strong> ${
-                    props.POB_E20 || "N/A"
-                  }
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
+            layer.bindPopup(
+              `
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Pobreza Extrema 2020:</strong> ${
+                props.POB_E20 || "N/A"
               }
-            };
-            bindTooltipIfEnabled();
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+              `,
+              {
+                className: "custom-popup",
+              }
+            );
           }
         },
       });
@@ -1029,27 +792,17 @@ const GroupedLayerControl = ({
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
             const props = feature.properties;
-            const bindTooltipIfEnabled = () => {
-              if (tooltipsEnabled) {
-                layer.bindTooltip(
-                  `
-                  <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-                  <strong>Grado de Marginación 2020:</strong> ${
-                    props.GM_2020 || "N/A"
-                  }
-                  `,
-                  {
-                    permanent: false,
-                    direction: "auto",
-                    className: "custom-tooltip",
-                  }
-                );
-              } else {
-                layer.unbindTooltip();
+            layer.bindPopup(
+              `
+              <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
+              <strong>Grado de Marginación 2020:</strong> ${
+                props.GM_2020 || "N/A"
               }
-            };
-            bindTooltipIfEnabled();
-            layer.bindTooltipIfEnabled = bindTooltipIfEnabled;
+              `,
+              {
+                className: "custom-popup",
+              }
+            );
           }
         },
       });
@@ -1079,7 +832,6 @@ const GroupedLayerControl = ({
     marginacion,
     activeLayers,
     activeBaseLayer,
-    tooltipsEnabled,
     opacity, // Agregamos opacity como dependencia
   ]);
 
@@ -1159,18 +911,8 @@ const GroupedLayerControl = ({
     onLegendVisibilityChange,
   ]);
 
-  // Actualizar tooltips cuando cambie el estado
-  useEffect(() => {
-    Object.values(layers).forEach((layer) => {
-      if (layer && layer.eachLayer) {
-        layer.eachLayer((subLayer) => {
-          if (subLayer.bindTooltipIfEnabled) {
-            subLayer.bindTooltipIfEnabled();
-          }
-        });
-      }
-    });
-  }, [tooltipsEnabled, layers]);
+  // Quitar el useEffect para actualizar tooltips ya que ahora solo usamos popups
+  // que funcionan por defecto al hacer clic
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = {
@@ -1284,6 +1026,7 @@ const GroupedLayerControl = ({
     top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
@@ -1293,7 +1036,7 @@ const GroupedLayerControl = ({
   };
 
   const headerStyle = {
-    fontSize: "12px",
+    fontSize: "16px",
     padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
@@ -1301,6 +1044,8 @@ const GroupedLayerControl = ({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -1313,17 +1058,18 @@ const GroupedLayerControl = ({
     <div
       style={{
         marginBottom: "2px",
-        padding: "0px",
+        padding: " 2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "4px",
-          gap: "6px",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
         }}
       >
         <input
@@ -1334,34 +1080,30 @@ const GroupedLayerControl = ({
         <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
-        {showDownload && (
+        {showDownload && data && (
           <button
             style={{
               backgroundColor: "transparent",
               border: "none",
-              padding: "0px",
               borderRadius: "3px",
               cursor: "pointer",
-              marginLeft: "2px",
-              width: "18px",
-              height: "18px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              marginLeft: "4px",
+              width: "32px",
+              height: "24px",
             }}
             title={`Descargar ${title}`}
-            onClick={() => downloadGeoJSON(data, title.toLowerCase())}
+            onClick={() => downloadGeoJSON(data, title)}
           >
             <svg
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#333"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1372,51 +1114,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#333"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "3px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -1425,10 +1187,11 @@ const GroupedLayerControl = ({
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
         <span>Capas</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
 
       {!isCollapsed && (
-        <div style={{ padding: "12px" }}>
+        <div style={{ padding: "15px" }}>
           {/* Capas Base */}
           <div
             style={{
@@ -1440,9 +1203,10 @@ const GroupedLayerControl = ({
             <strong
               style={{
                 color: "white",
-                marginBottom: "8px",
+                marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
+                fontWeight: "600",
               }}
             >
               Capas Base
@@ -1481,10 +1245,11 @@ const GroupedLayerControl = ({
           >
             <strong
               style={{
-                color: "#2c3e50",
-                marginBottom: "8px",
+                color: "white",
+                marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
+                fontWeight: "600",
               }}
             >
               Límites
@@ -1526,9 +1291,10 @@ const GroupedLayerControl = ({
             <strong
               style={{
                 color: "white",
-                marginBottom: "8px",
+                marginBottom: "10px",
                 display: "block",
                 fontSize: "16px",
+                fontWeight: "600",
               }}
             >
               Aspectos demográficos
@@ -1585,15 +1351,10 @@ const DraggingControl = () => {
   const map = useMap();
 
   useEffect(() => {
-    const enableDragging = () => {
+    // Habilitar dragging por defecto después de que se monte el mapa
+    setTimeout(() => {
       map.dragging.enable();
-    };
-
-    map.getContainer().addEventListener("mouseleave", enableDragging);
-
-    return () => {
-      map.getContainer().removeEventListener("mouseleave", enableDragging);
-    };
+    }, 100);
   }, [map]);
 
   return null;
@@ -1610,7 +1371,11 @@ const Poblacion = () => {
   const [marginacion, setMarginacion] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(true); // Activar leyenda por defecto
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+  const [layerControlState, setLayerControlState] = useState({
+    isCollapsed: true,
+    width: 80,
+  });
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false); // Mantenemos para compatibilidad pero no se usa
   const [activeLayers, setActiveLayers] = useState({
     area: true,
     municipios: true,
@@ -1633,7 +1398,7 @@ const Poblacion = () => {
   });
 
   const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
+    // Función removida - ya no es necesaria
   };
 
   // Activar automáticamente la leyenda cuando hay datos válidos
@@ -1642,6 +1407,16 @@ const Poblacion = () => {
       setShowLegend(true);
     }
   }, [colorMap]);
+
+  // Determinar el dataset actual para la leyenda
+  const getCurrentDataset = () => {
+    if (activeLayers.pobrezaExtrema) return "pobrezaExtrema";
+    if (activeLayers.pobrezaModerada) return "pobrezaModerada";
+    if (activeLayers.pobreza) return "pobreza";
+    if (activeLayers.marginacion) return "marginacion";
+    if (activeLayers.poblacion) return "poblacion";
+    return "poblacion";
+  };
 
   useEffect(() => {
     fetch("/AREA.geojson")
@@ -1673,16 +1448,12 @@ const Poblacion = () => {
 
   return (
     <MapContainer
-      center={[16.67566, -96.28311]}
+      center={[16.67566, -95.96711]}
       zoom={10}
       scrollWheelZoom={true}
-      dragging={true}
+      dragging={false}
       style={{ height: "100vh", width: "100%" }}
     >
-      <InfoControl
-        onToggleTooltips={toggleTooltips}
-        tooltipsEnabled={tooltipsEnabled}
-      />
       <DraggingControl />
       <GroupedLayerControl
         area={area}
@@ -1695,85 +1466,21 @@ const Poblacion = () => {
         marginacion={marginacion}
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
-        tooltipsEnabled={tooltipsEnabled}
+        onControlStateChange={setLayerControlState}
         activeLayers={activeLayers}
         setActiveLayers={setActiveLayers}
         opacity={opacity}
         setOpacity={setOpacity}
       />
+      <ColorLegend
+        colorMap={colorMap}
+        isVisible={showLegend}
+        currentDataset={getCurrentDataset()}
+        layerControlCollapsed={layerControlState.isCollapsed}
+        layerControlWidth={layerControlState.width}
+      />
       <CoordinateControl />
       <ScaleControl />
-
-      {/* Seleccionar el tipo de leyenda según la capa activa y el tipo de datos */}
-      {(() => {
-        console.log("Legend rendering check:", {
-          showLegend,
-          colorMapExists: !!colorMap,
-          colorMapKeys: Object.keys(colorMap || {}),
-          colorMapRange: colorMap?._range,
-          activeLayers,
-        });
-
-        return showLegend && colorMap && Object.keys(colorMap).length > 0 ? (
-          <>
-            {(() => {
-              // Detectar el tipo de leyenda basándose en el colorMap actual
-              if (colorMap._range) {
-                console.log("ColorMap range detected:", colorMap._range);
-
-                if (colorMap._range.type === "percentage") {
-                  // Leyenda de rangos de porcentaje (pobreza)
-                  const currentDataset = activeLayers.pobrezaExtrema
-                    ? "pobrezaExtrema"
-                    : activeLayers.pobrezaModerada
-                    ? "pobrezaModerada"
-                    : activeLayers.pobreza
-                    ? "pobreza"
-                    : "pobreza";
-
-                  console.log(
-                    "Rendering PercentageRangeLegend for:",
-                    currentDataset
-                  );
-                  return (
-                    <PercentageRangeLegend
-                      colorMap={colorMap}
-                      isVisible={showLegend}
-                      currentDataset={currentDataset}
-                    />
-                  );
-                } else if (colorMap._range.type === "categorical") {
-                  // Leyenda categórica (marginación)
-                  console.log("Rendering CategoricalLegend");
-                  return (
-                    <CategoricalLegend
-                      colorMap={colorMap}
-                      isVisible={showLegend}
-                      currentDataset="marginacion"
-                    />
-                  );
-                } else {
-                  // Leyenda de rampa continua (población)
-                  console.log("Rendering ColorRampLegend");
-                  return (
-                    <ColorRampLegend
-                      colorMap={colorMap}
-                      isVisible={showLegend}
-                      currentDataset="poblacion"
-                    />
-                  );
-                }
-              } else {
-                // Leyenda por defecto (discreta)
-                console.log("Rendering default ColorLegend");
-                return (
-                  <ColorLegend colorMap={colorMap} isVisible={showLegend} />
-                );
-              }
-            })()}
-          </>
-        ) : null;
-      })()}
     </MapContainer>
   );
 };
