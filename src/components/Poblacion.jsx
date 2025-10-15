@@ -711,9 +711,7 @@ const GroupedLayerControl = ({
             layer.bindPopup(
               `
               <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-              <strong>Pobreza Moderada 2020:</strong> ${
-                props.POB_M20 || "N/A"
-              }
+              <strong>Pobreza Moderada 2020:</strong> ${props.POB_M20 || "N/A"}
               `,
               {
                 className: "custom-popup",
@@ -753,9 +751,7 @@ const GroupedLayerControl = ({
             layer.bindPopup(
               `
               <strong>Municipio:</strong> ${props.NOMGEO || "N/A"}<br>
-              <strong>Pobreza Extrema 2020:</strong> ${
-                props.POB_E20 || "N/A"
-              }
+              <strong>Pobreza Extrema 2020:</strong> ${props.POB_E20 || "N/A"}
               `,
               {
                 className: "custom-popup",
