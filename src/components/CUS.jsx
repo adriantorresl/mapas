@@ -3,26 +3,33 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Clasificaciones CUS basadas en la guía de A (Antropogénico) y V (Vegetación)
+// Clasificaciones CUS basadas en el archivo SLD CUS_shp.sld
 const CUS_CLASSIFICATIONS = {
-  "A-A-A-A-A-A-A": "#8B4513", // marrón muy oscuro
-  "A-A-A-A-A-A": "#A0522D", // marrón oscuro
-  "A-A-A-A-A": "#CD853F", // marrón medio
-  "A-A-A-A": "#D2691E", // chocolate claro
-  "A-A-A": "#F4A460", // marrón arena
-  "A-A": "#F5DEB3", // beige
-  A: "#FFF8DC", // crema
-  V: "#90EE90", // verde claro
-  "V-V": "#7CFC00", // verde lima
-  "V-V-V": "#32CD32", // verde limón
-  "V-V-V-V": "#228B22", // verde bosque
-  "V-V-V-V-V": "#006400", // verde oscuro
-  "V-V-V-V-V-V": "#004d00", // verde muy oscuro
-  "V-V-V-V-V-V-V": "#003300", // verde profundo
+  "A - A - A - A - A - A - A": "#530c0c", // rojo muy oscuro
+  "A - A - A - A - A - A": "#8b1b1b", // rojo oscuro
+  "A - A - A - A - A": "#c32b2b", // rojo medio
+  "A - A - A - A": "#fb3b3b", // rojo 
+  "A - A - A": "#fc7676", // rojo claro
+  "A - A": "#fdb1b1", // rosa claro
+  "A": "#feeded", // rosa muy claro
+  "V": "#f0ffe8", // verde muy claro
+  "V - V": "#bdffc0", // verde claro
+  "V - V - V": "#2cff3e", // verde lima
+  "V - V - V - V": "#29cf33", // verde medio
+  "V - V - V - V - V": "#27a029", // verde bosque
+  "V - V - V - V - V - V": "#24701e", // verde oscuro
+  "V - V - V - V - V - V - V": "#224114", // verde muy oscuro
 };
 
-// Función para analizar sucesión consecutiva de campos S1-S7
-const analyzeSuccession = (feature) => {
+// Función para obtener clasificación CUS del campo CUS2
+const getCUSClassification = (feature) => {
+  // Usar directamente el campo CUS2 del GeoJSON
+  const cus2 = feature.properties.CUS2;
+  if (cus2 && CUS_CLASSIFICATIONS[cus2]) {
+    return cus2;
+  }
+  
+  // Fallback: analizar sucesión consecutiva de campos S1-S7 si no existe CUS2
   const series = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"];
   let consecutiveChar = null;
   let consecutiveCount = 0;
@@ -45,7 +52,8 @@ const analyzeSuccession = (feature) => {
   }
 
   if (consecutiveChar && consecutiveCount > 0) {
-    return Array(consecutiveCount).fill(consecutiveChar).join("-");
+    const classification = Array(consecutiveCount).fill(consecutiveChar).join(" - ");
+    return classification;
   }
 
   return "A"; // valor por defecto
@@ -104,30 +112,30 @@ const ColorLegend = ({
 
   // Orden específico para las clasificaciones CUS (A primero, luego V)
   const cusOrder = [
-    "A-A-A-A-A-A-A",
-    "A-A-A-A-A-A",
-    "A-A-A-A-A",
-    "A-A-A-A",
-    "A-A-A",
-    "A-A",
+    "A - A - A - A - A - A - A",
+    "A - A - A - A - A - A",
+    "A - A - A - A - A",
+    "A - A - A - A",
+    "A - A - A",
+    "A - A",
     "A",
     "V",
-    "V-V",
-    "V-V-V",
-    "V-V-V-V",
-    "V-V-V-V-V",
-    "V-V-V-V-V-V",
-    "V-V-V-V-V-V-V",
+    "V - V",
+    "V - V - V",
+    "V - V - V - V",
+    "V - V - V - V - V",
+    "V - V - V - V - V - V",
+    "V - V - V - V - V - V - V",
   ];
 
   // Función para ordenar los entries según el tipo de leyenda
   const getSortedEntries = () => {
     const entries = Object.entries(colorMap);
 
-    // Si es una leyenda CUS (contiene clasificaciones A-A-A o V-V-V)
+    // Si es una leyenda CUS (contiene clasificaciones A - A - A o V - V - V)
     const isCusLegend = entries.some(
       ([key]) =>
-        key.includes("A-A") || key.includes("V-V") || key === "A" || key === "V"
+        key.includes("A - A") || key.includes("V - V") || key === "A" || key === "V"
     );
 
     if (isCusLegend) {
@@ -495,11 +503,11 @@ const GroupedLayerControl = ({
       }
     }
 
-    // CUS - Colorear por clasificación de sucesión A/V
+    // CUS - Colorear por clasificación de sucesión A/V usando campo CUS2
     if (cusData) {
       const cusClassifications = {};
       cusData.features.forEach((feature) => {
-        const classification = analyzeSuccession(feature);
+        const classification = getCUSClassification(feature);
         if (CUS_CLASSIFICATIONS[classification]) {
           cusClassifications[classification] =
             CUS_CLASSIFICATIONS[classification];
@@ -508,7 +516,7 @@ const GroupedLayerControl = ({
 
       newLayers.cus = L.geoJSON(cusData, {
         style: (feature) => {
-          const classification = analyzeSuccession(feature);
+          const classification = getCUSClassification(feature);
           return {
             fillColor: CUS_CLASSIFICATIONS[classification] || "#CCCCCC",
             weight: 0,
@@ -519,9 +527,10 @@ const GroupedLayerControl = ({
         },
         onEachFeature: (feature, layer) => {
           if (feature.properties) {
-            const classification = analyzeSuccession(feature);
+            const classification = getCUSClassification(feature);
             const popup = `
               <b>Clasificación CUS:</b> ${classification}<br>
+              ${feature.properties.CUS2 ? `<b>CUS2:</b> ${feature.properties.CUS2}<br>` : ""}
               <b>S1:</b> ${feature.properties.S1 || "N/A"}<br>
               <b>S2:</b> ${feature.properties.S2 || "N/A"}<br>
               <b>S3:</b> ${feature.properties.S3 || "N/A"}<br>
@@ -622,7 +631,7 @@ const GroupedLayerControl = ({
       ) {
         const cusClassifications = {};
         cusData.features.forEach((feature) => {
-          const classification = analyzeSuccession(feature);
+          const classification = getCUSClassification(feature);
           if (CUS_CLASSIFICATIONS[classification]) {
             cusClassifications[classification] =
               CUS_CLASSIFICATIONS[classification];

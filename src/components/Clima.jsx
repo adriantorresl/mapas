@@ -750,7 +750,7 @@ const TemperaturaLegend = ({
 const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
   const controlStyle = {
     position: "absolute",
-    top: "80px", // Bajado más abajo del botón de zoom
+    top: "80px", // Vuelto a su posición original
     left: "10px",
     backgroundColor: "white",
     borderRadius: "0%",
@@ -834,6 +834,12 @@ const GroupedLayerControl = ({
       map.getPane("rasterPane").style.zIndex = 450; // Capas raster encima
     }
 
+    // Asegurar que las capas base tengan el z-index más bajo
+    if (!map.getPane("basePane")) {
+      map.createPane("basePane");
+      map.getPane("basePane").style.zIndex = 100; // Capas base al fondo
+    }
+
     // Capas base
     const baseLayers = {
       "Topográfico (OSM)": L.tileLayer(
@@ -842,18 +848,21 @@ const GroupedLayerControl = ({
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           maxZoom: 19,
+          pane: "basePane",
         }
       ),
       "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+          pane: "basePane",
         }
       ),
       "Hillshade (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+          pane: "basePane",
         }
       ),
     };
@@ -959,22 +968,81 @@ const GroupedLayerControl = ({
     newLayers.baseLayers = baseLayers;
     setLayers(newLayers);
 
-    // Configurar el zoom inicial basado en el área
-    if (area && area.features && area.features.length > 0) {
-      const layer = L.geoJSON(area);
-      map.fitBounds(layer.getBounds());
-    }
+    // Centrar el mapa en las coordenadas específicas con zoom 10
+    map.setView([16.67566, -95.96711], 10);
+
+    // Forzar centrado después de un breve delay para asegurar que el mapa esté listo
+    setTimeout(() => {
+      map.setView([16.67566, -95.96711], 10);
+      console.log(
+        "🎯 GroupedLayerControl - Mapa centrado en:",
+        map.getCenter(),
+        "Zoom:",
+        map.getZoom()
+      );
+    }, 100);
   }, [
     map,
     area,
     paisajes,
     municipios,
     clima,
-    activeLayers,
     activeBaseLayer,
     onColorMapChange,
     onLegendVisibilityChange,
     opacity.clima,
+  ]);
+
+  // Manejar la visibilidad de las capas cuando cambien los activeLayers
+  useEffect(() => {
+    // Solo procesar si tenemos capas disponibles
+    if (Object.keys(layers).length === 0) return;
+
+    Object.entries(activeLayers).forEach(([layerKey, isActive]) => {
+      const layer = layers[layerKey];
+
+      // Solo procesar capas que no sean baseLayers
+      if (layer && layer !== layers.baseLayers) {
+        const layerInMap = map.hasLayer(layer);
+
+        if (isActive && !layerInMap) {
+          layer.addTo(map);
+        } else if (!isActive && layerInMap) {
+          map.removeLayer(layer);
+        }
+      }
+    });
+
+    // Manejar la leyenda del clima específicamente
+    if (layers.clima) {
+      if (
+        activeLayers.clima &&
+        clima &&
+        onColorMapChange &&
+        onLegendVisibilityChange
+      ) {
+        const climaValues = clima.features
+          .map((f) => f.properties.CLIMA)
+          .filter(Boolean);
+        const { legendMap } = generateClimaColorPalette(climaValues);
+        onColorMapChange(legendMap);
+        onLegendVisibilityChange(true);
+      } else if (
+        !activeLayers.clima &&
+        onColorMapChange &&
+        onLegendVisibilityChange
+      ) {
+        onColorMapChange({});
+        onLegendVisibilityChange(false);
+      }
+    }
+  }, [
+    activeLayers,
+    layers,
+    map,
+    clima,
+    onColorMapChange,
+    onLegendVisibilityChange,
   ]);
 
   // Actualizar popups cuando cambien las capas
@@ -999,37 +1067,10 @@ const GroupedLayerControl = ({
   }, [isCollapsed, onControlStateChange]);
 
   const toggleLayer = (layerKey) => {
-    const newActiveLayers = {
-      ...activeLayers,
-      [layerKey]: !activeLayers[layerKey],
-    };
-    setActiveLayers(newActiveLayers);
-
-    const layer = layers[layerKey];
-    if (layer && layer !== layers.baseLayers) {
-      if (newActiveLayers[layerKey]) {
-        layer.addTo(map);
-      } else {
-        map.removeLayer(layer);
-      }
-    }
-
-    // Controlar visibilidad de la leyenda y actualizar colorMap para clima
-    if (layerKey === "clima" && onLegendVisibilityChange && onColorMapChange) {
-      if (newActiveLayers.clima && clima) {
-        // Clima activa, mostrar leyenda
-        const climaValues = clima.features
-          .map((f) => f.properties.CLIMA)
-          .filter(Boolean);
-        const { legendMap } = generateClimaColorPalette(climaValues);
-        onColorMapChange(legendMap); // Usar legendMap con acentos para la leyenda
-        onLegendVisibilityChange(true);
-      } else {
-        // Clima inactiva, ocultar leyenda
-        onColorMapChange({});
-        onLegendVisibilityChange(false);
-      }
-    }
+    setActiveLayers((prev) => ({
+      ...prev,
+      [layerKey]: !prev[layerKey],
+    }));
   };
 
   const changeBaseLayer = (newBaseLayer) => {
@@ -2113,12 +2154,60 @@ const Clima = () => {
   });
   const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
   const [layerControlWidth, setLayerControlWidth] = useState(300);
+  // Keys únicos para cada capa raster para forzar re-render completo
+  const [rasterKeys, setRasterKeys] = useState({
+    precipitacion: 0,
+    tempMax: 0,
+    tempMed: 0,
+    tempMin: 0,
+  });
+
+  // Timestamps para garantizar uniqueness absoluta
+  const [rasterTimestamps, setRasterTimestamps] = useState({
+    precipitacion: Date.now(),
+    tempMax: Date.now() + 1,
+    tempMed: Date.now() + 2,
+    tempMin: Date.now() + 3,
+  });
 
   // Handler para cambios en el estado del control de capas
   const handleControlStateChange = (collapsed, width) => {
     setLayerControlCollapsed(collapsed);
     setLayerControlWidth(width);
   };
+
+  // Forzar recarga individual de cada raster SIEMPRE que cambie (activar O desactivar)
+  useEffect(() => {
+    console.log("🔄 Precipitación layer changed:", activeLayers.precipitacion);
+    // Incrementar SIEMPRE que cambie el estado, no solo cuando se active
+    const timestamp = Date.now();
+    setRasterKeys((prev) => ({
+      ...prev,
+      precipitacion: prev.precipitacion + 1,
+    }));
+    setRasterTimestamps((prev) => ({ ...prev, precipitacion: timestamp }));
+  }, [activeLayers.precipitacion]);
+
+  useEffect(() => {
+    console.log("🔄 TempMax layer changed:", activeLayers.tempMax);
+    const timestamp = Date.now();
+    setRasterKeys((prev) => ({ ...prev, tempMax: prev.tempMax + 1 }));
+    setRasterTimestamps((prev) => ({ ...prev, tempMax: timestamp }));
+  }, [activeLayers.tempMax]);
+
+  useEffect(() => {
+    console.log("🔄 TempMed layer changed:", activeLayers.tempMed);
+    const timestamp = Date.now();
+    setRasterKeys((prev) => ({ ...prev, tempMed: prev.tempMed + 1 }));
+    setRasterTimestamps((prev) => ({ ...prev, tempMed: timestamp }));
+  }, [activeLayers.tempMed]);
+
+  useEffect(() => {
+    console.log("🔄 TempMin layer changed:", activeLayers.tempMin);
+    const timestamp = Date.now();
+    setRasterKeys((prev) => ({ ...prev, tempMin: prev.tempMin + 1 }));
+    setRasterTimestamps((prev) => ({ ...prev, tempMin: timestamp }));
+  }, [activeLayers.tempMin]);
 
   // Limpiar valores de píxeles cuando se desactivan capas raster
   useEffect(() => {
@@ -2139,33 +2228,6 @@ const Clima = () => {
   }, []);
 
   const onTempMaxPixelValue = useCallback((value) => {
-    // Debug: Mostrar el valor del píxel y qué color debería tener
-    if (value !== null && value !== undefined) {
-      console.log(`Valor del píxel de temperatura máxima: ${value}°C`);
-
-      // Verificar qué rango corresponde según nuestro SLD
-      for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
-        const minVal = SLD_TEMPERATURE_VALUES[i];
-        const maxVal = SLD_TEMPERATURE_VALUES[i + 1];
-        if (value >= minVal && value < maxVal) {
-          console.log(
-            `Debería estar en rango ${minVal}-${maxVal}°C con color ${SLD_TEMPERATURE_COLORS[i]}`
-          );
-          break;
-        }
-      }
-
-      // Caso especial para valor exacto de 26.2°C
-      if (Math.abs(value - 26.2) < 0.1) {
-        console.log(
-          `🚨 CASO PROBLEMÁTICO: 26.2°C debería ser NARANJA CLARO (#ffad21), NO azul`
-        );
-        console.log(
-          `Está en rango 26-28°C = ${SLD_TEMPERATURE_COLORS[11]} (naranja claro)`
-        );
-      }
-    }
-
     setPixelValues((prev) => ({ ...prev, tempMax: value }));
   }, []);
 
@@ -2174,23 +2236,6 @@ const Clima = () => {
   }, []);
 
   const onTempMinPixelValue = useCallback((value) => {
-    // Debug: Mostrar el valor del píxel y qué color debería tener
-    if (value !== null && value !== undefined) {
-      console.log(`Valor del píxel de temperatura mínima: ${value}°C`);
-
-      // Verificar qué rango corresponde según nuestro SLD
-      for (let i = 0; i < SLD_TEMPERATURE_VALUES.length - 1; i++) {
-        const minVal = SLD_TEMPERATURE_VALUES[i];
-        const maxVal = SLD_TEMPERATURE_VALUES[i + 1];
-        if (value >= minVal && value < maxVal) {
-          console.log(
-            `Debería estar en rango ${minVal}-${maxVal}°C con color ${SLD_TEMPERATURE_COLORS[i]}`
-          );
-          break;
-        }
-      }
-    }
-
     setPixelValues((prev) => ({ ...prev, tempMin: value }));
   }, []);
 
@@ -2204,6 +2249,10 @@ const Clima = () => {
   }, []);
 
   useEffect(() => {
+    // Configuración inicial del componente
+    console.log("� Inicializando componente Clima");
+
+    // Cargar datos GeoJSON
     fetch("/AREA.geojson")
       .then((res) => res.json())
       .then(setArea);
@@ -2218,6 +2267,16 @@ const Clima = () => {
       .then(setClima);
   }, []);
 
+  // Asegurar centrado del mapa
+  useEffect(() => {
+    // Pequeño delay para asegurar que el mapa esté montado
+    const timer = setTimeout(() => {
+      console.log("🎯 Forzando centrado del mapa en: 16.67566, -95.96711");
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <MapContainer
       center={[16.67566, -95.96711]}
@@ -2225,6 +2284,7 @@ const Clima = () => {
       scrollWheelZoom={true}
       dragging={true}
       style={{ height: "100vh", width: "100%" }}
+      key="map-clima" // Clave única para forzar re-montaje si es necesario
     >
       <DraggingControl />
       <PixelValueDisplay
@@ -2277,65 +2337,73 @@ const Clima = () => {
         layerType="tempMin"
       />
 
-      {/* Capas raster con control de visibilidad */}
-      <RasterOverlay
-        fileName="PREC_TOTAL_ANUAL.tif"
-        colorMap={{
-          313: "#FFFACD",
-          400: "#F0E68C",
-          600: "#9ACD32",
-          800: "#32CD32",
-          1000: "#228B22",
-          1100: "#006400",
-          1200: "#87CEEB",
-          1600: "#4169E1",
-          1800: "#0000CD",
-          2000: "#0000CD",
-        }}
-        baseUrl="/"
-        continuous={true}
-        setError={handleError}
-        setLoading={handleLoading}
-        onPixelValue={onPrecipitacionPixelValue}
-        overlayOpacity={opacity.precipitacion}
-        visible={activeLayers.precipitacion}
-      />
+      {/* Capas raster - Renderizado condicional simple como otros componentes */}
+      {activeLayers.precipitacion && (
+        <RasterOverlay
+          key={`precipitacion-${rasterKeys.precipitacion}-${rasterTimestamps.precipitacion}`}
+          fileName="PREC_TOTAL_ANUAL.tif"
+          colorMap={{
+            313: "#FFFACD",
+            400: "#F0E68C",
+            600: "#9ACD32",
+            800: "#32CD32",
+            1000: "#228B22",
+            1100: "#006400",
+            1200: "#87CEEB",
+            1600: "#4169E1",
+            1800: "#0000CD",
+            2000: "#0000CD",
+          }}
+          baseUrl="/"
+          continuous={true}
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onPrecipitacionPixelValue}
+          overlayOpacity={opacity.precipitacion}
+        />
+      )}
 
-      <RasterOverlay
-        fileName="TEMP_MAX_ANUAL.tif"
-        colorMap={generateSldTemperatureColorMap()}
-        baseUrl="/"
-        continuous={false}
-        setError={handleError}
-        setLoading={handleLoading}
-        onPixelValue={onTempMaxPixelValue}
-        overlayOpacity={opacity.tempMax}
-        visible={activeLayers.tempMax}
-      />
+      {activeLayers.tempMax && (
+        <RasterOverlay
+          key={`tempMax-${rasterKeys.tempMax}-${rasterTimestamps.tempMax}`}
+          fileName="TEMP_MAX_ANUAL.tif"
+          colorMap={generateSldTemperatureColorMap()}
+          baseUrl="/"
+          continuous={false}
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMaxPixelValue}
+          overlayOpacity={opacity.tempMax}
+        />
+      )}
 
-      <RasterOverlay
-        fileName="TEMP_MED_ANUAL.tif"
-        colorMap={generateSldTemperatureColorMap()}
-        baseUrl="/"
-        continuous={false}
-        setError={handleError}
-        setLoading={handleLoading}
-        onPixelValue={onTempMedPixelValue}
-        overlayOpacity={opacity.tempMed}
-        visible={activeLayers.tempMed}
-      />
+      {activeLayers.tempMed && (
+        <RasterOverlay
+          key={`tempMed-${rasterKeys.tempMed}-${rasterTimestamps.tempMed}`}
+          fileName="TEMP_MED_ANUAL.tif"
+          colorMap={generateSldTemperatureColorMap()}
+          baseUrl="/"
+          continuous={false}
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMedPixelValue}
+          overlayOpacity={opacity.tempMed}
+        />
+      )}
 
-      <RasterOverlay
-        fileName="TEMP_MIN_ANUAL.tif"
-        colorMap={generateSldTemperatureColorMap()}
-        baseUrl="/"
-        continuous={false}
-        setError={handleError}
-        setLoading={handleLoading}
-        onPixelValue={onTempMinPixelValue}
-        overlayOpacity={opacity.tempMin}
-        visible={activeLayers.tempMin}
-      />
+      {activeLayers.tempMin && (
+        <RasterOverlay
+          key={`tempMin-${rasterKeys.tempMin}-${rasterTimestamps.tempMin}`}
+          fileName="TEMP_MIN_ANUAL.tif"
+          colorMap={generateSldTemperatureColorMap()}
+          baseUrl="/"
+          continuous={false}
+          setError={handleError}
+          setLoading={handleLoading}
+          onPixelValue={onTempMinPixelValue}
+          overlayOpacity={opacity.tempMin}
+        />
+      )}
     </MapContainer>
   );
 };

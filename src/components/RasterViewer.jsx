@@ -143,8 +143,19 @@ export const RasterOverlay = React.memo(
 
             // Crear y agregar la capa con los datos cacheados
             if (cachedData.canvas && map) {
+              // Crear bounds desde los datos cacheados
+              const southWest = L.latLng(
+                cachedData.bounds[1],
+                cachedData.bounds[0]
+              );
+              const northEast = L.latLng(
+                cachedData.bounds[3],
+                cachedData.bounds[2]
+              );
+              const rasterBounds = L.latLngBounds(southWest, northEast);
+
               const canvasLayer = L.imageOverlay(
-                canvas.toDataURL(),
+                cachedData.imageUrl || cachedData.canvas.toDataURL(),
                 rasterBounds,
                 { opacity: visible ? overlayOpacity : 0, pane }
               );
