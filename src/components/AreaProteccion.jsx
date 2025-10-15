@@ -4,16 +4,17 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
 
-// Función para generar colores específicos para categorías de manejo de ANP
+// Función para generar colores específicos para categorías de manejo de ANP basada en Areas_Conservacion.sld
 const generateANPColorPalette = (values) => {
   const colorMap = {
+    ADVC: "#db524a", // rojo - Área dedicada voluntariamente a la conservación
+    "Monumento Nacional": "#4887e7", // azul - Monumento nacional
+    "Parque estatal": "#7cda85", // verde - Parque estatal
+    // Colores adicionales para otras categorías que puedan existir en los datos
     "Área de Protección de Flora y Fauna": "#4CAF50", // Verde
     "Área de Protección de Recursos Naturales": "#8BC34A", // Verde claro
-    "Monumento Nacional": "#2196F3", // Naranja
     "Parque Nacional": "#2196F3", // Azul
     "Reserva de la Biosfera": "#9C27B0", // Púrpura
-    ADVC: "#FFD700", // Dorado
-    "Parque estatal": "#795548", // Marrón
     "Otra Categoría": "#607D8B", // Gris azulado
   };
 
@@ -32,18 +33,19 @@ const generateANPColorPalette = (values) => {
   return result;
 };
 
-// Función para generar mapa de leyenda con nombres descriptivos
+// Función para generar mapa de leyenda con nombres descriptivos basados en el SLD
 const generateLegendMap = (colorMap) => {
   const displayNames = {
+    ADVC: "Área dedicada voluntariamente a la conservación",
+    "Monumento Nacional": "Monumento Nacional",
+    "Parque estatal": "Parque estatal",
+    // Mantener nombres adicionales para otras categorías
     "Área de Protección de Flora y Fauna":
       "Área de Protección de Flora y Fauna",
     "Área de Protección de Recursos Naturales":
       "Área de Protección de Recursos Naturales",
-    "Monumento Nacional": "Monumento Nacional",
     "Parque Nacional": "Parque Nacional",
     "Reserva de la Biosfera": "Reserva de la Biosfera",
-    ADVC: "Área destinada voluntariamente a la conservación",
-    "Parque estatal": "Parque estatal",
     "Otra Categoría": "Otra Categoría",
   };
 
@@ -415,9 +417,9 @@ const GroupedLayerControl = ({
           const color = colorMap[category] || "#CCCCCC";
           return {
             fillColor: color,
-            weight: 2,
+            weight: 1, // stroke-width del SLD
             opacity: 1,
-            color: "white",
+            color: "#9a9a9a", // stroke color del SLD (gris)
             fillOpacity: opacity.anp,
           };
         },
@@ -931,8 +933,8 @@ const AreaProteccion = () => {
   const [activeLayers, setActiveLayers] = useState({
     anp: true,
     area: true,
-    paisajes: false,
-    municipios: false,
+    paisajes: true,
+    municipios: true,
     "ZONA_CONFLICTO.tif": false,
     "IMPORTANCIA_ECOLOGICA.tif": false,
   });
