@@ -510,7 +510,9 @@ const ConcentracionPoblacionLegend = ({
           <div
             style={{
               height: "20px",
-              background: `linear-gradient(to right, ${colorGradient.join(", ")})`,
+              background: `linear-gradient(to right, ${colorGradient.join(
+                ", "
+              )})`,
               border: "1px solid #999",
               borderRadius: "2px",
               margin: "8px 0",
@@ -1581,7 +1583,7 @@ const Poblacion = () => {
       .then((res) => res.json())
       .then(setMarginacion)
       .catch(console.error);
-    
+
     // Habilitar archivo raster de concentración de población
     // RasterOverlay maneja la verificación y carga del archivo
     setConcentracionPoblacion("ConcentracionPoblacion.tif");
