@@ -372,7 +372,7 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState("OpenStreetMap");
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Satélite (ESRI)");
 
   useEffect(() => {
     // Limpiar capas anteriores (excepto capas base)

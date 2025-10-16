@@ -426,7 +426,7 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   // useEffect para crear capas (solo cuando cambian los datos, NO cuando cambia activeLayers)
   useEffect(() => {
@@ -455,6 +455,12 @@ const GroupedLayerControl = ({
       ),
       "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
