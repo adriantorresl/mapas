@@ -2,6 +2,20 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { RasterOverlay } from "./RasterViewer";
+
+// Función para cargar archivos raster GeoTIFF
+const loadGeoTIFF = async (url) => {
+  try {
+    // Para archivos TIFF, necesitamos usar una aproximación diferente
+    // Por ahora, retornamos null para indicar que no se puede cargar
+    console.warn(`GeoTIFF loading not implemented for ${url}`);
+    return null;
+  } catch (error) {
+    console.error("Error loading GeoTIFF:", error);
+    return null;
+  }
+};
 
 // Función para generar colores específicos para aspectos demográficos usando valores numéricos
 const generatePoblacionColorPalette = (values) => {
@@ -239,6 +253,8 @@ const ColorLegend = ({
         return "Pobreza Extrema";
       case "marginacion":
         return "Grado de Marginación";
+      case "concentracionPoblacion":
+        return "Concentración de Población";
       default:
         return "Valores";
     }
@@ -425,6 +441,99 @@ const ColorLegend = ({
   );
 };
 
+// Componente de leyenda para concentración de población (raster)
+const ConcentracionPoblacionLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "270px"; // Se mueve para evitar superposición
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease", // Animación suave
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Colores que corresponden al colorMap del RasterOverlay
+  const colorGradient = ["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Concentración de Población
+          </div>
+          <div
+            style={{
+              height: "20px",
+              background: `linear-gradient(to right, ${colorGradient.join(", ")})`,
+              border: "1px solid #999",
+              borderRadius: "2px",
+              margin: "8px 0",
+            }}
+          ></div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+              color: "white",
+              marginTop: "4px",
+            }}
+          >
+            <span>Baja</span>
+            <span>Alta</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CoordinateControl = () => {
   const map = useMap();
   useEffect(() => {
@@ -498,6 +607,7 @@ const GroupedLayerControl = ({
   pobrezaModerada,
   pobrezaExtrema,
   marginacion,
+  concentracionPoblacion,
   onColorMapChange,
   onLegendVisibilityChange,
   onControlStateChange,
@@ -808,6 +918,10 @@ const GroupedLayerControl = ({
       }
     }
 
+    // Capa Raster - Concentración de Población
+    // Ahora manejamos los archivos TIFF usando RasterOverlay especializado
+    // La lógica de creación se maneja en el componente RasterOverlay
+
     newLayers.baseLayers = baseLayers;
     setLayers(newLayers);
 
@@ -826,6 +940,7 @@ const GroupedLayerControl = ({
     pobrezaModerada,
     pobrezaExtrema,
     marginacion,
+    concentracionPoblacion,
     activeLayers,
     activeBaseLayer,
     opacity, // Agregamos opacity como dependencia
@@ -839,6 +954,7 @@ const GroupedLayerControl = ({
       "pobrezaModerada",
       "pobrezaExtrema",
       "marginacion",
+      "concentracionPoblacion",
     ];
 
     const activeCount = demograficLayers.filter(
@@ -933,6 +1049,7 @@ const GroupedLayerControl = ({
       "pobrezaModerada",
       "pobrezaExtrema",
       "marginacion",
+      "concentracionPoblacion",
     ];
     if (
       demograficLayers.includes(layerKey) &&
@@ -976,6 +1093,11 @@ const GroupedLayerControl = ({
             field = "GM_2020";
             colorGenerator = generateMarginacionColorPalette;
             break;
+          case "concentracionPoblacion":
+            // Para capas raster, no mostramos leyenda de datos
+            onColorMapChange({});
+            onLegendVisibilityChange(false);
+            return;
         }
 
         if (data && data.features) {
@@ -1011,8 +1133,14 @@ const GroupedLayerControl = ({
     setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
 
     const layer = layers[layerKey];
-    if (layer && layer.setStyle) {
-      layer.setStyle({ fillOpacity: newOpacity });
+    if (layer) {
+      if (layer.setStyle) {
+        // Para capas vectoriales
+        layer.setStyle({ fillOpacity: newOpacity });
+      } else if (layer.setOpacity) {
+        // Para capas raster
+        layer.setOpacity(newOpacity);
+      }
     }
   };
 
@@ -1335,6 +1463,15 @@ const GroupedLayerControl = ({
                 showOpacity={true}
               />
             )}
+            {concentracionPoblacion && (
+              <LayerItem
+                layerKey="concentracionPoblacion"
+                title="Concentración de población"
+                data={null}
+                showDownload={false}
+                showOpacity={true}
+              />
+            )}
           </div>
         </div>
       )}
@@ -1365,6 +1502,7 @@ const Poblacion = () => {
   const [pobrezaModerada, setPobrezaModerada] = useState(null);
   const [pobrezaExtrema, setPobrezaExtrema] = useState(null);
   const [marginacion, setMarginacion] = useState(null);
+  const [concentracionPoblacion, setConcentracionPoblacion] = useState(null);
   const [colorMap, setColorMap] = useState({});
   const [showLegend, setShowLegend] = useState(true); // Activar leyenda por defecto
   const [layerControlState, setLayerControlState] = useState({
@@ -1381,6 +1519,7 @@ const Poblacion = () => {
     pobrezaModerada: false,
     pobrezaExtrema: false,
     marginacion: false,
+    concentracionPoblacion: false,
   });
   const [opacity, setOpacity] = useState({
     area: 1,
@@ -1391,6 +1530,7 @@ const Poblacion = () => {
     pobrezaModerada: 1,
     pobrezaExtrema: 1,
     marginacion: 1,
+    concentracionPoblacion: 0.7,
   });
 
   const toggleTooltips = () => {
@@ -1410,6 +1550,7 @@ const Poblacion = () => {
     if (activeLayers.pobrezaModerada) return "pobrezaModerada";
     if (activeLayers.pobreza) return "pobreza";
     if (activeLayers.marginacion) return "marginacion";
+    if (activeLayers.concentracionPoblacion) return "concentracionPoblacion";
     if (activeLayers.poblacion) return "poblacion";
     return "poblacion";
   };
@@ -1440,6 +1581,10 @@ const Poblacion = () => {
       .then((res) => res.json())
       .then(setMarginacion)
       .catch(console.error);
+    
+    // Habilitar archivo raster de concentración de población
+    // RasterOverlay maneja la verificación y carga del archivo
+    setConcentracionPoblacion("ConcentracionPoblacion.tif");
   }, []);
 
   return (
@@ -1460,6 +1605,7 @@ const Poblacion = () => {
         pobrezaModerada={pobrezaModerada}
         pobrezaExtrema={pobrezaExtrema}
         marginacion={marginacion}
+        concentracionPoblacion={concentracionPoblacion}
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
         onControlStateChange={setLayerControlState}
@@ -1468,10 +1614,26 @@ const Poblacion = () => {
         opacity={opacity}
         setOpacity={setOpacity}
       />
+      <RasterOverlay
+        fileName="ConcentracionPoblacion.tif"
+        colorMap={["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"]}
+        baseUrl="/"
+        continuous={true}
+        setError={() => {}}
+        setLoading={() => {}}
+        onPixelValue={() => {}}
+        overlayOpacity={opacity.concentracionPoblacion}
+        visible={activeLayers.concentracionPoblacion}
+      />
       <ColorLegend
         colorMap={colorMap}
-        isVisible={showLegend}
+        isVisible={showLegend && !activeLayers.concentracionPoblacion}
         currentDataset={getCurrentDataset()}
+        layerControlCollapsed={layerControlState.isCollapsed}
+        layerControlWidth={layerControlState.width}
+      />
+      <ConcentracionPoblacionLegend
+        isVisible={activeLayers.concentracionPoblacion}
         layerControlCollapsed={layerControlState.isCollapsed}
         layerControlWidth={layerControlState.width}
       />
