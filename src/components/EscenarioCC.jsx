@@ -359,9 +359,7 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Hillshade (ESRI)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   // Mapeo de periodos a códigos de archivo
   const periodMap = {
@@ -780,28 +778,26 @@ const GroupedLayerControl = ({
             <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
               Mapa Base
             </div>
-            {["Satelital (ESRI)", "Hillshade (ESRI)"].map(
-              (layerName) => (
-                <div
-                  key={layerName}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "3px",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="baseLayer"
-                    checked={activeBaseLayer === layerName}
-                    onChange={() => changeBaseLayer(layerName)}
-                  />
-                  <span style={{ marginLeft: "8px", fontSize: "11px" }}>
-                    {layerName}
-                  </span>
-                </div>
-              )
-            )}
+            {["Satelital (ESRI)", "Hillshade (ESRI)"].map((layerName) => (
+              <div
+                key={layerName}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "3px",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="baseLayer"
+                  checked={activeBaseLayer === layerName}
+                  onChange={() => changeBaseLayer(layerName)}
+                />
+                <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                  {layerName}
+                </span>
+              </div>
+            ))}
           </div>
 
           {/* Límites */}
