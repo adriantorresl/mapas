@@ -5,7 +5,7 @@
       <sld:FeatureTypeConstraint/>
     </sld:LayerFeatureConstraints>
     <sld:UserStyle>
-      <sld:Name>Temp_med_anual</sld:Name>
+      <sld:Name>Temp_min_7599</sld:Name>
       <sld:FeatureTypeStyle>
         <sld:Rule>
           <sld:RasterSymbolizer>

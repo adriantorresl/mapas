@@ -23,14 +23,19 @@ const downloadGeoJSON = (data, filename) => {
 const downloadRaster = async (filename, displayName) => {
   try {
     const url = `/${filename}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("No se pudo descargar el archivo");
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = url;
+    link.href = downloadUrl;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
-    console.error(`Error descargando ${displayName}:`, error);
+    console.error("Error descargando archivo raster:", error);
     alert(`Error al descargar ${displayName}`);
   }
 };
@@ -167,27 +172,38 @@ const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
 };
 
 // Componente de leyenda para Balance de Nitrógeno
-const NitrogenoLegend = ({ isVisible }) => {
+const NitrogenoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "200px",
     maxWidth: "250px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
@@ -200,11 +216,11 @@ const NitrogenoLegend = ({ isVisible }) => {
   };
 
   const categories = [
-    { name: "0 - 300", color: "#1a9850" },
-    { name: "301 - 900", color: "#91bfdb" },
-    { name: "901 - 1,500", color: "#ffffbf" },
-    { name: "1,501 - 2,100", color: "#fc8d59" },
-    { name: "2,101 - 3,202", color: "#d73027" },
+    { name: "0 - 300", color: "#0c5406" },
+    { name: "301 - 900", color: "#8ed500" },
+    { name: "901 - 1,500", color: "#fff700" },
+    { name: "1,501 - 2,100", color: "#ff9f00" },
+    { name: "2,101 - 3,202", color: "#c40000" },
   ];
 
   return (
@@ -242,27 +258,38 @@ const NitrogenoLegend = ({ isVisible }) => {
 };
 
 // Componente de leyenda para Balance de Fósforo
-const FosforoLegend = ({ isVisible }) => {
+const FosforoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "200px",
     maxWidth: "250px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
@@ -277,11 +304,11 @@ const FosforoLegend = ({ isVisible }) => {
   };
 
   const categories = [
-    { name: "0 - 5000", color: "#762a83" },
-    { name: "5001 - 10000", color: "#af8dc3" },
-    { name: "10001 - 20000", color: "#f7f7f7" },
-    { name: "20001 - 40000", color: "#7fbf7b" },
-    { name: "40001 - 80455", color: "#1b7837" },
+    { name: "0 - 5,000", color: "#0c5406" },
+    { name: "5,001 - 10,000", color: "#85a503" },
+    { name: "10,001 - 20,000", color: "#fff700" },
+    { name: "20,001 - 40,000", color: "#e27c00" },
+    { name: "40,001 - 80,607", color: "#c40000" },
   ];
 
   return (
@@ -319,25 +346,37 @@ const FosforoLegend = ({ isVisible }) => {
 };
 
 // Componente de leyenda para raster de Tendencia de Nitrógeno
-const TendenciaNitrogenoLegend = ({ isVisible }) => {
+const TendenciaNitrogenoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "180px",
     maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
@@ -350,13 +389,12 @@ const TendenciaNitrogenoLegend = ({ isVisible }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de nitrógeno - usando la paleta correcta
+  // Rampa de colores para tendencia de nitrógeno - usando la paleta de NDR_N_Tendencia.sld
   const createColorRamp = () => {
     const colors = [
-      "#238443", // Verde oscuro (muy baja)
-      "#78c679", // Verde claro
-      "#ffffcc", // Amarillo muy claro
-      "#8c6bb1", // Púrpura grisáceo/cafesoso (muy alta)
+      "#0c5406", // Verde oscuro (valor bajo)
+      "#fffee1", // Amarillo muy claro (valor medio)
+      "#3c003d", // Púrpura oscuro (valor alto)
     ];
 
     return (
@@ -405,25 +443,38 @@ const TendenciaNitrogenoLegend = ({ isVisible }) => {
 };
 
 // Componente de leyenda para raster de Tendencia de Fósforo
-const TendenciaFosforoLegend = ({ isVisible }) => {
+const TendenciaFosforoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     padding: isCollapsed ? "8px" : "15px",
     zIndex: 1000,
     minWidth: isCollapsed ? "auto" : "180px",
     maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
@@ -435,15 +486,11 @@ const TendenciaFosforoLegend = ({ isVisible }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de fósforo - usando la paleta correcta
+  // Rampa de colores para tendencia de fósforo - usando la paleta de NDR_P_Tendencia.sld
   const createColorRamp = () => {
     const colors = [
-      "#238443", // Verde oscuro (muy baja)
-      "#41ab5d", // Verde medio
-      "#78c679", // Verde claro
-      "#c2e699", // Verde amarillento claro
-      "#ffffcc", // Amarillo muy claro
-      "#8c6bb1", // Púrpura grisáceo/cafesoso (muy alta)
+      "#0c5406", // Verde oscuro (valor bajo)
+      "#3c003d", // Púrpura oscuro (valor alto)
     ];
 
     return (
@@ -500,11 +547,20 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const baseLayers = {
@@ -577,11 +633,11 @@ const GroupedLayerControl = ({
     if (expNutr) {
       const fieldN = "S7_N";
       const colorCategoriesN = {
-        "0 - 300": "#1a9850",
-        "301 - 900": "#91bfdb",
-        "901 - 1,500": "#ffffbf",
-        "1,501 - 2,100": "#fc8d59",
-        "2,101 - 3,202": "#d73027",
+        "0 - 300": "#0c5406",
+        "301 - 900": "#8ed500",
+        "901 - 1,500": "#fff700",
+        "1,501 - 2,100": "#ff9f00",
+        "2,101 - 3,202": "#c40000",
       };
 
       newLayers.expNutrN = L.geoJSON(expNutr, {
@@ -625,11 +681,11 @@ const GroupedLayerControl = ({
     if (expNutr) {
       const fieldP = "S7_P";
       const colorCategoriesP = {
-        "0 - 5000": "#762a83",
-        "5001 - 10000": "#af8dc3",
-        "10001 - 20000": "#f7f7f7",
-        "20001 - 40000": "#7fbf7b",
-        "40001 - 80455": "#1b7837",
+        "0 - 5000": "#0c5406",
+        "5001 - 10000": "#85a503",
+        "10001 - 20000": "#fff700",
+        "20001 - 40000": "#e27c00",
+        "40001 - 80607": "#c40000",
       };
 
       newLayers.expNutrP = L.geoJSON(expNutr, {
@@ -651,9 +707,9 @@ const GroupedLayerControl = ({
           } else if (value >= 20001 && value <= 40000) {
             color = colorCategoriesP["20001 - 40000"];
             fillColor = colorCategoriesP["20001 - 40000"];
-          } else if (value >= 40001 && value <= 80455) {
-            color = colorCategoriesP["40001 - 80455"];
-            fillColor = colorCategoriesP["40001 - 80455"];
+          } else if (value >= 40001 && value <= 80607) {
+            color = colorCategoriesP["40001 - 80607"];
+            fillColor = colorCategoriesP["40001 - 80607"];
           }
 
           return {
@@ -735,29 +791,29 @@ const GroupedLayerControl = ({
   const controlStyle = {
     color: "white",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
-    padding: isCollapsed ? "8px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    fontSize: "12px",
-    padding: isCollapsed ? "4px 4px" : "4px 4px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    fontSize: isCollapsed ? "12px" : "12px",
-    whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -769,17 +825,18 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
@@ -818,7 +875,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#ffffffff"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -829,59 +886,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#ffffffff"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.touchZoom.disable();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.touchZoom.enable();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -899,36 +968,44 @@ const GroupedLayerControl = ({
             style={{
               marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "15px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
-              Mapa Base
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {[
+                "Hillshade (ESRI)",
+                "Satelital (ESRI)",
+                "Calles (OpenStreetMap)",
+              ].map((layerName) => (
+                <div key={layerName} style={{ marginBottom: "5px" }}>
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === layerName}
+                    onChange={() => changeBaseLayer(layerName)}
+                  />
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {layerName}
+                  </span>
+                </div>
+              ))}
             </div>
-            {[
-              "Hillshade (ESRI)",
-              "Satelital (ESRI)",
-              "Calles (OpenStreetMap)",
-            ].map((layerName) => (
-              <div
-                key={layerName}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "5px",
-                }}
-              >
-                <input
-                  type="radio"
-                  name="baseLayer"
-                  checked={activeBaseLayer === layerName}
-                  onChange={() => changeBaseLayer(layerName)}
-                />
-                <span style={{ marginLeft: "8px", fontSize: "12px" }}>
-                  {layerName}
-                </span>
-              </div>
-            ))}
           </div>
 
           {/* Límites */}
@@ -936,12 +1013,19 @@ const GroupedLayerControl = ({
             style={{
               marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "15px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Límites
-            </div>
+            </strong>
             <LayerItem
               layerKey="area"
               title="Área de estudio"
@@ -967,12 +1051,19 @@ const GroupedLayerControl = ({
             style={{
               marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "15px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Nitrógeno
-            </div>
+            </strong>
             <LayerItem
               layerKey="expNutrN"
               title="Balance de Nitrógeno"
@@ -981,17 +1072,18 @@ const GroupedLayerControl = ({
             />
             <div
               style={{
-                marginBottom: "6px",
-                padding: "0px",
+                marginBottom: "2px",
+                padding: "2px 10px",
                 backgroundColor: "transparent",
-                borderRadius: "0px",
+                borderRadius: "4px",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
+                  alignContent: "center",
+                  marginBottom: "2px",
                   gap: "8px",
                 }}
               >
@@ -1033,7 +1125,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#ffffffff"
+                      stroke="white"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1044,62 +1136,86 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#ffffffff"
+                      fill="white"
                     />
                   </svg>
                 </button>
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "white",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
                 }}
               >
-                Opacidad: {Math.round(opacity.rasterN * 100)}%
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.rasterN * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.rasterN - 0.1);
+                    handleOpacityChange("rasterN", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterN <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.rasterN + 0.1);
+                    handleOpacityChange("rasterN", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterN >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.rasterN}
-                onChange={(e) =>
-                  handleOpacityChange("rasterN", parseFloat(e.target.value))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.disable();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.enable();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
           </div>
 
           {/* Grupo de Fósforo */}
           <div style={{ marginBottom: "10px" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Fósforo
-            </div>
+            </strong>
             <LayerItem
               layerKey="expNutrP"
               title="Balance de Fósforo"
@@ -1108,17 +1224,18 @@ const GroupedLayerControl = ({
             />
             <div
               style={{
-                marginBottom: "6px",
-                padding: "0px",
+                marginBottom: "2px",
+                padding: "2px 10px",
                 backgroundColor: "transparent",
-                borderRadius: "0px",
+                borderRadius: "4px",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
+                  alignContent: "center",
+                  marginBottom: "2px",
                   gap: "8px",
                 }}
               >
@@ -1160,7 +1277,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#ffffffff"
+                      stroke="white"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1171,54 +1288,71 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#ffffffff"
+                      fill="white"
                     />
                   </svg>
                 </button>
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "white",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
                 }}
               >
-                Opacidad: {Math.round(opacity.rasterP * 100)}%
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.rasterP * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.rasterP - 0.1);
+                    handleOpacityChange("rasterP", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterP <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.rasterP + 0.1);
+                    handleOpacityChange("rasterP", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterP >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.rasterP}
-                onChange={(e) =>
-                  handleOpacityChange("rasterP", parseFloat(e.target.value))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.disable();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.enable();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
           </div>
         </div>
@@ -1275,9 +1409,19 @@ const Nutrientes = ({
   // Estado para tooltips
   const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
 
+  // Estado para controlar la posición dinámica de la leyenda
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
+
   // Función para toggle de tooltips
   const toggleTooltips = () => {
     setTooltipsEnabled(!tooltipsEnabled);
+  };
+
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
   };
 
   // Estado para el centro del mapa
@@ -1398,14 +1542,7 @@ const Nutrientes = ({
         {activeLayers.rasterN && (
           <RasterOverlay
             fileName="TEND_N.tif"
-            colorMap={[
-              "#238443",
-              "#41ab5d",
-              "#78c679",
-              "#c2e699",
-              "#ffffcc",
-              "#8c6bb1",
-            ]}
+            colorMap={["#0c5406", "#fffee1", "#3c003d"]}
             baseUrl="/"
             continuous={true}
             setError={setError}
@@ -1418,14 +1555,7 @@ const Nutrientes = ({
         {activeLayers.rasterP && (
           <RasterOverlay
             fileName="TEND_P.tif"
-            colorMap={[
-              "#238443",
-              "#41ab5d",
-              "#78c679",
-              "#c2e699",
-              "#ffffcc",
-              "#8c6bb1",
-            ]}
+            colorMap={["#0c5406", "#3c003d"]}
             baseUrl="/"
             continuous={true}
             setError={setError}
@@ -1445,6 +1575,7 @@ const Nutrientes = ({
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
+          onControlStateChange={handleControlStateChange}
         />
 
         {/* Indicador de carga */}
@@ -1487,10 +1618,26 @@ const Nutrientes = ({
         )}
 
         {/* Leyendas */}
-        <NitrogenoLegend isVisible={nitrogenoLegendVisible} />
-        <FosforoLegend isVisible={fosforoLegendVisible} />
-        <TendenciaNitrogenoLegend isVisible={tendenciaNitrogenoLegendVisible} />
-        <TendenciaFosforoLegend isVisible={tendenciaFosforoLegendVisible} />
+        <NitrogenoLegend
+          isVisible={nitrogenoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <FosforoLegend
+          isVisible={fosforoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <TendenciaNitrogenoLegend
+          isVisible={tendenciaNitrogenoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <TendenciaFosforoLegend
+          isVisible={tendenciaFosforoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />

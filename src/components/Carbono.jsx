@@ -168,73 +168,98 @@ const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
   );
 };
 
-// Componente de leyenda para Balance de Carbono
-const CarbonoLegend = ({ isVisible }) => {
+// Componente de leyenda para Balance de Carbono (2018)
+const Carbono2018Legend = ({ isVisible, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "280px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
-    padding: isCollapsed ? "8px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "200px",
-    maxWidth: "250px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
   };
 
+  // Categorías basadas en CO2_Tendencia_2018.sld
   const categories = [
-    { name: "77,312 - 350,000", color: "#ffffcc" },
-    { name: "350,001 - 700,000", color: "#c2e699" },
-    { name: "700,001 - 1,050,000", color: "#78c679" },
-    { name: "1,050,001 - 1,500,000", color: "#41b6c4" },
-    { name: "1,500,001 - 1,967,911", color: "#2c7fb8" },
+    { name: "70,000 - 350,000", color: "#fde725" },
+    { name: "350,000 - 700,000", color: "#5dc963" },
+    { name: "700,000 - 1,050,000", color: "#21908d" },
+    { name: "1,050,000 - 1,500,000", color: "#3b528b" },
+    { name: "1,500,000 - 2,000,000", color: "#440154" },
   ];
 
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Balance de Carbono (Ton CO₂)</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
       {!isCollapsed && (
-        <div>
+        <div style={{ padding: "10px 15px", paddingTop: "0" }}>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+            }}
+          >
+            Balance (Ton CO₂/ha)
+          </div>
           {categories.map((category) => (
             <div
               key={category.name}
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "5px",
+                marginBottom: "8px",
+                justifyContent: "space-between",
               }}
             >
-              <div
-                style={{
-                  width: "15px",
-                  height: "15px",
-                  backgroundColor: category.color,
-                  border: "1px solid #666",
-                  marginRight: "8px",
-                  flexShrink: 0,
-                }}
-              />
-              <span>{category.name}</span>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    backgroundColor: category.color,
+                    border: "1px solid white",
+                    marginRight: "8px",
+                    flexShrink: 0,
+                    display: "inline-block",
+                  }}
+                />
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {category.name}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -244,50 +269,58 @@ const CarbonoLegend = ({ isVisible }) => {
 };
 
 // Componente de leyenda para raster de Tendencia de CO2
-const TendenciaCarbonoLegend = ({ isVisible }) => {
+const TendenciaCarbonoLegend = ({ isVisible, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "280px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
-    padding: isCollapsed ? "8px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de CO2 (RdBu invertido)
+  // Rampa de colores para tendencia de CO2 basada en CO2_Tendencia.sld
   const createColorRamp = () => {
     const colors = [
-      "#67001f", // Rojo oscuro (pérdida alta)
-      "#b2182b", // Rojo
-      "#d6604d", // Rojo claro
-      "#f4a582", // Rosa
-      "#fddbc7", // Rosa muy claro
-      "#ffffff", // Blanco (neutro)
-      "#d1e5f0", // Azul muy claro
-      "#92c5de", // Azul claro
-      "#4393c3", // Azul
-      "#2166ac", // Azul oscuro
-      "#053061", // Azul muy oscuro (ganancia alta)
+      "#a50026", // Rojo muy oscuro (pérdida muy alta)
+      "#d73027", // Rojo oscuro
+      "#f46d43", // Rojo
+      "#fdae61", // Naranja
+      "#fee08b", // Amarillo claro
+      "#ffffbf", // Amarillo muy claro (neutro)
+      "#e6f598", // Verde muy claro
+      "#abdda4", // Verde claro
+      "#66c2a5", // Verde
+      "#3288bd", // Azul
+      "#5e4fa2", // Púrpura (ganancia muy alta)
     ];
 
     return (
@@ -300,8 +333,8 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
             marginBottom: "4px",
           }}
         >
-          <span>Muy baja</span>
-          <span>Muy alta</span>
+          <span>Pérdida alta</span>
+          <span>Ganancia alta</span>
         </div>
         <div
           style={{
@@ -327,10 +360,125 @@ const TendenciaCarbonoLegend = ({ isVisible }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Tendencia CO₂</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
-      {!isCollapsed && createColorRamp()}
+      {!isCollapsed && (
+        <div style={{ padding: "10px 15px", paddingTop: "0" }}>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+            }}
+          >
+            Tendencia CO₂
+          </div>
+          {createColorRamp()}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda para Tendencia de CO2 (2100)
+const TendenciaCarbono2100Legend = ({ isVisible, layerControlCollapsed }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "280px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  };
+
+  // Categorías basadas en CO2_Tendencia_2100.sld
+  const categories = [
+    { name: "60,000 - 70,000", color: "#e80809" },
+    { name: "70,000 - 350,000", color: "#fde725" },
+    { name: "350,000 - 700,000", color: "#5dc963" },
+    { name: "700,000 - 1,050,000", color: "#21908d" },
+    { name: "1,050,000 - 1,500,000", color: "#3b528b" },
+    { name: "1,500,000 - 2,250,000", color: "#440154" },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px 15px", paddingTop: "0" }}>
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              textAlign: "center",
+            }}
+          >
+            Tendencia (2100)
+          </div>
+          {categories.map((category) => (
+            <div
+              key={category.name}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "8px",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    backgroundColor: category.color,
+                    border: "1px solid white",
+                    marginRight: "8px",
+                    flexShrink: 0,
+                    display: "inline-block",
+                  }}
+                />
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {category.name}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -345,9 +493,10 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  isCollapsed,
+  setIsCollapsed,
 }) => {
   const map = useMap();
-  const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
@@ -418,39 +567,59 @@ const GroupedLayerControl = ({
       }
     }
 
-    // Balance de Carbono (CO2_CUENCA.geojson con campo S7)
+    // Balance de Carbono (2018) - CO2_CUENCA.geojson con campo S7
     if (co2Cuenca) {
+      // Debug: mostrar todos los campos disponibles
+      if (co2Cuenca.features && co2Cuenca.features[0]) {
+        console.log(
+          "Campos disponibles en CO2_CUENCA:",
+          Object.keys(co2Cuenca.features[0].properties)
+        );
+      }
+
       const field = "S7";
       const colorCategories = {
-        "77,312 - 350,000": "#ffffcc",
-        "350,001 - 700,000": "#c2e699",
-        "700,001 - 1,050,000": "#78c679",
-        "1,050,001 - 1,500,000": "#41b6c4",
-        "1,500,001 - 1,967,911": "#2c7fb8",
+        "70,000 - 350,000": "#fde725",
+        "350,000 - 700,000": "#5dc963",
+        "700,000 - 1,050,000": "#21908d",
+        "1,050,000 - 1,500,000": "#3b528b",
+        "1,500,000 - 2,000,000": "#440154",
       };
 
       newLayers.co2Cuenca = L.geoJSON(co2Cuenca, {
         style: (feature) => {
           const value = feature.properties[field];
+          console.log(
+            `Balance Carbono (2018) - Campo ${field}:`,
+            value,
+            typeof value
+          );
           let color = "#666666";
           let fillColor = "#999999";
 
-          // Clasificar valores en categorías según rangos de Carbono
-          if (value >= 77312 && value <= 350000) {
-            color = colorCategories["77,312 - 350,000"];
-            fillColor = colorCategories["77,312 - 350,000"];
-          } else if (value >= 350001 && value <= 700000) {
-            color = colorCategories["350,001 - 700,000"];
-            fillColor = colorCategories["350,001 - 700,000"];
-          } else if (value >= 700001 && value <= 1050000) {
-            color = colorCategories["700,001 - 1,050,000"];
-            fillColor = colorCategories["700,001 - 1,050,000"];
-          } else if (value >= 1050001 && value <= 1500000) {
-            color = colorCategories["1,050,001 - 1,500,000"];
-            fillColor = colorCategories["1,050,001 - 1,500,000"];
-          } else if (value >= 1500001 && value <= 1967911) {
-            color = colorCategories["1,500,001 - 1,967,911"];
-            fillColor = colorCategories["1,500,001 - 1,967,911"];
+          // Convertir a número si es string
+          const numValue = parseFloat(value);
+
+          // Clasificar valores en categorías según rangos de CO2_Tendencia_2018.sld
+          if (!isNaN(numValue)) {
+            if (numValue <= 350000) {
+              color = colorCategories["70,000 - 350,000"];
+              fillColor = colorCategories["70,000 - 350,000"];
+            } else if (numValue <= 700000) {
+              color = colorCategories["350,000 - 700,000"];
+              fillColor = colorCategories["350,000 - 700,000"];
+            } else if (numValue <= 1050000) {
+              color = colorCategories["700,000 - 1,050,000"];
+              fillColor = colorCategories["700,000 - 1,050,000"];
+            } else if (numValue <= 1500000) {
+              color = colorCategories["1,050,000 - 1,500,000"];
+              fillColor = colorCategories["1,050,000 - 1,500,000"];
+            } else {
+              color = colorCategories["1,500,000 - 2,000,000"];
+              fillColor = colorCategories["1,500,000 - 2,000,000"];
+            }
+          } else {
+            console.log(`Valor inválido para ${field}:`, value);
           }
 
           return {
@@ -463,6 +632,70 @@ const GroupedLayerControl = ({
       });
       if (activeLayers.co2Cuenca) {
         newLayers.co2Cuenca.addTo(map);
+      }
+    }
+
+    // Tendencia de CO2 (2100) - CO2_CUENCA.geojson con campo diferente
+    if (co2Cuenca) {
+      const field2100 = "A_2100";
+      const colorCategories2100 = {
+        "60,000 - 70,000": "#e80809",
+        "70,000 - 350,000": "#fde725",
+        "350,000 - 700,000": "#5dc963",
+        "700,000 - 1,050,000": "#21908d",
+        "1,050,000 - 1,500,000": "#3b528b",
+        "1,500,000 - 2,250,000": "#440154",
+      };
+
+      newLayers.co2Cuenca2100 = L.geoJSON(co2Cuenca, {
+        style: (feature) => {
+          const value = feature.properties[field2100];
+          console.log(
+            `Tendencia CO2 (2100) - Campo ${field2100}:`,
+            value,
+            typeof value
+          );
+          let color = "#666666";
+          let fillColor = "#999999";
+
+          // Convertir a número si es string
+          const numValue = parseFloat(value);
+
+          // Clasificar valores en categorías según rangos de CO2_Tendencia_2100.sld
+          if (!isNaN(numValue)) {
+            if (numValue <= 70000) {
+              color = colorCategories2100["60,000 - 70,000"];
+              fillColor = colorCategories2100["60,000 - 70,000"];
+            } else if (numValue <= 350000) {
+              color = colorCategories2100["70,000 - 350,000"];
+              fillColor = colorCategories2100["70,000 - 350,000"];
+            } else if (numValue <= 700000) {
+              color = colorCategories2100["350,000 - 700,000"];
+              fillColor = colorCategories2100["350,000 - 700,000"];
+            } else if (numValue <= 1050000) {
+              color = colorCategories2100["700,000 - 1,050,000"];
+              fillColor = colorCategories2100["700,000 - 1,050,000"];
+            } else if (numValue <= 1500000) {
+              color = colorCategories2100["1,050,000 - 1,500,000"];
+              fillColor = colorCategories2100["1,050,000 - 1,500,000"];
+            } else {
+              color = colorCategories2100["1,500,000 - 2,250,000"];
+              fillColor = colorCategories2100["1,500,000 - 2,250,000"];
+            }
+          } else {
+            console.log(`Valor inválido para ${field2100}:`, value);
+          }
+
+          return {
+            color: color,
+            weight: 2,
+            fillOpacity: 0.6,
+            fillColor: fillColor,
+          };
+        },
+      });
+      if (activeLayers.co2Cuenca2100) {
+        newLayers.co2Cuenca2100.addTo(map);
       }
     }
 
@@ -491,6 +724,7 @@ const GroupedLayerControl = ({
     activeLayers.paisajes,
     activeLayers.municipios,
     activeLayers.co2Cuenca,
+    activeLayers.co2Cuenca2100,
   ]);
 
   const toggleLayer = (layerKey) => {
@@ -531,28 +765,29 @@ const GroupedLayerControl = ({
   const controlStyle = {
     color: "white",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
-    padding: isCollapsed ? "4px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    padding: isCollapsed ? "8px 10px" : "10px 15px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    fontSize: isCollapsed ? "12px" : "13px",
-    whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -564,17 +799,18 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
@@ -631,56 +867,64 @@ const GroupedLayerControl = ({
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{
-              fontSize: "10px",
-              color: "#ffffffff",
-              marginBottom: "5px",
-            }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.touchZoom.disable();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.touchZoom.enable();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -769,23 +1013,30 @@ const GroupedLayerControl = ({
             </div>
             <LayerItem
               layerKey="co2Cuenca"
-              title="Balance de Carbono"
+              title="Balance de Carbono (2018)"
+              data={co2Cuenca}
+              showOpacity={true}
+            />
+            <LayerItem
+              layerKey="co2Cuenca2100"
+              title="Balance de Carbono (2100)"
               data={co2Cuenca}
               showOpacity={true}
             />
             <div
               style={{
-                marginBottom: "6px",
-                padding: "0px",
+                marginBottom: "2px",
+                padding: "2px 10px",
                 backgroundColor: "transparent",
-                borderRadius: "0px",
+                borderRadius: "4px",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
+                  alignContent: "center",
+                  marginBottom: "2px",
                   gap: "8px",
                 }}
               >
@@ -797,7 +1048,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Tendencia de CO₂
+                  Tendencia de Carbono
                 </span>
                 <button
                   style={{
@@ -845,47 +1096,64 @@ const GroupedLayerControl = ({
               </div>
               <div
                 style={{
-                  fontSize: "10px",
-                  color: "#ffffffff",
-                  marginBottom: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
                 }}
               >
-                Opacidad: {Math.round(opacity.rasterCO2 * 100)}%
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.rasterCO2 * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.rasterCO2 - 0.1);
+                    handleOpacityChange("rasterCO2", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterCO2 <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.rasterCO2 + 0.1);
+                    handleOpacityChange("rasterCO2", newOpacity);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.rasterCO2 >= 1}
+                >
+                  +
+                </button>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={opacity.rasterCO2}
-                onChange={(e) =>
-                  handleOpacityChange("rasterCO2", parseFloat(e.target.value))
-                }
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  map.dragging.disable();
-                }}
-                onMouseUp={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                  map.dragging.enable();
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.disable();
-                  map.dragging.disable();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  map.touchZoom.enable();
-                  map.dragging.enable();
-                }}
-                style={{ width: "100%" }}
-              />
             </div>
           </div>
         </div>
@@ -911,17 +1179,22 @@ const Carbono = ({
     paisajes: false,
     municipios: false,
     co2Cuenca: false,
+    co2Cuenca2100: false,
     rasterCO2: false,
   });
 
   // Estado para opacidad de capas
   const [opacity, setOpacity] = useState({
     co2Cuenca: 0.6,
+    co2Cuenca2100: 0.6,
     rasterCO2: 0.7,
   });
 
   // Estados para leyendas
-  const [carbonoLegendVisible, setCarbonoLegendVisible] = useState(false);
+  const [carbono2018LegendVisible, setCarbono2018LegendVisible] =
+    useState(false);
+  const [carbono2100LegendVisible, setCarbono2100LegendVisible] =
+    useState(false);
   const [tendenciaCarbonoLegendVisible, setTendenciaCarbonoLegendVisible] =
     useState(false);
 
@@ -934,6 +1207,9 @@ const Carbono = ({
 
   // Estado para tooltips
   const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Estado para el control de capas colapsado
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Función para toggle de tooltips
   const toggleTooltips = () => {
@@ -1007,22 +1283,39 @@ const Carbono = ({
 
   // Efecto para controlar la visibilidad de las leyendas
   useEffect(() => {
-    // Mostrar leyenda de carbono
-    if (activeLayers.co2Cuenca && !activeLayers.rasterCO2) {
-      setCarbonoLegendVisible(true);
+    // Lógica de prioridad para mostrar leyendas:
+    // 1. Si raster está activo, mostrar leyenda raster
+    // 2. Si solo CO2 (2100) está activo, mostrar su leyenda
+    // 3. Si solo CO2 (2018) está activo, mostrar su leyenda
+    // 4. Si ambas capas vectoriales están activas, mostrar CO2 (2100)
+
+    if (activeLayers.rasterCO2) {
+      setCarbono2018LegendVisible(false);
+      setCarbono2100LegendVisible(false);
+      setTendenciaCarbonoLegendVisible(true);
+    } else if (activeLayers.co2Cuenca2100 && !activeLayers.co2Cuenca) {
+      setCarbono2018LegendVisible(false);
+      setCarbono2100LegendVisible(true);
       setTendenciaCarbonoLegendVisible(false);
-    } else if (activeLayers.rasterCO2 && !activeLayers.co2Cuenca) {
-      setCarbonoLegendVisible(false);
-      setTendenciaCarbonoLegendVisible(true);
-    } else if (activeLayers.rasterCO2 && activeLayers.co2Cuenca) {
-      // Si ambos están activos, priorizar raster
-      setCarbonoLegendVisible(false);
-      setTendenciaCarbonoLegendVisible(true);
+    } else if (activeLayers.co2Cuenca && !activeLayers.co2Cuenca2100) {
+      setCarbono2018LegendVisible(true);
+      setCarbono2100LegendVisible(false);
+      setTendenciaCarbonoLegendVisible(false);
+    } else if (activeLayers.co2Cuenca && activeLayers.co2Cuenca2100) {
+      // Si ambas capas vectoriales están activas, priorizar 2100
+      setCarbono2018LegendVisible(false);
+      setCarbono2100LegendVisible(true);
+      setTendenciaCarbonoLegendVisible(false);
     } else {
-      setCarbonoLegendVisible(false);
+      setCarbono2018LegendVisible(false);
+      setCarbono2100LegendVisible(false);
       setTendenciaCarbonoLegendVisible(false);
     }
-  }, [activeLayers.co2Cuenca, activeLayers.rasterCO2]);
+  }, [
+    activeLayers.co2Cuenca,
+    activeLayers.co2Cuenca2100,
+    activeLayers.rasterCO2,
+  ]);
 
   return (
     <div style={{ height: "100vh", width: "100%" }}>
@@ -1038,17 +1331,17 @@ const Carbono = ({
           <RasterOverlay
             fileName="TEND_CO2.tif"
             colorMap={[
-              "#67001f",
-              "#b2182b",
-              "#d6604d",
-              "#f4a582",
-              "#fddbc7",
-              "#ffffff",
-              "#d1e5f0",
-              "#92c5de",
-              "#4393c3",
-              "#2166ac",
-              "#053061",
+              "#a50026",
+              "#d73027",
+              "#f46d43",
+              "#fdae61",
+              "#fee08b",
+              "#ffffbf",
+              "#e6f598",
+              "#abdda4",
+              "#66c2a5",
+              "#3288bd",
+              "#5e4fa2",
             ]}
             baseUrl="/"
             continuous={true}
@@ -1069,6 +1362,8 @@ const Carbono = ({
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
         />
 
         {/* Indicador de carga */}
@@ -1111,8 +1406,18 @@ const Carbono = ({
         )}
 
         {/* Leyendas */}
-        <CarbonoLegend isVisible={carbonoLegendVisible} />
-        <TendenciaCarbonoLegend isVisible={tendenciaCarbonoLegendVisible} />
+        <Carbono2018Legend
+          isVisible={carbono2018LegendVisible}
+          layerControlCollapsed={isCollapsed}
+        />
+        <TendenciaCarbono2100Legend
+          isVisible={carbono2100LegendVisible}
+          layerControlCollapsed={isCollapsed}
+        />
+        <TendenciaCarbonoLegend
+          isVisible={tendenciaCarbonoLegendVisible}
+          layerControlCollapsed={isCollapsed}
+        />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />

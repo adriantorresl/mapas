@@ -5,11 +5,10 @@
       <sld:FeatureTypeConstraint/>
     </sld:LayerFeatureConstraints>
     <sld:UserStyle>
-      <sld:Name>Temp_med_anual</sld:Name>
+      <sld:Name>Temp_min_4569</sld:Name>
       <sld:FeatureTypeStyle>
         <sld:Rule>
           <sld:RasterSymbolizer>
-            <sld:Opacity>0.8</sld:Opacity>
             <sld:ChannelSelection>
               <sld:GrayChannel>
                 <sld:SourceChannelName>1</sld:SourceChannelName>

@@ -247,27 +247,41 @@ const LegendsControl = ({ activeLayers, activePeriod }) => {
               <span>Precipitación - ${activePeriod}</span>
             </div>
             <div style="margin-top: 8px;">
-              <div style="
-                display: flex;
-                justify-content: space-between;
-                font-size: 10px;
-                margin-bottom: 4px;
-              ">
-                <span>Baja</span>
-                <span>Alta</span>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #fffee3; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">≤ 400 mm</span>
               </div>
-              <div style="
-                height: 20px;
-                background: linear-gradient(to right, #ffffcc, #c7e9b4, #7fcdbb, #41b6c4, #2c7fb8, #253494);
-              "></div>
-              <div style="
-                display: flex;
-                justify-content: center;
-                font-size: 10px;
-                margin-top: 4px;
-                font-style: italic;
-              ">
-                <span>Precipitación (mm/año)</span>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #deea51; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">400 - 600 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #ccf162; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">600 - 800 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #68d849; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">800 - 1000 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #2db242; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">1000 - 1200 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #3a8a79; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">1200 - 1400 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #5c6fd1; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">1400 - 1600 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #4843d4; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">1600 - 1800 mm</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                <div style="width: 12px; height: 12px; background-color: #550056; margin-right: 6px; border: 1px solid white;"></div>
+                <span style="font-size: 10px;">> 1800 mm</span>
               </div>
             </div>
           </div>
@@ -304,12 +318,12 @@ const LegendsControl = ({ activeLayers, activePeriod }) => {
                 font-size: 10px;
                 margin-bottom: 4px;
               ">
-                <span>Fría</span>
-                <span>Cálida</span>
+                <span>4°C</span>
+                <span>36°C</span>
               </div>
               <div style="
                 height: 20px;
-                background: linear-gradient(to right, #ffffcc, #fed976, #feb24c, #fd8d3c, #fc4e2a, #e31a1c);
+                background: linear-gradient(to right, #7b39d4, #224988, #306190, #4a8e9f, #66bfaf, #73dc9a, #79f178, #a1fa7e, #defb9d, #fff099, #ffd76d, #ffbf41, #f99b20, #e4581f, #b73b1f, #8a1f1f, #4a2121);
               "></div>
               <div style="
                 display: flex;
@@ -318,7 +332,7 @@ const LegendsControl = ({ activeLayers, activePeriod }) => {
                 margin-top: 4px;
                 font-style: italic;
               ">
-                <span>Temperatura (°C)</span>
+                <span>Temperatura Media (°C)</span>
               </div>
             </div>
           </div>
@@ -346,7 +360,7 @@ const GroupedLayerControl = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
+    "Hillshade (ESRI)"
   );
 
   // Mapeo de periodos a códigos de archivo
@@ -358,15 +372,14 @@ const GroupedLayerControl = ({
 
   useEffect(() => {
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-        {
-          attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }
-      ),
       "Satelital (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
@@ -767,7 +780,7 @@ const GroupedLayerControl = ({
             <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
               Mapa Base
             </div>
-            {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
+            {["Satelital (ESRI)", "Hillshade (ESRI)"].map(
               (layerName) => (
                 <div
                   key={layerName}
@@ -994,15 +1007,15 @@ const EscenarioCC = () => {
             baseUrl="http://localhost:3000"
             overlayOpacity={opacity.rasterPT}
             colorMap={[
-              "#f7fbff",
-              "#deebf7",
-              "#c6dbef",
-              "#9ecae1",
-              "#6baed6",
-              "#4292c6",
-              "#2171b5",
-              "#08519c",
-              "#08306b",
+              "#fffee3", // Valores bajos (≤ 400)
+              "#deea51", // 400 - 600
+              "#ccf162", // 600 - 800
+              "#68d849", // 800 - 1000
+              "#2db242", // 1000 - 1200
+              "#3a8a79", // 1200 - 1400
+              "#5c6fd1", // 1400 - 1600
+              "#4843d4", // 1600 - 1800
+              "#550056", // Valores altos (> 1800)
             ]}
             continuous={true}
             onPixelValue={setPixelValue}
@@ -1015,15 +1028,23 @@ const EscenarioCC = () => {
             baseUrl="http://localhost:3000"
             overlayOpacity={opacity.rasterTEMP}
             colorMap={[
-              "#fff5f0",
-              "#fee0d2",
-              "#fcbba1",
-              "#fc9272",
-              "#fb6a4a",
-              "#ef3b2c",
-              "#cb181d",
-              "#a50f15",
-              "#67000d",
+              "#7b39d4", // 4°C
+              "#224988", // 6°C
+              "#306190", // 8°C
+              "#4a8e9f", // 10°C
+              "#66bfaf", // 12°C
+              "#73dc9a", // 14°C
+              "#79f178", // 16°C
+              "#a1fa7e", // 18°C
+              "#defb9d", // 20°C
+              "#fff099", // 22°C
+              "#ffd76d", // 24°C
+              "#ffbf41", // 26°C
+              "#f99b20", // 28°C
+              "#e4581f", // 30°C
+              "#b73b1f", // 32°C
+              "#8a1f1f", // 34°C
+              "#4a2121", // 36°C
             ]}
             continuous={true}
             onPixelValue={setPixelValue}

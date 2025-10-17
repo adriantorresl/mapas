@@ -5,7 +5,7 @@
       <sld:FeatureTypeConstraint/>
     </sld:LayerFeatureConstraints>
     <sld:UserStyle>
-      <sld:Name>Temp_med_anual</sld:Name>
+      <sld:Name>Temp_med_4569</sld:Name>
       <sld:FeatureTypeStyle>
         <sld:Rule>
           <sld:RasterSymbolizer>
@@ -29,6 +29,7 @@
               <sld:ColorMapEntry color="#ffd76d" quantity="24" label="24.0000"/>
               <sld:ColorMapEntry color="#ffbf41" quantity="26" label="26.0000"/>
               <sld:ColorMapEntry color="#f99b20" quantity="28" label="28.0000"/>
+              <sld:ColorMapEntry color="#e4581f" quantity="30" label="30.0000"/>
               <sld:ColorMapEntry color="#e4581f" quantity="30" label="30.0000"/>
               <sld:ColorMapEntry color="#b73b1f" quantity="32" label="32.0000"/>
               <sld:ColorMapEntry color="#8a1f1f" quantity="34" label="34.0000"/>
