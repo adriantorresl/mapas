@@ -130,82 +130,157 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "120px", // Debajo del control de capas
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
-// Componente de leyenda para Exportación de Sedimentos
-const ExportacionLegend = ({ isVisible }) => {
+// Componente de leyenda para Exportación de Sedimentos (2018)
+const ExportacionSedimentos2018Legend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
-    border: "2px solid rgba(0,0,0,0.2)",
-    borderRadius: "4px",
-    padding: isCollapsed ? "8px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "200px",
-    maxWidth: "250px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    color: "white",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
-    backgroundColor: "#1E3C20",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  const categories = [
+    { name: "0 - 750,000", color: "#0c5406" },
+    { name: "750,000 - 1,500,000", color: "#8ed500" },
+    { name: "1,500,000 - 3,000,000", color: "#fff700" },
+    { name: "3,000,000 - 4,500,000", color: "#ff9f00" },
+    { name: "4,500,000 - 9,000,000", color: "#c40000" },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            2018 (t/ha/año)
+          </div>
+          {categories.map((category) => (
+            <div
+              key={category.name}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "5px 0",
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: category.color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    borderRadius: "0px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {category.name}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda para Exportación de Sedimentos
+const ExportacionLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
   };
 
   const categories = [
@@ -219,30 +294,41 @@ const ExportacionLegend = ({ isVisible }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Exportación de Sedimentos</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
       {!isCollapsed && (
-        <div>
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
           {categories.map((category) => (
             <div
               key={category.name}
               style={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "5px",
+                justifyContent: "space-between",
+                padding: "5px 0",
               }}
             >
-              <div
-                style={{
-                  width: "15px",
-                  height: "15px",
-                  backgroundColor: category.color,
-                  border: "1px solid #666",
-                  marginRight: "8px",
-                  flexShrink: 0,
-                }}
-              />
-              <span>{category.name}</span>
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: category.color,
+                    display: "inline-block",
+                    marginRight: "8px",
+                    borderRadius: "0px",
+                    verticalAlign: "middle",
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {category.name}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -252,36 +338,48 @@ const ExportacionLegend = ({ isVisible }) => {
 };
 
 // Componente de leyenda para el raster USLE
-const RasterLegend = ({ isVisible }) => {
+const RasterLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "8px" : "15px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
-    backgroundColor: "#1E3C20",
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
   };
 
   // Rampa de colores para erosión (de menor a mayor) - usando la paleta de la imagen
@@ -334,10 +432,18 @@ const RasterLegend = ({ isVisible }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>USLE Tendencia</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
-      {!isCollapsed && createColorRamp()}
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          {createColorRamp()}
+        </div>
+      )}
     </div>
   );
 };
@@ -352,12 +458,20 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
-  tooltipsEnabled,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const newLayers = {};
@@ -455,34 +569,61 @@ const GroupedLayerControl = ({
           };
         },
         onEachFeature: (feature, layer) => {
-          // Configurar tooltip al hacer hover si está habilitado
-          const bindTooltipIfEnabled = () => {
-            if (tooltipsEnabled) {
-              layer.bindTooltip(
-                `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-                  <strong>Exportación de Sedimentos:</strong><br/>
-                  <strong>Nivel:</strong> ${feature.properties.Exp_Sed || "N/A"}
-                </div>`,
-                {
-                  permanent: false,
-                  direction: "auto",
-                  className: "custom-tooltip",
-                }
-              );
-            } else {
-              layer.unbindTooltip();
-            }
-          };
-
-          // Configurar tooltip inicial
-          bindTooltipIfEnabled();
-
-          // Actualizar tooltip cuando cambie el estado
-          layer.updateTooltip = bindTooltipIfEnabled;
+          // Configurar popup al hacer clic (siempre habilitado)
+          layer.bindPopup(
+            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+              <strong>Exportación de Sedimentos:</strong><br/>
+              <strong>Nivel:</strong> ${feature.properties.Exp_Sed || "N/A"}
+            </div>`
+          );
         },
       });
       if (activeLayers.exportacionSedimentos) {
         newLayers.exportacionSedimentos.addTo(map);
+      }
+    }
+
+    // Exportación de Sedimentos (2018) - usando estilos USLE_S7
+    if (exportacionSedimentos) {
+      newLayers.exportacionSedimentos2018 = L.geoJSON(exportacionSedimentos, {
+        style: (feature) => {
+          const sdrS7 = feature.properties.SDR_S7;
+          let fillColor = "#666666"; // Color por defecto
+          let color = "#ffffff"; // Borde blanco como en el SLD
+
+          // Asignar colores según los rangos del archivo USLE_S7.sld
+          if (sdrS7 >= 0 && sdrS7 <= 750000) {
+            fillColor = "#0c5406"; // Verde muy oscuro
+          } else if (sdrS7 > 750000 && sdrS7 <= 1500000) {
+            fillColor = "#8ed500"; // Verde claro
+          } else if (sdrS7 > 1500000 && sdrS7 <= 3000000) {
+            fillColor = "#fff700"; // Amarillo
+          } else if (sdrS7 > 3000000 && sdrS7 <= 4500000) {
+            fillColor = "#ff9f00"; // Naranja
+          } else if (sdrS7 > 4500000 && sdrS7 <= 9000000) {
+            fillColor = "#c40000"; // Rojo
+          }
+
+          return {
+            color: color,
+            weight: 1,
+            fillOpacity: 0.7,
+            fillColor: fillColor,
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          // Configurar popup al hacer clic (siempre habilitado)
+          const sdrValue = feature.properties.SDR_S7 || "N/A";
+          layer.bindPopup(
+            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+              <strong>Exportación de Sedimentos (2018):</strong><br/>
+              <strong>SDR_S7:</strong> ${sdrValue}
+            </div>`
+          );
+        },
+      });
+      if (activeLayers.exportacionSedimentos2018) {
+        newLayers.exportacionSedimentos2018.addTo(map);
       }
     }
 
@@ -511,17 +652,8 @@ const GroupedLayerControl = ({
     activeLayers.paisajes,
     activeLayers.municipios,
     activeLayers.exportacionSedimentos,
-    tooltipsEnabled,
+    activeLayers.exportacionSedimentos2018,
   ]);
-
-  // Efecto para actualizar tooltips cuando cambie el estado
-  useEffect(() => {
-    Object.values(layers).forEach((layer) => {
-      if (layer && layer.updateTooltip) {
-        layer.updateTooltip();
-      }
-    });
-  }, [tooltipsEnabled, layers]);
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = { ...activeLayers };
@@ -579,29 +711,29 @@ const GroupedLayerControl = ({
   const controlStyle = {
     color: "white",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
-    padding: isCollapsed ? "8px" : "15px",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    fontSize: "12px",
-    padding: isCollapsed ? "4px 4px" : "4px 4px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    fontSize: isCollapsed ? "12px" : "12px",
-    whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -613,17 +745,18 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "6px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "8px",
+          alignContent: "center",
+          marginBottom: "2px",
           gap: "8px",
         }}
       >
@@ -662,7 +795,7 @@ const GroupedLayerControl = ({
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#ffffffff"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -673,51 +806,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#ffffffff"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "10px", color: "white", marginBottom: "5px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -842,19 +995,28 @@ const GroupedLayerControl = ({
                 showOpacity={true}
               />
             )}
+            {exportacionSedimentos && (
+              <LayerItem
+                layerKey="exportacionSedimentos2018"
+                title="Exportación de sedimentos (2018)"
+                data={exportacionSedimentos}
+                showOpacity={true}
+              />
+            )}
             <div
               style={{
-                marginBottom: "6px",
-                padding: "0px",
+                marginBottom: "2px",
+                padding: "2px 10px",
                 backgroundColor: "transparent",
-                borderRadius: "0px",
+                borderRadius: "4px",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "8px",
+                  alignContent: "center",
+                  marginBottom: "2px",
                   gap: "8px",
                 }}
               >
@@ -896,7 +1058,7 @@ const GroupedLayerControl = ({
                   >
                     <path
                       d="M8 2v8m0 0l-3-3m3 3l3-3"
-                      stroke="#ffffffff"
+                      stroke="white"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -907,9 +1069,75 @@ const GroupedLayerControl = ({
                       width="10"
                       height="1.5"
                       rx="0.75"
-                      fill="#ffffffff"
+                      fill="white"
                     />
                   </svg>
+                </button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
+                }}
+              >
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.raster * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(0, opacity.raster - 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      raster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.raster <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(1, opacity.raster + 0.1);
+                    setOpacity((prev) => ({
+                      ...prev,
+                      raster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.raster >= 1}
+                >
+                  +
                 </button>
               </div>
             </div>
@@ -937,18 +1165,26 @@ const Erosion = ({
     paisajes: false,
     municipios: false,
     exportacionSedimentos: false,
+    exportacionSedimentos2018: false,
     raster: true,
   });
 
   // Estado para opacidad de capas
   const [opacity, setOpacity] = useState({
     exportacionSedimentos: 0.6,
+    exportacionSedimentos2018: 0.7,
     raster: 0.7,
   });
 
   // Estados para leyenda de exportación
   const [exportacionLegendVisible, setExportacionLegendVisible] =
     useState(false);
+
+  // Estados para leyenda de exportación 2018
+  const [
+    exportacionSedimentos2018LegendVisible,
+    setExportacionSedimentos2018LegendVisible,
+  ] = useState(false);
 
   // Estado para leyenda del raster
   const [rasterLegendVisible, setRasterLegendVisible] = useState(true);
@@ -960,12 +1196,14 @@ const Erosion = ({
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
 
-  // Estado para tooltips
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+  // Estado para controlar la posición dinámica de la leyenda
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
 
-  // Función para toggle de tooltips
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
   };
 
   // Cargar datos GeoJSON al montar el componente
@@ -1009,27 +1247,40 @@ const Erosion = ({
 
   // Efecto para controlar la visibilidad de las leyendas (solo una a la vez)
   useEffect(() => {
-    // Prioridad: si exportación está activa, mostrar esa leyenda
-    if (activeLayers.exportacionSedimentos) {
+    // Prioridad: si exportación 2018 está activa, mostrar esa leyenda
+    if (activeLayers.exportacionSedimentos2018) {
+      setExportacionSedimentos2018LegendVisible(true);
+      setExportacionLegendVisible(false);
+      setRasterLegendVisible(false);
+    }
+    // Si exportación original está activa, mostrar esa leyenda
+    else if (activeLayers.exportacionSedimentos) {
       setExportacionLegendVisible(true);
+      setExportacionSedimentos2018LegendVisible(false);
       setRasterLegendVisible(false);
     }
     // Si solo el raster está activo, mostrar leyenda del raster
     else if (activeLayers.raster) {
       setExportacionLegendVisible(false);
+      setExportacionSedimentos2018LegendVisible(false);
       setRasterLegendVisible(true);
     }
-    // Si ninguna está activa, ocultar ambas
+    // Si ninguna está activa, ocultar todas
     else {
       setExportacionLegendVisible(false);
+      setExportacionSedimentos2018LegendVisible(false);
       setRasterLegendVisible(false);
     }
-  }, [activeLayers.exportacionSedimentos, activeLayers.raster]);
+  }, [
+    activeLayers.exportacionSedimentos,
+    activeLayers.exportacionSedimentos2018,
+    activeLayers.raster,
+  ]);
 
   return (
     <div style={{ height: "100vh", width: "100%" }}>
       <MapContainer
-        center={[19.5, -99.0]}
+        center={[16.67566, -95.96711]}
         zoom={10}
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
@@ -1065,11 +1316,22 @@ const Erosion = ({
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
-          tooltipsEnabled={tooltipsEnabled}
+          onControlStateChange={handleControlStateChange}
         />
 
         {/* Leyenda de Exportación de Sedimentos */}
-        <ExportacionLegend isVisible={exportacionLegendVisible} />
+        <ExportacionLegend
+          isVisible={exportacionLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+
+        {/* Leyenda de Exportación de Sedimentos (2018) */}
+        <ExportacionSedimentos2018Legend
+          isVisible={exportacionSedimentos2018LegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
 
         {/* Indicador de carga */}
         {loading && (
@@ -1111,10 +1373,11 @@ const Erosion = ({
         )}
 
         {/* Leyenda del raster */}
-        <RasterLegend isVisible={rasterLegendVisible} />
-
-        {/* Leyenda de exportación de sedimentos */}
-        <ExportacionLegend isVisible={exportacionLegendVisible} />
+        <RasterLegend
+          isVisible={rasterLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />
@@ -1122,12 +1385,6 @@ const Erosion = ({
 
         {/* Componente para mostrar el valor del pixel */}
         <PixelValueDisplay pixelValue={pixelValue} />
-
-        {/* Control de información (tooltips) */}
-        <InfoControl
-          onToggleTooltips={toggleTooltips}
-          tooltipsEnabled={tooltipsEnabled}
-        />
       </MapContainer>
     </div>
   );
