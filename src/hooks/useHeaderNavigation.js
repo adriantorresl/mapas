@@ -132,6 +132,7 @@ export const useHeaderNavigation = (onNavigate) => {
       const defaultSubItem = subsection.subsecciones[0];
       navigate(defaultSubItem.key);
     } else {
+      setIsDrawerOpen(false); // Cerrar drawer cuando no hay subsecciones
       navigate(itemKey);
     }
   }, [resetToInitialState, navigate, processSubsections]);
@@ -139,6 +140,7 @@ export const useHeaderNavigation = (onNavigate) => {
   // Manejador para cambios en subitems
   const handleSubItemChange = useCallback((subItem) => {
     setSelectedSubItem(subItem.key);
+    setIsDrawerOpen(false); // Cerrar drawer al seleccionar subitem
     navigate(subItem.key);
   }, [navigate]);
 

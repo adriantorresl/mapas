@@ -61,16 +61,16 @@ export const navigationData = {
         {
           id: "2.2",
           titulo: "Acumulación de Nutrientes",
-          // "subsecciones": [
-          //   {
-          //     "id": "2.2.1",
-          //     "titulo": "Nitrógeno"
-          //   },
-          //   {
-          //     "id": "2.2.2",
-          //     "titulo": "Fosforo"
-          //   }
-          // ]
+          "subsecciones": [
+            {
+              "id": "2.2.1",
+              "titulo": "Nitrógeno"
+            },
+            {
+              "id": "2.2.2",
+              "titulo": "Fosforo"
+            }
+          ]
         },
         {
           id: "2.3",
@@ -84,64 +84,48 @@ export const navigationData = {
     },
     {
       id: "3",
+      titulo: "Escenarios con cambio climático",
+    },
+    {
+      id: "4",
       titulo: "Potencial Productivo",
       subsecciones: [
         {
-          id: "3.1",
-          titulo: "Características agroclimáticas",
-          subsecciones: [
-            {
-              id: "3.1.1",
-              titulo: "Escenario actual",
-            },
-            {
-              id: "3.1.2",
-              titulo: "Escenarios con cambio climático",
-            },
-          ],
+          id: "4.1",
+          titulo: "Agave Arroqueño",
         },
         {
-          id: "3.2",
-          titulo: "Potencial productivo",
-          subsecciones: [
-            {
-              id: "3.2.1",
-              titulo: "Agave Arroqueño",
-            },
-            {
-              id: "3.2.2",
-              titulo: "Agave Angustifolia (Espadín)",
-            },
-            {
-              id: "3.2.3",
-              titulo: "Agave Iyoba",
-            },
-            {
-              id: "3.2.4",
-              titulo: "Agave Karwinskii",
-            },
-            {
-              id: "3.2.5",
-              titulo: "Agave Marmorata (Tepeztate)",
-            },
-          ],
+          id: "4.2",
+          titulo: "Agave Angustifolia (Espadín)",
+        },
+        {
+          id: "4.3",
+          titulo: "Agave Iyoba",
+        },
+        {
+          id: "4.4",
+          titulo: "Agave Karwinskii",
+        },
+        {
+          id: "4.5",
+          titulo: "Agave Marmorata (Tepeztate)",
         },
       ],
     },
     {
-      id: "4",
+      id: "5",
       titulo: "Plan de Manejo Integral del paisaje",
       subsecciones: [
         {
-          id: "4.1",
+          id: "5.1",
           titulo: "Zonificación",
         },
         {
-          id: "4.2",
+          id: "5.2",
           titulo: "Story map",
         },
         {
-          id: "4.3",
+          id: "5.3",
           titulo: "Sistema de monitoreo",
         },
       ],

@@ -431,7 +431,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "2.2",
+      id: "2.2.1",
       data: [
         {
           type: "heading",
@@ -442,17 +442,22 @@ export const dataPages = {
           content:
             "Los procesos de cambios de uso de suelo de áreas con vegetación primaria y secundaria a usos de suelo antropogénico, modifican dramáticamente el ciclo natural de nutrientes.",
         },
+      ],
+    },
+    {
+      id: "2.2.2",
+      data: [
         {
           type: "heading",
           content: "Fosforo",
         },
+        {
+          type: "text",
+          content:
+            "Los procesos de cambios de uso de suelo de áreas con vegetación primaria y secundaria a usos de suelo antropogénico, modifican dramáticamente el ciclo natural de nutrientes.",
+        },
       ],
-    },
-    // {
-    //     "id": "2.2.2",
-    //     "data":[
-    //     ]
-    // },
+    }, 
     {
       id: "2.3",
       data: [
@@ -482,7 +487,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.1.1",
+      id: "3.1",
       data: [
         {
           type: "heading",
@@ -493,10 +498,19 @@ export const dataPages = {
           content:
             "Para evaluar la aptitud del territorio para diferentes cultivos, es necesario conocer la fisiología de las plantas/cultivos, con lo que se pueden determinar las características agroecológicas que determinan los diferentes niveles de productividad.",
         },
+        {
+          type: "heading",
+          content: "Escenarios con cambio climático",
+        },
+        {
+          type: "text",
+          content:
+            "Los escenarios con cambio climático muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos prioritarios caracterizados anteriormente.",
+        },
       ],
     },
     {
-      id: "3.1.2",
+      id: "3",
       data: [
         {
           type: "heading",
@@ -510,7 +524,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.2.1",
+      id: "4.1",
       data: [
         {
           type: "heading",
@@ -562,7 +576,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.2.2",
+      id: "4.2",
       data: [
         {
           type: "heading",
@@ -614,7 +628,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.2.3",
+      id: "4.3",
       data: [
         {
           type: "heading",
@@ -666,7 +680,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.2.4",
+      id: "4.4",
       data: [
         {
           type: "heading",
@@ -718,7 +732,7 @@ export const dataPages = {
       ],
     },
     {
-      id: "3.2.5",
+      id: "4.5",
       data: [
         {
           type: "heading",
