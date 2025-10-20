@@ -952,7 +952,9 @@ const GroupedLayerControl = ({
                     justifyContent: "center",
                   }}
                   title="Descargar Pendiente"
-                  onClick={() => downloadRaster("MDE.tif", "Pendiente")}
+                  onClick={() =>
+                    downloadRaster("Pendiente_4326.tif", "Pendiente")
+                  }
                 >
                   <svg
                     width="16"
@@ -1135,7 +1137,7 @@ const MapView = () => {
         municipios={municipios}
         cuencas={cuencas}
         escurrimientos={escurrimientos}
-        rasterFile="MDE.tif"
+        rasterFile="Pendiente_4326.tif"
         onColorMapChange={setColorMap}
         onLegendVisibilityChange={setShowLegend}
         activeLayers={activeLayers}
@@ -1145,7 +1147,7 @@ const MapView = () => {
         onControlStateChange={handleControlStateChange}
       />
       <RasterOverlay
-        fileName="MDE.tif"
+        fileName="Pendiente_4326.tif"
         colorMap={["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"]}
         baseUrl="/"
         continuous={true}
