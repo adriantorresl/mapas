@@ -40,9 +40,7 @@ const generatePoblacionColorPalette = (values) => {
   // Asignar colores basados en los rangos del SLD
   numericValues.forEach((value) => {
     // Encontrar el rango correspondiente para este valor
-    const range = sldRanges.find(
-      (r) => value >= r.min && value <= r.max
-    );
+    const range = sldRanges.find((r) => value >= r.min && value <= r.max);
 
     if (range) {
       result[value] = range.color;
