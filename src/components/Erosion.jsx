@@ -130,8 +130,8 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente de leyenda para Exportación de Sedimentos (2018)
-const ExportacionSedimentos2018Legend = ({
+// Componente de leyenda para Tendencia de Erosión
+const TendenciaErosionLegend = ({
   isVisible,
   layerControlCollapsed,
   layerControlWidth,
@@ -175,12 +175,39 @@ const ExportacionSedimentos2018Legend = ({
     backgroundColor: "#1E3C20",
   };
 
-  const categories = [
-    { name: "0 - 750,000", color: "#0c5406" },
-    { name: "750,000 - 1,500,000", color: "#8ed500" },
-    { name: "1,500,000 - 3,000,000", color: "#fff700" },
-    { name: "3,000,000 - 4,500,000", color: "#ff9f00" },
-    { name: "4,500,000 - 9,000,000", color: "#c40000" },
+  // Rangos y colores del archivo USLE_Tendencia_WS.sld
+  const sldRanges = [
+    { min: 0, max: 750000, color: "#0c5406", label: "0 - 750,000" },
+    {
+      min: 750001,
+      max: 1500000,
+      color: "#8ed500",
+      label: "750,000 - 1,500,000",
+    },
+    {
+      min: 1500001,
+      max: 3000000,
+      color: "#fff700",
+      label: "1,500,000 - 3,000,000",
+    },
+    {
+      min: 3000001,
+      max: 4500000,
+      color: "#ff9f00",
+      label: "3,000,000 - 4,500,000",
+    },
+    {
+      min: 4500001,
+      max: 9000000,
+      color: "#c40000",
+      label: "4,500,000 - 9,000,000",
+    },
+    {
+      min: 9000001,
+      max: 21000000,
+      color: "#601c2a",
+      label: "9,000,000 - 21,000,000",
+    },
   ];
 
   return (
@@ -202,34 +229,30 @@ const ExportacionSedimentos2018Legend = ({
               fontSize: "12px",
             }}
           >
-            2018 (t/ha/año)
+            Tendencia de Erosión
           </div>
-          {categories.map((category) => (
+          {sldRanges.map((range, index) => (
             <div
-              key={category.name}
+              key={index}
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                padding: "5px 0",
+                marginBottom: "6px",
+                fontSize: "12px",
               }}
             >
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    backgroundColor: category.color,
-                    display: "inline-block",
-                    marginRight: "8px",
-                    borderRadius: "0px",
-                    verticalAlign: "middle",
-                  }}
-                ></div>
-                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
-                  {category.name}
-                </span>
-              </div>
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  backgroundColor: range.color,
+                  marginRight: "8px",
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ lineHeight: "1.2" }}>{range.label}</span>
             </div>
           ))}
         </div>
@@ -238,8 +261,8 @@ const ExportacionSedimentos2018Legend = ({
   );
 };
 
-// Componente de leyenda para Exportación de Sedimentos
-const ExportacionLegend = ({
+// Componente de leyenda para Tendencia de Erosión (Raster)
+const TendenciaErosionRasterLegend = ({
   isVisible,
   layerControlCollapsed,
   layerControlWidth,
@@ -283,12 +306,15 @@ const ExportacionLegend = ({
     backgroundColor: "#1E3C20",
   };
 
-  const categories = [
-    { name: "Muy bajo", color: "#66CDAA" },
-    { name: "Bajo", color: "#90EE90" },
-    { name: "Medio", color: "#FFFFE0" },
-    { name: "Alto", color: "#FFA500" },
-    { name: "Muy alto", color: "#FF6347" },
+  // Colores extraídos del archivo USLE_Tendencia_px.sld (simplificado para la leyenda)
+  const colorGradient = [
+    "#457428", // Verde oscuro (valores más negativos)
+    "#8cab18", // Verde medio
+    "#c0d20d", // Verde claro
+    "#f9fe00", // Amarillo (valores cerca de cero)
+    "#f1c812", // Naranja claro
+    "#e57f29", // Naranja
+    "#dc443c", // Rojo (valores más positivos)
   ];
 
   return (
@@ -303,42 +329,57 @@ const ExportacionLegend = ({
             padding: "10px",
           }}
         >
-          {categories.map((category) => (
-            <div
-              key={category.name}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "5px 0",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    backgroundColor: category.color,
-                    display: "inline-block",
-                    marginRight: "8px",
-                    borderRadius: "0px",
-                    verticalAlign: "middle",
-                  }}
-                ></div>
-                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
-                  {category.name}
-                </span>
-              </div>
-            </div>
-          ))}
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Tendencia de Erosión (Raster)
+          </div>
+          <div
+            style={{
+              height: "20px",
+              background: `linear-gradient(to right, ${colorGradient.join(
+                ", "
+              )})`,
+              border: "1px solid #999",
+              borderRadius: "2px",
+              margin: "8px 0",
+            }}
+          ></div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+              color: "white",
+              marginTop: "4px",
+            }}
+          >
+            <span>-0.0028</span>
+            <span>0.0028</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              fontSize: "10px",
+              marginTop: "4px",
+              fontStyle: "italic",
+            }}
+          >
+            <span>Pendiente de erosión</span>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// Componente de leyenda para el raster USLE
-const RasterLegend = ({
+// Componente de leyenda para Erosión Serie VII (Raster)
+const ErosionSerieVIIRasterLegend = ({
   isVisible,
   layerControlCollapsed,
   layerControlWidth,
@@ -382,52 +423,15 @@ const RasterLegend = ({
     backgroundColor: "#1E3C20",
   };
 
-  // Rampa de colores para erosión (de menor a mayor) - usando la paleta de la imagen
-  const createColorRamp = () => {
-    const colors = [
-      "#006837",
-      "#31a354",
-      "#78c679",
-      "#c2e699",
-      "#ffffcc",
-      "#d73027", // Rojo (muy alta)
-    ];
-
-    return (
-      <div style={{ marginTop: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-            marginBottom: "4px",
-          }}
-        >
-          <span>Muy Baja</span>
-          <span>Muy Alta</span>
-        </div>
-        <div
-          style={{
-            height: "20px",
-            background: `linear-gradient(to right, ${colors.join(", ")})`,
-            border: "1px solid #666",
-            borderRadius: "2px",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            fontSize: "10px",
-            marginTop: "4px",
-            fontStyle: "italic",
-          }}
-        >
-          <span>Tendencia de Erosión (t/ha/año)</span>
-        </div>
-      </div>
-    );
-  };
+  // Colores extraídos del archivo USLE_S7_px.sld (simplificado para la leyenda)
+  const colorGradient = [
+    "#035800", // Verde muy oscuro (valores bajos)
+    "#669900", // Verde medio
+    "#fafa00", // Amarillo (valores medios)
+    "#e1b304", // Naranja
+    "#c46d08", // Naranja rojizo
+    "#98000e", // Rojo muy oscuro (valores altos)
+  ];
 
   return (
     <div style={legendStyle}>
@@ -441,7 +445,174 @@ const RasterLegend = ({
             padding: "10px",
           }}
         >
-          {createColorRamp()}
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Erosión Serie VII (Raster)
+          </div>
+          <div
+            style={{
+              height: "20px",
+              background: `linear-gradient(to right, ${colorGradient.join(
+                ", "
+              )})`,
+              border: "1px solid #999",
+              borderRadius: "2px",
+              margin: "8px 0",
+            }}
+          ></div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+              color: "white",
+              marginTop: "4px",
+            }}
+          >
+            <span>0</span>
+            <span>1000</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              fontSize: "10px",
+              marginTop: "4px",
+              fontStyle: "italic",
+            }}
+          >
+            <span>Erosión (t/ha/año)</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda para Erosión Serie VII
+const ErosionSerieVIILegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Rangos y colores del archivo USLE_S7_WS.sld
+  const sldRanges = [
+    { min: 0, max: 750000, color: "#0c5406", label: "0 - 750,000" },
+    {
+      min: 750001,
+      max: 1500000,
+      color: "#8ed500",
+      label: "750,000 - 1,500,000",
+    },
+    {
+      min: 1500001,
+      max: 3000000,
+      color: "#fff700",
+      label: "1,500,000 - 3,000,000",
+    },
+    {
+      min: 3000001,
+      max: 4500000,
+      color: "#ff9f00",
+      label: "3,000,000 - 4,500,000",
+    },
+    {
+      min: 4500001,
+      max: 9000000,
+      color: "#c40000",
+      label: "4,500,000 - 9,000,000",
+    },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Erosión Serie VII (2018)
+          </div>
+          {sldRanges.map((range, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "6px",
+                fontSize: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  backgroundColor: range.color,
+                  marginRight: "8px",
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ lineHeight: "1.2" }}>{range.label}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -453,7 +624,7 @@ const GroupedLayerControl = ({
   area,
   paisajes,
   municipios,
-  exportacionSedimentos,
+  usleData,
   activeLayers,
   setActiveLayers,
   opacity,
@@ -526,104 +697,89 @@ const GroupedLayerControl = ({
       }
     }
 
-    // Exportación de Sedimentos
-    if (exportacionSedimentos) {
-      newLayers.exportacionSedimentos = L.geoJSON(exportacionSedimentos, {
+    // Tendencia de Erosión
+    if (usleData) {
+      newLayers.tendenciaErosion = L.geoJSON(usleData, {
         style: (feature) => {
-          const expSed = feature.properties.Exp_Sed;
-          let color = "#666666"; // Color por defecto
-          let fillColor = "#999999";
-
-          // Asignar colores según el valor de Exp_Sed
-          switch (expSed) {
-            case "Muy bajo":
-              color = "#2E8B57"; // Verde oscuro
-              fillColor = "#66CDAA";
-              break;
-            case "Bajo":
-              color = "#32CD32"; // Verde lima
-              fillColor = "#90EE90";
-              break;
-            case "Medio":
-              color = "#FFD700"; // Oro
-              fillColor = "#FFFFE0";
-              break;
-            case "Alto":
-              color = "#FF8C00"; // Naranja oscuro
-              fillColor = "#FFA500";
-              break;
-            case "Muy alto":
-              color = "#DC143C"; // Rojo carmesí
-              fillColor = "#FF6347";
-              break;
-            default:
-              color = "#666666";
-              fillColor = "#999999";
-          }
-
-          return {
-            color: color,
-            weight: 2,
-            fillOpacity: 0.6,
-            fillColor: fillColor,
-          };
-        },
-        onEachFeature: (feature, layer) => {
-          // Configurar popup al hacer clic (siempre habilitado)
-          layer.bindPopup(
-            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Exportación de Sedimentos:</strong><br/>
-              <strong>Nivel:</strong> ${feature.properties.Exp_Sed || "N/A"}
-            </div>`
-          );
-        },
-      });
-      if (activeLayers.exportacionSedimentos) {
-        newLayers.exportacionSedimentos.addTo(map);
-      }
-    }
-
-    // Exportación de Sedimentos (2018) - usando estilos USLE_S7
-    if (exportacionSedimentos) {
-      newLayers.exportacionSedimentos2018 = L.geoJSON(exportacionSedimentos, {
-        style: (feature) => {
-          const sdrS7 = feature.properties.SDR_S7;
+          const ten100 = feature.properties.TEN_100;
           let fillColor = "#666666"; // Color por defecto
-          let color = "#ffffff"; // Borde blanco como en el SLD
 
-          // Asignar colores según los rangos del archivo USLE_S7.sld
-          if (sdrS7 >= 0 && sdrS7 <= 750000) {
-            fillColor = "#0c5406"; // Verde muy oscuro
-          } else if (sdrS7 > 750000 && sdrS7 <= 1500000) {
-            fillColor = "#8ed500"; // Verde claro
-          } else if (sdrS7 > 1500000 && sdrS7 <= 3000000) {
-            fillColor = "#fff700"; // Amarillo
-          } else if (sdrS7 > 3000000 && sdrS7 <= 4500000) {
-            fillColor = "#ff9f00"; // Naranja
-          } else if (sdrS7 > 4500000 && sdrS7 <= 9000000) {
-            fillColor = "#c40000"; // Rojo
+          // Asignar colores según los rangos del archivo USLE_Tendencia_WS.sld
+          if (ten100 >= 0 && ten100 <= 750000) {
+            fillColor = "#0c5406";
+          } else if (ten100 > 750000 && ten100 <= 1500000) {
+            fillColor = "#8ed500";
+          } else if (ten100 > 1500000 && ten100 <= 3000000) {
+            fillColor = "#fff700";
+          } else if (ten100 > 3000000 && ten100 <= 4500000) {
+            fillColor = "#ff9f00";
+          } else if (ten100 > 4500000 && ten100 <= 9000000) {
+            fillColor = "#c40000";
+          } else if (ten100 > 9000000 && ten100 <= 21000000) {
+            fillColor = "#601c2a";
           }
 
           return {
-            color: color,
+            color: "#ffffff",
             weight: 1,
             fillOpacity: 0.7,
             fillColor: fillColor,
           };
         },
         onEachFeature: (feature, layer) => {
-          // Configurar popup al hacer clic (siempre habilitado)
+          const tenValue = feature.properties.TEN_100 || "N/A";
+          layer.bindPopup(
+            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+              <strong>Tendencia de Erosión:</strong><br/>
+              <strong>TEN_100:</strong> ${tenValue}
+            </div>`
+          );
+        },
+      });
+      if (activeLayers.tendenciaErosion) {
+        newLayers.tendenciaErosion.addTo(map);
+      }
+    }
+
+    // Erosión Serie VII
+    if (usleData) {
+      newLayers.erosionSerieVII = L.geoJSON(usleData, {
+        style: (feature) => {
+          const sdrS7 = feature.properties.SDR_S7;
+          let fillColor = "#666666"; // Color por defecto
+
+          // Asignar colores según los rangos del archivo USLE_S7_WS.sld
+          if (sdrS7 >= 0 && sdrS7 <= 750000) {
+            fillColor = "#0c5406";
+          } else if (sdrS7 > 750000 && sdrS7 <= 1500000) {
+            fillColor = "#8ed500";
+          } else if (sdrS7 > 1500000 && sdrS7 <= 3000000) {
+            fillColor = "#fff700";
+          } else if (sdrS7 > 3000000 && sdrS7 <= 4500000) {
+            fillColor = "#ff9f00";
+          } else if (sdrS7 > 4500000 && sdrS7 <= 9000000) {
+            fillColor = "#c40000";
+          }
+
+          return {
+            color: "#ffffff",
+            weight: 1,
+            fillOpacity: 0.7,
+            fillColor: fillColor,
+          };
+        },
+        onEachFeature: (feature, layer) => {
           const sdrValue = feature.properties.SDR_S7 || "N/A";
           layer.bindPopup(
             `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Exportación de Sedimentos (2018):</strong><br/>
+              <strong>Erosión Serie VII (2018):</strong><br/>
               <strong>SDR_S7:</strong> ${sdrValue}
             </div>`
           );
         },
       });
-      if (activeLayers.exportacionSedimentos2018) {
-        newLayers.exportacionSedimentos2018.addTo(map);
+      if (activeLayers.erosionSerieVII) {
+        newLayers.erosionSerieVII.addTo(map);
       }
     }
 
@@ -646,20 +802,23 @@ const GroupedLayerControl = ({
     area,
     paisajes,
     municipios,
-    exportacionSedimentos,
+    usleData,
     activeBaseLayer,
     activeLayers.area,
     activeLayers.paisajes,
     activeLayers.municipios,
-    activeLayers.exportacionSedimentos,
-    activeLayers.exportacionSedimentos2018,
+    activeLayers.tendenciaErosion,
+    activeLayers.erosionSerieVII,
   ]);
 
   const toggleLayer = (layerKey) => {
     const newActiveLayers = { ...activeLayers };
 
-    if (layerKey === "raster") {
-      // Manejo especial para la capa raster
+    if (
+      layerKey === "erosionSerieVIIRaster" ||
+      layerKey === "tendenciaErosionRaster"
+    ) {
+      // Manejo especial para las capas raster
       newActiveLayers[layerKey] = !activeLayers[layerKey];
       setActiveLayers(newActiveLayers);
       return;
@@ -702,6 +861,15 @@ const GroupedLayerControl = ({
 
   const handleOpacityChange = (layerKey, newOpacity) => {
     setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+
+    // Para capas raster, la opacidad se maneja automáticamente a través del estado
+    if (
+      layerKey === "erosionSerieVIIRaster" ||
+      layerKey === "tendenciaErosionRaster"
+    ) {
+      return;
+    }
+
     const layer = layers[layerKey];
     if (layer && activeLayers[layerKey]) {
       layer.setStyle({ fillOpacity: newOpacity });
@@ -987,19 +1155,19 @@ const GroupedLayerControl = ({
             >
               Erosión
             </strong>
-            {exportacionSedimentos && (
+            {usleData && (
               <LayerItem
-                layerKey="exportacionSedimentos"
-                title="Exportación de sedimentos"
-                data={exportacionSedimentos}
+                layerKey="tendenciaErosion"
+                title="Tendencia de erosión"
+                data={usleData}
                 showOpacity={true}
               />
             )}
-            {exportacionSedimentos && (
+            {usleData && (
               <LayerItem
-                layerKey="exportacionSedimentos2018"
-                title="Exportación de sedimentos (2018)"
-                data={exportacionSedimentos}
+                layerKey="erosionSerieVII"
+                title="Erosión Serie VII"
+                data={usleData}
                 showOpacity={true}
               />
             )}
@@ -1022,13 +1190,13 @@ const GroupedLayerControl = ({
               >
                 <input
                   type="checkbox"
-                  checked={activeLayers.raster || false}
-                  onChange={() => toggleLayer("raster")}
+                  checked={activeLayers.tendenciaErosionRaster || false}
+                  onChange={() => toggleLayer("tendenciaErosionRaster")}
                 />
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Tendencia de erosión
+                  Tendencia de erosión (Raster)
                 </span>
                 <button
                   style={{
@@ -1044,9 +1212,12 @@ const GroupedLayerControl = ({
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  title="Descargar Tendencia de erosión"
+                  title="Descargar Tendencia de erosión (Raster)"
                   onClick={() =>
-                    downloadRaster("USLE_TEND.tif", "Tendencia de erosión")
+                    downloadRaster(
+                      "USLE_pendiente.tif",
+                      "Tendencia de erosión (Raster)"
+                    )
                   }
                 >
                   <svg
@@ -1085,15 +1256,18 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
                 >
-                  Opacidad: {Math.round(opacity.raster * 100)}%
+                  Opacidad: {Math.round(opacity.tendenciaErosionRaster * 100)}%
                 </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newOpacity = Math.max(0, opacity.raster - 0.1);
+                    const newOpacity = Math.max(
+                      0,
+                      opacity.tendenciaErosionRaster - 0.1
+                    );
                     setOpacity((prev) => ({
                       ...prev,
-                      raster: newOpacity,
+                      tendenciaErosionRaster: newOpacity,
                     }));
                   }}
                   style={{
@@ -1109,17 +1283,20 @@ const GroupedLayerControl = ({
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  disabled={opacity.raster <= 0}
+                  disabled={opacity.tendenciaErosionRaster <= 0}
                 >
                   -
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newOpacity = Math.min(1, opacity.raster + 0.1);
+                    const newOpacity = Math.min(
+                      1,
+                      opacity.tendenciaErosionRaster + 0.1
+                    );
                     setOpacity((prev) => ({
                       ...prev,
-                      raster: newOpacity,
+                      tendenciaErosionRaster: newOpacity,
                     }));
                   }}
                   style={{
@@ -1135,7 +1312,154 @@ const GroupedLayerControl = ({
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  disabled={opacity.raster >= 1}
+                  disabled={opacity.tendenciaErosionRaster >= 1}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div
+              style={{
+                marginBottom: "2px",
+                padding: "2px 10px",
+                backgroundColor: "transparent",
+                borderRadius: "4px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  alignContent: "center",
+                  marginBottom: "2px",
+                  gap: "8px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={activeLayers.erosionSerieVIIRaster || false}
+                  onChange={() => toggleLayer("erosionSerieVIIRaster")}
+                />
+                <span
+                  style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
+                >
+                  Erosión Serie VII (Raster)
+                </span>
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    padding: "0px",
+                    borderRadius: "3px",
+                    cursor: "pointer",
+                    marginLeft: "2px",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  title="Descargar Erosión Serie VII (Raster)"
+                  onClick={() =>
+                    downloadRaster(
+                      "USLE_S7_simple.tif",
+                      "Erosión Serie VII (Raster)"
+                    )
+                  }
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2v8m0 0l-3-3m3 3l3-3"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="13"
+                      width="10"
+                      height="1.5"
+                      rx="0.75"
+                      fill="white"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "2px",
+                }}
+              >
+                <span
+                  style={{ fontSize: "9px", color: "white", minWidth: "55px" }}
+                >
+                  Opacidad: {Math.round(opacity.erosionSerieVIIRaster * 100)}%
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.max(
+                      0,
+                      opacity.erosionSerieVIIRaster - 0.1
+                    );
+                    setOpacity((prev) => ({
+                      ...prev,
+                      erosionSerieVIIRaster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.erosionSerieVIIRaster <= 0}
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newOpacity = Math.min(
+                      1,
+                      opacity.erosionSerieVIIRaster + 0.1
+                    );
+                    setOpacity((prev) => ({
+                      ...prev,
+                      erosionSerieVIIRaster: newOpacity,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid white",
+                    color: "white",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "2px",
+                    cursor: "pointer",
+                    fontSize: "9px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  disabled={opacity.erosionSerieVIIRaster >= 1}
                 >
                   +
                 </button>
@@ -1149,45 +1473,48 @@ const GroupedLayerControl = ({
 };
 
 // Componente principal
-const Erosion = ({
-  rastersBasePath = "/data/rasters/erosion/",
-  geojsonUrl = "/EXPORTACION_SEDIMENTOS.geojson",
-}) => {
+const Erosion = () => {
   // Estados para datos
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
-  const [exportacionSedimentos, setExportacionSedimentos] = useState(null);
+  const [usleData, setUsleData] = useState(null);
 
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
     paisajes: false,
     municipios: false,
-    exportacionSedimentos: false,
-    exportacionSedimentos2018: false,
-    raster: true,
+    tendenciaErosion: true,
+    erosionSerieVII: false,
+    erosionSerieVIIRaster: false,
+    tendenciaErosionRaster: false,
   });
 
   // Estado para opacidad de capas
   const [opacity, setOpacity] = useState({
-    exportacionSedimentos: 0.6,
-    exportacionSedimentos2018: 0.7,
-    raster: 0.7,
+    tendenciaErosion: 0.7,
+    erosionSerieVII: 0.7,
+    erosionSerieVIIRaster: 0.7,
+    tendenciaErosionRaster: 0.7,
   });
 
-  // Estados para leyenda de exportación
-  const [exportacionLegendVisible, setExportacionLegendVisible] =
+  // Estados para leyendas
+  const [tendenciaLegendVisible, setTendenciaLegendVisible] = useState(true);
+  const [erosionSerieVIILegendVisible, setErosionSerieVIILegendVisible] =
     useState(false);
-
-  // Estados para leyenda de exportación 2018
   const [
-    exportacionSedimentos2018LegendVisible,
-    setExportacionSedimentos2018LegendVisible,
+    erosionSerieVIIRasterLegendVisible,
+    setErosionSerieVIIRasterLegendVisible,
+  ] = useState(false);
+  const [
+    tendenciaErosionRasterLegendVisible,
+    setTendenciaErosionRasterLegendVisible,
   ] = useState(false);
 
-  // Estado para leyenda del raster
-  const [rasterLegendVisible, setRasterLegendVisible] = useState(true);
+  // Estado para controlar la posición dinámica de la leyenda
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
 
   // Estados para manejo de carga y errores del raster
   const [loading, setLoading] = useState(false);
@@ -1195,10 +1522,6 @@ const Erosion = ({
 
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
-
-  // Estado para controlar la posición dinámica de la leyenda
-  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
-  const [layerControlWidth, setLayerControlWidth] = useState(300);
 
   // Función para manejar cambios en el estado del control de capas
   const handleControlStateChange = (collapsed, width) => {
@@ -1231,11 +1554,11 @@ const Erosion = ({
           setMunicipios(municipiosData);
         }
 
-        // Cargar exportación de sedimentos
-        const exportacionResponse = await fetch(geojsonUrl);
-        if (exportacionResponse.ok) {
-          const exportacionData = await exportacionResponse.json();
-          setExportacionSedimentos(exportacionData);
+        // Cargar datos USLE
+        const usleResponse = await fetch("/USLE_tendencia_WS.geojson");
+        if (usleResponse.ok) {
+          const usleData = await usleResponse.json();
+          setUsleData(usleData);
         }
       } catch (error) {
         console.error("Error cargando datos geográficos:", error);
@@ -1243,38 +1566,52 @@ const Erosion = ({
     };
 
     loadGeoData();
-  }, [geojsonUrl]);
+  }, []);
 
   // Efecto para controlar la visibilidad de las leyendas (solo una a la vez)
   useEffect(() => {
-    // Prioridad: si exportación 2018 está activa, mostrar esa leyenda
-    if (activeLayers.exportacionSedimentos2018) {
-      setExportacionSedimentos2018LegendVisible(true);
-      setExportacionLegendVisible(false);
-      setRasterLegendVisible(false);
+    let activeCount = 0;
+    let lastActive = null;
+
+    // Contar capas activas y encontrar la última activa
+    if (activeLayers.tendenciaErosion) {
+      activeCount++;
+      lastActive = "tendencia";
     }
-    // Si exportación original está activa, mostrar esa leyenda
-    else if (activeLayers.exportacionSedimentos) {
-      setExportacionLegendVisible(true);
-      setExportacionSedimentos2018LegendVisible(false);
-      setRasterLegendVisible(false);
+    if (activeLayers.erosionSerieVII) {
+      activeCount++;
+      lastActive = "erosionVector";
     }
-    // Si solo el raster está activo, mostrar leyenda del raster
-    else if (activeLayers.raster) {
-      setExportacionLegendVisible(false);
-      setExportacionSedimentos2018LegendVisible(false);
-      setRasterLegendVisible(true);
+    if (activeLayers.erosionSerieVIIRaster) {
+      activeCount++;
+      lastActive = "erosionRaster";
     }
-    // Si ninguna está activa, ocultar todas
-    else {
-      setExportacionLegendVisible(false);
-      setExportacionSedimentos2018LegendVisible(false);
-      setRasterLegendVisible(false);
+    if (activeLayers.tendenciaErosionRaster) {
+      activeCount++;
+      lastActive = "tendenciaRaster";
+    }
+
+    // Ocultar todas las leyendas primero
+    setTendenciaLegendVisible(false);
+    setErosionSerieVIILegendVisible(false);
+    setErosionSerieVIIRasterLegendVisible(false);
+    setTendenciaErosionRasterLegendVisible(false);
+
+    // Mostrar solo la leyenda de la última capa activada
+    if (lastActive === "tendencia") {
+      setTendenciaLegendVisible(true);
+    } else if (lastActive === "erosionVector") {
+      setErosionSerieVIILegendVisible(true);
+    } else if (lastActive === "erosionRaster") {
+      setErosionSerieVIIRasterLegendVisible(true);
+    } else if (lastActive === "tendenciaRaster") {
+      setTendenciaErosionRasterLegendVisible(true);
     }
   }, [
-    activeLayers.exportacionSedimentos,
-    activeLayers.exportacionSedimentos2018,
-    activeLayers.raster,
+    activeLayers.tendenciaErosion,
+    activeLayers.erosionSerieVII,
+    activeLayers.erosionSerieVIIRaster,
+    activeLayers.tendenciaErosionRaster,
   ]);
 
   return (
@@ -1285,24 +1622,36 @@ const Erosion = ({
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
       >
-        {/* RasterOverlay para tendencia USLE */}
-        {activeLayers.raster && (
+        {/* RasterOverlay para Tendencia de erosión */}
+        {activeLayers.tendenciaErosionRaster && (
           <RasterOverlay
-            fileName="USLE_TEND.tif"
-            colorMap={[
-              "#ffffcc",
-              "#c2e699",
-              "#78c679",
-              "#31a354",
-              "#006837",
-              "#d73027",
-            ]}
+            fileName="USLE_pendiente.tif"
+            colorMap="-0.0028143113013357002:#457428,-0.00270385287039895:#4a7827,-0.00259339387612297:#4e7b26,-0.0024829354451862198:#537f25,-0.0023724764509102398:#588324,-0.0022620180199734901:#5d8623,-0.0021515595890367499:#618a22,-0.00204110003142152:#668d21,-0.0019306404738062999:#6b9120,-0.0018201809161910801:#70951f,-0.00170972699196823:#74981e,-0.0015992674343530101:#799c1c,-0.00148880787673779:#7ea01b,-0.0013783483191225699:#83a31a,-0.00126788876150735:#87a719,-0.0011574292038921299:#8cab18,-0.00104697527966928:#91ae17,-0.00093651572205405702:#95b216,-0.00082605616443883595:#9ab515,-0.000715596606823615:#9fb914,-0.00060513704920839404:#a4bd13,-0.00049467749159317297:#a8c012,-0.00038421793397795201:#adc411,-0.00027376400975510299:#b2c810,-0.000163304452139881:#b7cb0f,-5.2844894524660302e-05:#bbcf0e,5.7614663090560902e-05:#c0d20d,0.00016807422070578201:#c5d60c,0.00027853377832100202:#c9da0b,0.00038898770254385201:#cedd0a,0.00049944726015907297:#d3e109,0.00060990681777429404:#d8e508,0.000720366375389515:#dce807,0.00083082593300473704:#e1ec05,0.00094128549061995703:#e6f004,0.0010517450482351799:#ebf303,0.00116219897245803:#eff702,0.0012726585300732499:#f4fa01,0.00138311808768847:#f9fe00,0.0014935776453036901:#f8f404,0.00160403720291891:#f6e508,0.0017144967605341301:#f4d70d,0.0018249506847569799:#f1c812,0.0019354102423722:#efba16,0.0020458697999874201:#ecab1b,0.00215632935760265:#ea9c20,0.0022667889152178699:#e88e24,0.0023772484728330902:#e57f29,0.0024877023970559398:#e3702e,0.0025981619546711601:#e16233,0.00270862151228638:#de5337,0.0028190810699015999:#dc443c"
             baseUrl="/"
             continuous={true}
             setError={setError}
             setLoading={setLoading}
             onPixelValue={setPixelValue}
-            overlayOpacity={opacity.raster}
+            overlayOpacity={opacity.tendenciaErosionRaster}
+            visible={true}
+            pane="overlayPane"
+          />
+        )}
+
+        {/* RasterOverlay para Erosión Serie VII */}
+        {/* Line 1324 omitted */}
+        {activeLayers.erosionSerieVIIRaster && (
+          <RasterOverlay
+            fileName="USLE_S7_simple.tif"
+            colorMap="0:#035800,19.607800000000001:#0d5e00,39.215699999999998:#176500,58.823500000000003:#216b00,78.431399999999996:#2b7200,98.039200000000008:#357800,117.64700000000001:#3f7f00,137.255:#488500,156.863:#528c00,176.47099999999998:#5c9200,196.078:#669900,215.68599999999998:#709f00,235.29400000000001:#7aa600,254.90200000000002:#84ac00,274.50999999999999:#8db300,294.11799999999999:#97b900,313.72499999999997:#a1c000,333.33299999999997:#abc600,352.94100000000003:#b5cd00,372.54900000000004:#bfd300,392.15699999999998:#c9da00,411.76499999999999:#d3e000,431.37299999999999:#dce700,450.98000000000002:#e6ed00,470.58800000000002:#f0f400,490.19600000000003:#fafa00,509.80400000000003:#fdf900,529.41200000000003:#f9ef01,549.01999999999998:#f5e501,568.62699999999995:#f1db02,588.2349999999999:#edd102,607.84300000000007:#e9c703,627.45100000000002:#e5bd03,647.05900000000008:#e1b304,666.66700000000003:#dda905,686.27499999999998:#d99f05,705.88200000000006:#d49506,725.49000000000001:#d08b06,745.09800000000007:#cc8107,764.70600000000002:#c87707,784.31399999999996:#c46d08,803.92200000000003:#c06308,823.529:#bc5909,843.13700000000006:#b85009,862.745:#b4460a,882.35300000000007:#b03c0a,901.96100000000001:#ac320b,921.56899999999996:#a8280c,941.17600000000004:#a41e0c,960.78399999999999:#a0140d,980.39200000000005:#9c0a0d,1000:#98000e"
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={setPixelValue}
+            overlayOpacity={opacity.erosionSerieVIIRaster}
+            visible={true}
+            pane="overlayPane"
           />
         )}
 
@@ -1311,7 +1660,7 @@ const Erosion = ({
           area={area}
           paisajes={paisajes}
           municipios={municipios}
-          exportacionSedimentos={exportacionSedimentos}
+          usleData={usleData}
           activeLayers={activeLayers}
           setActiveLayers={setActiveLayers}
           opacity={opacity}
@@ -1319,16 +1668,30 @@ const Erosion = ({
           onControlStateChange={handleControlStateChange}
         />
 
-        {/* Leyenda de Exportación de Sedimentos */}
-        <ExportacionLegend
-          isVisible={exportacionLegendVisible}
+        {/* Leyenda de Tendencia de Erosión */}
+        <TendenciaErosionLegend
+          isVisible={tendenciaLegendVisible}
           layerControlCollapsed={layerControlCollapsed}
           layerControlWidth={layerControlWidth}
         />
 
-        {/* Leyenda de Exportación de Sedimentos (2018) */}
-        <ExportacionSedimentos2018Legend
-          isVisible={exportacionSedimentos2018LegendVisible}
+        {/* Leyenda de Erosión Serie VII */}
+        <ErosionSerieVIILegend
+          isVisible={erosionSerieVIILegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+
+        {/* Leyenda de Tendencia de erosión (Raster) */}
+        <TendenciaErosionRasterLegend
+          isVisible={tendenciaErosionRasterLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+
+        {/* Leyenda de Erosión Serie VII (Raster) */}
+        <ErosionSerieVIIRasterLegend
+          isVisible={erosionSerieVIIRasterLegendVisible}
           layerControlCollapsed={layerControlCollapsed}
           layerControlWidth={layerControlWidth}
         />
@@ -1345,7 +1708,7 @@ const Erosion = ({
               padding: "10px 20px",
               borderRadius: "5px",
               zIndex: 2000,
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Inter, sans-serif",
             }}
           >
             Cargando raster...
@@ -1365,19 +1728,12 @@ const Erosion = ({
               padding: "10px 20px",
               borderRadius: "5px",
               zIndex: 2000,
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Inter, sans-serif",
             }}
           >
             Error: {error}
           </div>
         )}
-
-        {/* Leyenda del raster */}
-        <RasterLegend
-          isVisible={rasterLegendVisible}
-          layerControlCollapsed={layerControlCollapsed}
-          layerControlWidth={layerControlWidth}
-        />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />

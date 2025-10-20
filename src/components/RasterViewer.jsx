@@ -176,11 +176,55 @@ export const RasterOverlay = React.memo(
           }
 
           console.log(`[RasterViewer] Loading raster from URL: ${fullUrl}`);
-          const tiff = await GeoTIFF.fromUrl(fullUrl);
+
+          // Añadir configuración específica para evitar problemas con blocks
+          const tiff = await GeoTIFF.fromUrl(fullUrl, {
+            allowFullFile: true,
+            forceXHR: false,
+            cache: false,
+            headers: {},
+            credentials: "same-origin",
+          });
           if (!isMounted) return;
+
           const image = await tiff.getImage();
           if (!isMounted) return;
-          const rasters = await image.readRasters();
+
+          // Verificar que la imagen tenga los métodos necesarios
+          console.log(
+            `[RasterViewer] Image size: ${image.getWidth()}x${image.getHeight()}`
+          );
+
+          // Intentar leer los rasters con configuración específica
+          let rasters;
+          try {
+            rasters = await image.readRasters({
+              interleave: false,
+              pool: null,
+              width: image.getWidth(),
+              height: image.getHeight(),
+            });
+          } catch (blockError) {
+            console.warn(
+              `[RasterViewer] Block read error, trying alternative method:`,
+              blockError
+            );
+            // Método alternativo: leer por chunks más pequeños
+            try {
+              rasters = await image.readRasters({
+                window: [0, 0, image.getWidth(), image.getHeight()],
+                samples: [0],
+              });
+            } catch (alternativeError) {
+              console.error(
+                `[RasterViewer] Alternative method also failed:`,
+                alternativeError
+              );
+              throw new Error(
+                `Error reading TIFF blocks: ${blockError.message}`
+              );
+            }
+          }
           if (!isMounted) return;
           const data = rasters[0];
           const width = image.getWidth();
