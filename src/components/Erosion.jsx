@@ -145,7 +145,7 @@ const TendenciaErosionLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "320px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -229,7 +229,7 @@ const TendenciaErosionLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de Erosión
+            Tendencia de Exportación de Sedimentos (2100)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -276,7 +276,7 @@ const TendenciaErosionRasterLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "320px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -336,7 +336,7 @@ const TendenciaErosionRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de Erosión (Raster)
+            Tendencia de Exportación de Sedimentos (2100)
           </div>
           <div
             style={{
@@ -393,7 +393,7 @@ const ErosionSerieVIIRasterLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "320px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -452,7 +452,7 @@ const ErosionSerieVIIRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Erosión Serie VII (Raster)
+            Exportación de Sedimentos (2018)
           </div>
           <div
             style={{
@@ -509,7 +509,7 @@ const ErosionSerieVIILegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "300px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "320px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -587,7 +587,7 @@ const ErosionSerieVIILegend = ({
               fontSize: "12px",
             }}
           >
-            Erosión Serie VII (2018)
+            Exportación de Sedimentos (2018)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -730,7 +730,7 @@ const GroupedLayerControl = ({
           const tenValue = feature.properties.TEN_100 || "N/A";
           layer.bindPopup(
             `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Tendencia de Erosión:</strong><br/>
+              <strong>Tendencia de Exportación de Sedimentos (2100):</strong><br/>
               <strong>TEN_100:</strong> ${tenValue}
             </div>`
           );
@@ -772,7 +772,7 @@ const GroupedLayerControl = ({
           const sdrValue = feature.properties.SDR_S7 || "N/A";
           layer.bindPopup(
             `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Erosión Serie VII (2018):</strong><br/>
+              <strong>Exportación de Sedimentos (2018):</strong><br/>
               <strong>SDR_S7:</strong> ${sdrValue}
             </div>`
           );
@@ -1158,7 +1158,7 @@ const GroupedLayerControl = ({
             {usleData && (
               <LayerItem
                 layerKey="tendenciaErosion"
-                title="Tendencia de erosión"
+                title="Tendencia de Exportación de Sedimentos (2100)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1166,7 +1166,7 @@ const GroupedLayerControl = ({
             {usleData && (
               <LayerItem
                 layerKey="erosionSerieVII"
-                title="Erosión Serie VII"
+                title="Exportación de Sedimentos (2018)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1196,7 +1196,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Tendencia de erosión (Raster)
+                  Tendencia de exportación de sedimentos (2100)
                 </span>
                 <button
                   style={{
@@ -1343,7 +1343,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Erosión Serie VII (Raster)
+                  Exportación de Sedimentos (2018)
                 </span>
                 <button
                   style={{

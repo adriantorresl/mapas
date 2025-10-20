@@ -30,6 +30,8 @@ import Angustifolia from "../components/Angustifolia";
 import Iyoba from "../components/Iyoba";
 import Karwinskii from "../components/Karwinskii";
 import Marmorata from "../components/Marmorata";
+import Nitrogeno from "../components/Nitrogeno";
+import Fosforo from "../components/Fosforo";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
@@ -114,12 +116,16 @@ export const componentMapping = {
   },
 
   // 2.2 - Acumulación de Nutrientes
-  2.2: {
-    component: Nutrientes,
+  "2.2.1": {
+    component: Nitrogeno,
     props: {},
   },
 
   // 2.3 - Secuestro de Carbono
+  "2.2.2": {
+    component: Fosforo,
+    props: {},
+  },
   2.3: {
     component: Carbono,
     props: {},
