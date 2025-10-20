@@ -254,12 +254,14 @@ const PendienteLegend = ({
     return null;
   }
 
-  // Colores del gradiente de pendiente (extraídos del archivo Pendiente.sld)
-  const colors = ["#fef9ae", "#fd9242", "#ff0094", "#0602f2", "#040058"];
-
-  // Valores de pendiente según el archivo SLD (0° a 61.82°)
-  const minPendiente = 0; // grados
-  const maxPendiente = 61.82; // grados (valor exacto del SLD)
+  // Colores y rangos exactos del archivo Pendiente.sld
+  const sldRanges = [
+    { min: 0, max: 15.45, color: "#fef9ae", label: "0.0° - 15.5°" },
+    { min: 15.45, max: 30.91, color: "#fd9242", label: "15.5° - 30.9°" },
+    { min: 30.91, max: 46.36, color: "#ff0094", label: "30.9° - 46.4°" },
+    { min: 46.36, max: 61.82, color: "#0602f2", label: "46.4° - 61.8°" },
+    { min: 61.82, max: 61.82, color: "#040058", label: "> 61.8°" },
+  ];
 
   // Calcular posición dinámica basada en el estado del control de capas
   // Mantener una separación constante y razonable entre controles
@@ -295,24 +297,6 @@ const PendienteLegend = ({
     backgroundColor: "#1E3C20",
   };
 
-  // Crear gradiente CSS para la rampa
-  const gradientColors = colors.join(", ");
-  const rampStyle = {
-    height: "20px",
-    background: `linear-gradient(to right, ${gradientColors})`,
-    border: "1px solid #999",
-    borderRadius: "2px",
-    margin: "8px 0",
-  };
-
-  const labelsStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "10px",
-    color: "white",
-    marginTop: "4px",
-  };
-
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
@@ -335,11 +319,30 @@ const PendienteLegend = ({
           >
             Pendiente (°)
           </div>
-          <div style={rampStyle}></div>
-          <div style={labelsStyle}>
-            <span>{minPendiente}°</span>
-            <span>{maxPendiente}°</span>
-          </div>
+          {sldRanges.map((range, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "6px",
+                fontSize: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  backgroundColor: range.color,
+                  marginRight: "8px",
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ lineHeight: "1.2" }}>{range.label}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -445,15 +448,7 @@ const GroupedLayerControl = ({
 
     // Capas base
     const baseLayers = {
-      "Topográfico (OSM)": L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19,
-        }
-      ),
-      "Satélite (ESRI)": L.tileLayer(
+      "Satelital (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
