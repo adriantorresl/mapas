@@ -185,7 +185,7 @@ const BalanceNitrogenoLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -225,7 +225,7 @@ const BalanceNitrogenoLegend = ({
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Balance de Nitrógeno 2018 (kg/ha/año)</span>
+        <span>Simbología</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -271,7 +271,7 @@ const TendenciaNitrogenoLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",
@@ -312,7 +312,7 @@ const TendenciaNitrogenoLegend = ({
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Tendencia de Nitrógeno 2100 (kg/ha/año)</span>
+        <span>Simbología</span>
       </div>
       {!isCollapsed && (
         <div>
@@ -358,7 +358,7 @@ const BalanceNitrogenoRasterLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     position: "absolute",
@@ -467,7 +467,7 @@ const TendenciaNitrogenoRasterLegend = ({
   // Calcular posición dinámica basada en el estado del control de capas
   const rightPosition = layerControlCollapsed
     ? "105px" // Posición normal cuando está colapsado
-    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
 
   const legendStyle = {
     color: "white",

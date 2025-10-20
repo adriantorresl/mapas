@@ -170,11 +170,408 @@ const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
   );
 };
 
+// Componente para la leyenda de Balance de Fósforo
+const BalanceFosforoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Rangos y colores del archivo NDR_P_S7_WS.sld
+  const sldRanges = [
+    { min: 0, max: 5000, color: "#0c5406", label: "0 - 5,000" },
+    { min: 5001, max: 10000, color: "#85a503", label: "5,000 - 10,000" },
+    { min: 10001, max: 20000, color: "#fff700", label: "10,000 - 20,000" },
+    { min: 20001, max: 40000, color: "#e27c00", label: "20,000 - 40,000" },
+    { min: 40001, max: 80607, color: "#c40000", label: "40,000 - 80,607" },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div style={{ marginBottom: "10px", fontSize: "14px" }}>
+            kg P/ha/año
+          </div>
+          {sldRanges.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "5px",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "15px",
+                  backgroundColor: item.color,
+                  marginRight: "10px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              <span style={{ fontSize: "11px" }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente para la leyenda de Tendencia de Fósforo
+const TendenciaFosforoLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Rangos y colores del archivo NDR_P_Tendencia_WS.sld
+  const sldRanges = [
+    { min: -74171, max: 5000, color: "#0c5406", label: "-74,171 - 5,000" },
+    { min: 5001, max: 10000, color: "#8ed500", label: "5,000 - 10,000" },
+    { min: 10001, max: 20000, color: "#fff700", label: "10,000 - 20,000" },
+    { min: 20001, max: 40000, color: "#ff9f00", label: "20,000 - 40,000" },
+    { min: 40001, max: 80455, color: "#c40000", label: "40,000 - 80,455" },
+    { min: 80456, max: 106012, color: "#601c2a", label: "80,455 - 106,012" },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div style={{ marginBottom: "10px", fontSize: "14px" }}>
+            kg P/ha/año
+          </div>
+          {sldRanges.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "5px",
+              }}
+            >
+              <div
+                style={{
+                  width: "20px",
+                  height: "15px",
+                  backgroundColor: item.color,
+                  marginRight: "10px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              <span style={{ fontSize: "11px" }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente para la leyenda de Balance de Fósforo Raster
+const BalanceFosforoRasterLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Gradiente basado en NDR_P_S7_px.sld (20 colores de verde a rojo)
+  const gradientColors = [
+    "#0c5406",
+    "#266505",
+    "#3f7605",
+    "#598704",
+    "#729903",
+    "#8caa03",
+    "#a5bb02",
+    "#bfcc02",
+    "#d9dd01",
+    "#f2ee00",
+    "#fcea00",
+    "#f6d000",
+    "#efb600",
+    "#e99c00",
+    "#e38200",
+    "#dd6800",
+    "#d74e00",
+    "#d03400",
+    "#ca1a00",
+    "#c40000",
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div style={{ marginBottom: "10px", fontSize: "14px" }}>
+            kg P/ha/año
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: "160px",
+                height: "20px",
+                background: `linear-gradient(to right, ${gradientColors.join(
+                  ", "
+                )})`,
+                marginRight: "10px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "11px",
+            }}
+          >
+            <span>0.0</span>
+            <span>43.7</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente para la leyenda de Tendencia de Fósforo Raster
+const TendenciaFosforoRasterLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  layerControlWidth,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "290px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  // Gradiente simplificado basado en NDR_P_Tendencia_px.sld (5 puntos clave)
+  const gradientColors = [
+    "#0c5406",
+    "#175c10",
+    "#fffee1",
+    "#9b7b8d",
+    "#3c003d",
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div style={{ marginBottom: "10px", fontSize: "14px" }}>
+            kg P/ha/año
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: "160px",
+                height: "20px",
+                background: `linear-gradient(to right, ${gradientColors.join(
+                  ", "
+                )})`,
+                marginRight: "10px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "11px",
+            }}
+          >
+            <span>0.0</span>
+            <span>28.3</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Componente para el control de capas agrupadas
 const GroupedLayerControl = ({
   area,
   paisajes,
   municipios,
+  ndrPTendenciaWS,
   activeLayers,
   setActiveLayers,
   opacity,
@@ -284,6 +681,116 @@ const GroupedLayerControl = ({
     activeLayers.area,
     activeLayers.paisajes,
     activeLayers.municipios,
+    activeLayers.balanceFosforo2018,
+    activeLayers.tendenciaFosforo2100,
+  ]);
+
+  useEffect(() => {
+    // Manejo de capas GeoJSON de fósforo
+    if (ndrPTendenciaWS) {
+      // Balance de Fósforo (2018) - GeoJSON
+      if (activeLayers.balanceFosforo2018) {
+        const balanceFosforo2018Layer = L.geoJSON(ndrPTendenciaWS, {
+          style: (feature) => {
+            const value = feature.properties.S7;
+            let color = "#0c5406"; // Color por defecto
+
+            // Aplicar colores según los rangos del SLD NDR_P_S7_WS.sld
+            if (value >= 0 && value <= 5000) {
+              color = "#0c5406";
+            } else if (value > 5000 && value <= 10000) {
+              color = "#85a503";
+            } else if (value > 10000 && value <= 20000) {
+              color = "#fff700";
+            } else if (value > 20000 && value <= 40000) {
+              color = "#e27c00";
+            } else if (value > 40000 && value <= 80607) {
+              color = "#c40000";
+            }
+
+            return {
+              color: "#232323",
+              weight: 1,
+              fillColor: color,
+              fillOpacity: opacity.balanceFosforo2018,
+              opacity: 0.8,
+            };
+          },
+        });
+
+        if (!layers.balanceFosforo2018) {
+          setLayers((prev) => ({
+            ...prev,
+            balanceFosforo2018: balanceFosforo2018Layer,
+          }));
+          balanceFosforo2018Layer.addTo(map);
+        }
+      } else if (layers.balanceFosforo2018) {
+        map.removeLayer(layers.balanceFosforo2018);
+        setLayers((prev) => {
+          const newLayers = { ...prev };
+          delete newLayers.balanceFosforo2018;
+          return newLayers;
+        });
+      }
+
+      // Tendencia de Fósforo (2100) - GeoJSON
+      if (activeLayers.tendenciaFosforo2100) {
+        const tendenciaFosforo2100Layer = L.geoJSON(ndrPTendenciaWS, {
+          style: (feature) => {
+            const value = feature.properties.A_2100;
+            let color = "#0c5406"; // Color por defecto
+
+            // Aplicar colores según los rangos del SLD NDR_P_Tendencia_WS.sld
+            if (value >= -74171 && value <= 5000) {
+              color = "#0c5406";
+            } else if (value > 5000 && value <= 10000) {
+              color = "#8ed500";
+            } else if (value > 10000 && value <= 20000) {
+              color = "#fff700";
+            } else if (value > 20000 && value <= 40000) {
+              color = "#ff9f00";
+            } else if (value > 40000 && value <= 80455) {
+              color = "#c40000";
+            } else if (value > 80455 && value <= 106012) {
+              color = "#601c2a";
+            }
+
+            return {
+              color: "#232323",
+              weight: 1,
+              fillColor: color,
+              fillOpacity: opacity.tendenciaFosforo2100,
+              opacity: 0.8,
+            };
+          },
+        });
+
+        if (!layers.tendenciaFosforo2100) {
+          setLayers((prev) => ({
+            ...prev,
+            tendenciaFosforo2100: tendenciaFosforo2100Layer,
+          }));
+          tendenciaFosforo2100Layer.addTo(map);
+        }
+      } else if (layers.tendenciaFosforo2100) {
+        map.removeLayer(layers.tendenciaFosforo2100);
+        setLayers((prev) => {
+          const newLayers = { ...prev };
+          delete newLayers.tendenciaFosforo2100;
+          return newLayers;
+        });
+      }
+    }
+  }, [
+    map,
+    ndrPTendenciaWS,
+    activeLayers.balanceFosforo2018,
+    activeLayers.tendenciaFosforo2100,
+    opacity.balanceFosforo2018,
+    opacity.tendenciaFosforo2100,
+    layers.balanceFosforo2018,
+    layers.tendenciaFosforo2100,
   ]);
 
   const toggleLayer = (layerKey) => {
@@ -571,7 +1078,7 @@ const GroupedLayerControl = ({
             />
           </div>
 
-          {/* Grupo de Fósforo - Aquí puedes agregar tus capas específicas */}
+          {/* Grupo de Fósforo */}
           <div style={{ marginBottom: "10px" }}>
             <strong
               style={{
@@ -583,7 +1090,632 @@ const GroupedLayerControl = ({
             >
               Fósforo
             </strong>
-            {/* Aquí irán las capas específicas de fósforo que agregues después */}
+
+            {/* Nivel Cuenca */}
+            <div style={{ marginBottom: "15px" }}>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  marginBottom: "8px",
+                  marginLeft: "10px",
+                }}
+              >
+                Nivel Cuenca
+              </div>
+
+              {/* Balance de Fósforo (2018) - GeoJSON */}
+              <div
+                style={{
+                  marginBottom: "2px",
+                  padding: "2px 10px",
+                  backgroundColor: "transparent",
+                  borderRadius: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "2px",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={activeLayers.balanceFosforo2018 || false}
+                    onChange={() => toggleLayer("balanceFosforo2018")}
+                  />
+                  <span
+                    style={{
+                      fontWeight: "normal",
+                      flex: 1,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Balance de Fósforo (2018)
+                  </span>
+                  {ndrPTendenciaWS && (
+                    <button
+                      style={{
+                        backgroundColor: "transparent",
+                        border: "none",
+                        padding: "0px",
+                        borderRadius: "3px",
+                        cursor: "pointer",
+                        marginLeft: "2px",
+                        width: "18px",
+                        height: "18px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Descargar Balance de Fósforo (2018)"
+                      onClick={() =>
+                        downloadGeoJSON(ndrPTendenciaWS, "Balance_Fosforo_2018")
+                      }
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 2v8m0 0l-3-3m3 3l3-3"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <rect
+                          x="3"
+                          y="13"
+                          width="10"
+                          height="1.5"
+                          rx="0.75"
+                          fill="white"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "2px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "white",
+                      minWidth: "55px",
+                    }}
+                  >
+                    Opacidad: {Math.round(opacity.balanceFosforo2018 * 100)}%
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.max(
+                        0,
+                        opacity.balanceFosforo2018 - 0.1
+                      );
+                      handleOpacityChange("balanceFosforo2018", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.balanceFosforo2018 <= 0}
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.min(
+                        1,
+                        opacity.balanceFosforo2018 + 0.1
+                      );
+                      handleOpacityChange("balanceFosforo2018", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.balanceFosforo2018 >= 1}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Tendencia de Fósforo (2100) - GeoJSON */}
+              <div
+                style={{
+                  marginBottom: "2px",
+                  padding: "2px 10px",
+                  backgroundColor: "transparent",
+                  borderRadius: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "2px",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={activeLayers.tendenciaFosforo2100 || false}
+                    onChange={() => toggleLayer("tendenciaFosforo2100")}
+                  />
+                  <span
+                    style={{
+                      fontWeight: "normal",
+                      flex: 1,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Tendencia de Fósforo (2100)
+                  </span>
+                  {ndrPTendenciaWS && (
+                    <button
+                      style={{
+                        backgroundColor: "transparent",
+                        border: "none",
+                        padding: "0px",
+                        borderRadius: "3px",
+                        cursor: "pointer",
+                        marginLeft: "2px",
+                        width: "18px",
+                        height: "18px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Descargar Tendencia de Fósforo (2100)"
+                      onClick={() =>
+                        downloadGeoJSON(
+                          ndrPTendenciaWS,
+                          "Tendencia_Fosforo_2100"
+                        )
+                      }
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 2v8m0 0l-3-3m3 3l3-3"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <rect
+                          x="3"
+                          y="13"
+                          width="10"
+                          height="1.5"
+                          rx="0.75"
+                          fill="white"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "2px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "white",
+                      minWidth: "55px",
+                    }}
+                  >
+                    Opacidad: {Math.round(opacity.tendenciaFosforo2100 * 100)}%
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.max(
+                        0,
+                        opacity.tendenciaFosforo2100 - 0.1
+                      );
+                      handleOpacityChange("tendenciaFosforo2100", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.tendenciaFosforo2100 <= 0}
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.min(
+                        1,
+                        opacity.tendenciaFosforo2100 + 0.1
+                      );
+                      handleOpacityChange("tendenciaFosforo2100", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.tendenciaFosforo2100 >= 1}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Nivel Pixel */}
+            <div style={{ marginBottom: "10px" }}>
+              <div
+                style={{
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  marginBottom: "8px",
+                  marginLeft: "10px",
+                }}
+              >
+                Nivel Pixel
+              </div>
+
+              {/* Balance de Fósforo (2018) - Raster */}
+              <div
+                style={{
+                  marginBottom: "2px",
+                  padding: "2px 10px",
+                  backgroundColor: "transparent",
+                  borderRadius: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "2px",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={activeLayers.balanceFosforoRaster || false}
+                    onChange={() => toggleLayer("balanceFosforoRaster")}
+                  />
+                  <span
+                    style={{
+                      fontWeight: "normal",
+                      flex: 1,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Balance de Fósforo (2018)
+                  </span>
+                  <button
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "none",
+                      padding: "0px",
+                      borderRadius: "3px",
+                      cursor: "pointer",
+                      marginLeft: "2px",
+                      width: "18px",
+                      height: "18px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Descargar Balance de Fósforo Raster (2018)"
+                    onClick={() =>
+                      downloadRaster("NDR_p_S7.tif", "Balance Fósforo 2018")
+                    }
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 2v8m0 0l-3-3m3 3l3-3"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <rect
+                        x="3"
+                        y="13"
+                        width="10"
+                        height="1.5"
+                        rx="0.75"
+                        fill="white"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "2px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "white",
+                      minWidth: "55px",
+                    }}
+                  >
+                    Opacidad: {Math.round(opacity.balanceFosforoRaster * 100)}%
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.max(
+                        0,
+                        opacity.balanceFosforoRaster - 0.1
+                      );
+                      handleOpacityChange("balanceFosforoRaster", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.balanceFosforoRaster <= 0}
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.min(
+                        1,
+                        opacity.balanceFosforoRaster + 0.1
+                      );
+                      handleOpacityChange("balanceFosforoRaster", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.balanceFosforoRaster >= 1}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Tendencia de Fósforo (2100) - Raster */}
+              <div
+                style={{
+                  marginBottom: "2px",
+                  padding: "2px 10px",
+                  backgroundColor: "transparent",
+                  borderRadius: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "2px",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={activeLayers.tendenciaFosforoRaster || false}
+                    onChange={() => toggleLayer("tendenciaFosforoRaster")}
+                  />
+                  <span
+                    style={{
+                      fontWeight: "normal",
+                      flex: 1,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Tendencia de Fósforo (2100)
+                  </span>
+                  <button
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "none",
+                      padding: "0px",
+                      borderRadius: "3px",
+                      cursor: "pointer",
+                      marginLeft: "2px",
+                      width: "18px",
+                      height: "18px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Descargar Tendencia de Fósforo Raster (2100)"
+                    onClick={() =>
+                      downloadRaster("NDR_p_2100.tif", "Tendencia Fósforo 2100")
+                    }
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 2v8m0 0l-3-3m3 3l3-3"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <rect
+                        x="3"
+                        y="13"
+                        width="10"
+                        height="1.5"
+                        rx="0.75"
+                        fill="white"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "2px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "white",
+                      minWidth: "55px",
+                    }}
+                  >
+                    Opacidad: {Math.round(opacity.tendenciaFosforoRaster * 100)}
+                    %
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.max(
+                        0,
+                        opacity.tendenciaFosforoRaster - 0.1
+                      );
+                      handleOpacityChange("tendenciaFosforoRaster", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.tendenciaFosforoRaster <= 0}
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newOpacity = Math.min(
+                        1,
+                        opacity.tendenciaFosforoRaster + 0.1
+                      );
+                      handleOpacityChange("tendenciaFosforoRaster", newOpacity);
+                    }}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "1px solid white",
+                      color: "white",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "2px",
+                      cursor: "pointer",
+                      fontSize: "9px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    disabled={opacity.tendenciaFosforoRaster >= 1}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -597,16 +1729,26 @@ const Fosforo = () => {
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
+  const [ndrPTendenciaWS, setNdrPTendenciaWS] = useState(null);
 
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
     paisajes: false,
     municipios: false,
+    balanceFosforo2018: false,
+    tendenciaFosforo2100: false,
+    balanceFosforoRaster: false,
+    tendenciaFosforoRaster: false,
   });
 
   // Estado para opacidad de capas
-  const [opacity, setOpacity] = useState({});
+  const [opacity, setOpacity] = useState({
+    balanceFosforo2018: 0.6,
+    tendenciaFosforo2100: 0.6,
+    balanceFosforoRaster: 0.7,
+    tendenciaFosforoRaster: 0.7,
+  });
 
   // Estados para manejo de carga y errores del raster
   const [loading, setLoading] = useState(false);
@@ -617,6 +1759,20 @@ const Fosforo = () => {
 
   // Estado para tooltips
   const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  // Estados para leyendas
+  const [balanceFosforoLegendVisible, setBalanceFosforoLegendVisible] =
+    useState(false);
+  const [tendenciaFosforoLegendVisible, setTendenciaFosforoLegendVisible] =
+    useState(false);
+  const [
+    balanceFosforoRasterLegendVisible,
+    setBalanceFosforoRasterLegendVisible,
+  ] = useState(false);
+  const [
+    tendenciaFosforoRasterLegendVisible,
+    setTendenciaFosforoRasterLegendVisible,
+  ] = useState(false);
 
   // Estado para controlar la posición dinámica de la leyenda
   const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
@@ -683,6 +1839,15 @@ const Fosforo = () => {
           const municipiosData = await municipiosResponse.json();
           setMunicipios(municipiosData);
         }
+
+        // Cargar datos de fósforo
+        const ndrPTendenciaWSResponse = await fetch(
+          "/NDR_P_Tendencia_WS.geojson"
+        );
+        if (ndrPTendenciaWSResponse.ok) {
+          const ndrPTendenciaWSData = await ndrPTendenciaWSResponse.json();
+          setNdrPTendenciaWS(ndrPTendenciaWSData);
+        }
       } catch (error) {
         console.error("Error cargando datos geográficos:", error);
       }
@@ -690,6 +1855,46 @@ const Fosforo = () => {
 
     loadGeoData();
   }, []);
+
+  // Efecto para controlar la visibilidad de las leyendas
+  useEffect(() => {
+    // Lógica para mostrar leyendas basada en capas activas
+    let balanceVisible = false;
+    let tendenciaVisible = false;
+    let balanceRasterVisible = false;
+    let tendenciaRasterVisible = false;
+
+    // Para capas de nivel cuenca
+    if (activeLayers.balanceFosforo2018 && !activeLayers.balanceFosforoRaster) {
+      balanceVisible = true;
+    }
+    if (
+      activeLayers.tendenciaFosforo2100 &&
+      !activeLayers.tendenciaFosforoRaster
+    ) {
+      tendenciaVisible = true;
+    }
+
+    // Para capas raster (nivel pixel) - tienen prioridad
+    if (activeLayers.balanceFosforoRaster) {
+      balanceRasterVisible = true;
+      balanceVisible = false; // Ocultar leyenda de cuenca si hay raster
+    }
+    if (activeLayers.tendenciaFosforoRaster) {
+      tendenciaRasterVisible = true;
+      tendenciaVisible = false; // Ocultar leyenda de cuenca si hay raster
+    }
+
+    setBalanceFosforoLegendVisible(balanceVisible);
+    setTendenciaFosforoLegendVisible(tendenciaVisible);
+    setBalanceFosforoRasterLegendVisible(balanceRasterVisible);
+    setTendenciaFosforoRasterLegendVisible(tendenciaRasterVisible);
+  }, [
+    activeLayers.balanceFosforo2018,
+    activeLayers.tendenciaFosforo2100,
+    activeLayers.balanceFosforoRaster,
+    activeLayers.tendenciaFosforoRaster,
+  ]);
 
   return (
     <div style={{ height: "100vh", width: "100%" }}>
@@ -700,11 +1905,40 @@ const Fosforo = () => {
         zoomControl={false}
         key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
       >
+        {/* RasterOverlay para Balance de Fósforo (2018) */}
+        {activeLayers.balanceFosforoRaster && (
+          <RasterOverlay
+            fileName="NDR_p_S7.tif"
+            colorMap="0.0:#0c5406,2.3:#266505,4.6:#3f7605,6.9:#598704,9.2:#729903,11.5:#8caa03,13.8:#a5bb02,16.1:#bfcc02,18.4:#d9dd01,20.7:#f2ee00,23.0:#fcea00,25.3:#f6d000,27.6:#efb600,29.9:#e99c00,32.2:#e38200,34.5:#dd6800,36.8:#d74e00,39.1:#d03400,41.4:#ca1a00,43.7:#c40000"
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={setPixelValue}
+            overlayOpacity={opacity.balanceFosforoRaster}
+          />
+        )}
+
+        {/* RasterOverlay para Tendencia de Fósforo (2100) */}
+        {activeLayers.tendenciaFosforoRaster && (
+          <RasterOverlay
+            fileName="NDR_p_2100.tif"
+            colorMap="0.0:#0c5406,7.0:#175c10,14.2:#fffee1,21.3:#9b7b8d,28.3:#3c003d"
+            baseUrl="/"
+            continuous={true}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={setPixelValue}
+            overlayOpacity={opacity.tendenciaFosforoRaster}
+          />
+        )}
+
         {/* Control de capas agrupadas */}
         <GroupedLayerControl
           area={area}
           paisajes={paisajes}
           municipios={municipios}
+          ndrPTendenciaWS={ndrPTendenciaWS}
           activeLayers={activeLayers}
           setActiveLayers={setActiveLayers}
           opacity={opacity}
@@ -750,6 +1984,28 @@ const Fosforo = () => {
             Error: {error}
           </div>
         )}
+
+        {/* Leyendas */}
+        <BalanceFosforoLegend
+          isVisible={balanceFosforoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <TendenciaFosforoLegend
+          isVisible={tendenciaFosforoLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <BalanceFosforoRasterLegend
+          isVisible={balanceFosforoRasterLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
+        <TendenciaFosforoRasterLegend
+          isVisible={tendenciaFosforoRasterLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          layerControlWidth={layerControlWidth}
+        />
 
         {/* Controles de coordenadas y escala */}
         <CoordinateControl />
