@@ -17,7 +17,7 @@ const loadGeoTIFF = async (url) => {
   }
 };
 
-// Función para generar colores específicos para aspectos demográficos usando valores numéricos
+// Función para generar colores específicos para población total usando el archivo SLD
 const generatePoblacionColorPalette = (values) => {
   if (!values || values.length === 0) return {};
 
@@ -26,22 +26,40 @@ const generatePoblacionColorPalette = (values) => {
     .map(Number);
   if (numericValues.length === 0) return {};
 
-  const min = Math.min(...numericValues);
-  const max = Math.max(...numericValues);
-
-  // Rampa de colores: rosado/magenta → azul → amarillo
-  const colors = ["#FF69B4", "#9966CC", "#4169E1", "#00BFFF", "#FFFF00"];
+  // Definir rangos y colores basados en el archivo SLD "Población total.sld"
+  const sldRanges = [
+    { min: 634, max: 1000, color: "#fcfdbf", label: "634 - 1000" },
+    { min: 1001, max: 2500, color: "#f4a489", label: "1001 - 2500" },
+    { min: 2501, max: 5000, color: "#c02375", label: "2501 - 5000" },
+    { min: 5001, max: 10000, color: "#846998", label: "5001 - 10000" },
+    { min: 10001, max: 50375, color: "#1f1f8d", label: "10001 - 50375" },
+  ];
 
   const result = {};
+
+  // Asignar colores basados en los rangos del SLD
   numericValues.forEach((value) => {
-    const normalizedValue = (value - min) / (max - min);
-    const colorIndex = Math.floor(normalizedValue * (colors.length - 1));
-    result[value] =
-      colors[Math.max(0, Math.min(colorIndex, colors.length - 1))];
+    // Encontrar el rango correspondiente para este valor
+    const range = sldRanges.find(
+      (r) => value >= r.min && value <= r.max
+    );
+
+    if (range) {
+      result[value] = range.color;
+    } else {
+      // Para valores fuera de rango, usar el color más apropiado
+      if (value < 634) {
+        result[value] = "#fcfdbf"; // Usar el color más claro para valores menores
+      } else {
+        result[value] = "#1f1f8d"; // Usar el color más oscuro para valores mayores
+      }
+    }
   });
 
-  // Agregar información de rango para la leyenda continua
-  result._range = { min, max, colors };
+  // Agregar información de rangos SLD para la leyenda
+  result._range = { sldRanges, type: "sld" };
+
+  console.log("Generated población color map from SLD:", result);
 
   return result;
 };
@@ -277,6 +295,46 @@ const ColorLegend = ({
               {getDatasetTitle()}
             </div>
             {percentageRanges.map((range, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                  fontSize: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: range.color,
+                    marginRight: "8px",
+                    border: "1px solid #999",
+                    borderRadius: "2px",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ lineHeight: "1.2" }}>{range.label}</span>
+              </div>
+            ))}
+          </div>
+        );
+      } else if (colorMap._range.type === "sld") {
+        // Leyenda de rangos del archivo SLD (población total)
+        const { sldRanges } = colorMap._range;
+        return (
+          <div>
+            <div
+              style={{
+                fontWeight: "bold",
+                marginBottom: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {getDatasetTitle()}
+            </div>
+            {sldRanges.map((range, index) => (
               <div
                 key={index}
                 style={{
@@ -621,7 +679,7 @@ const GroupedLayerControl = ({
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState("Topográfico (OSM)");
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
 
   // Efecto para notificar cambios del estado del control
   useEffect(() => {
@@ -661,18 +719,16 @@ const GroupedLayerControl = ({
 
     // Capas base
     const baseLayers = {
-      "Topográfico (OSM)": L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }
-      ),
-      "Satélite (ESRI)": L.tileLayer(
+      "Satelital (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
+        }
+      ),
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
       ),
     };
