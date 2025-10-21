@@ -344,7 +344,7 @@ const GroupedLayerControl = ({
     area: true,
     paisajes: true,
     municipios: true,
-    agave: false,
+    agave: true,
     maiz: false,
     riego: false,
     temporal: false,

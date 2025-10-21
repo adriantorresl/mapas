@@ -191,158 +191,217 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente para mostrar leyendas dentro del mapa
-const LegendsControl = ({ activeLayers, activePeriod }) => {
-  const map = useMap();
+// Componente de leyenda para Precipitación
+const PrecipitacionLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  activePeriod,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  useEffect(() => {
-    // Crear el div para las leyendas
-    const legendsDiv = L.DomUtil.create("div", "legends-control");
-    legendsDiv.style.position = "absolute";
-    legendsDiv.style.bottom = "50px";
-    legendsDiv.style.right = "10px";
-    legendsDiv.style.zIndex = "1000";
-    legendsDiv.style.display = "flex";
-    legendsDiv.style.flexDirection = "column";
-    legendsDiv.style.gap = "8px";
-    legendsDiv.style.pointerEvents = "auto"; // Permitir interacción
+  if (!isVisible) {
+    return null;
+  }
 
-    // Agregar directamente al contenedor del mapa
-    map.getContainer().appendChild(legendsDiv);
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "270px"; // Espacio suficiente para evitar superposición con el control expandido
 
-    return () => {
-      if (legendsDiv.parentNode) {
-        legendsDiv.parentNode.removeChild(legendsDiv);
-      }
-    };
-  }, [map]);
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
 
-  useEffect(() => {
-    const legendsDiv = map.getContainer().querySelector(".legends-control");
-    if (legendsDiv) {
-      // Limpiar contenido anterior
-      legendsDiv.innerHTML = "";
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
 
-      // Crear leyendas según las capas activas
-      if (activeLayers.rasterPT) {
-        const ptLegend = document.createElement("div");
-        ptLegend.innerHTML = `
-          <div style="
-          color: white;
-            background-color: #1E3C20;
-            padding: 15px;
-            min-width: 180px;
-            max-width: 220px;
-            font-family: Inter, sans-serif;
-            font-size: 12px;
-            margin-bottom: 8px;
-          ">
-            <div style="
-              font-weight: bold;
-              margin-bottom: 10px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            ">
-              <span>Precipitación - ${activePeriod}</span>
-            </div>
-            <div style="margin-top: 8px;">
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #fffee3; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">≤ 400 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #deea51; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">400 - 600 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #ccf162; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">600 - 800 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #68d849; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">800 - 1000 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #2db242; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">1000 - 1200 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #3a8a79; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">1200 - 1400 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #5c6fd1; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">1400 - 1600 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #4843d4; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">1600 - 1800 mm</span>
-              </div>
-              <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                <div style="width: 12px; height: 12px; background-color: #550056; margin-right: 6px; border: 1px solid white;"></div>
-                <span style="font-size: 10px;">> 1800 mm</span>
-              </div>
-            </div>
+  const precipitacionRanges = [
+    { color: "#fffee3", label: "≤ 400 mm" },
+    { color: "#deea51", label: "400 - 600 mm" },
+    { color: "#ccf162", label: "600 - 800 mm" },
+    { color: "#68d849", label: "800 - 1000 mm" },
+    { color: "#2db242", label: "1000 - 1200 mm" },
+    { color: "#3a8a79", label: "1200 - 1400 mm" },
+    { color: "#5c6fd1", label: "1400 - 1600 mm" },
+    { color: "#4843d4", label: "1600 - 1800 mm" },
+    { color: "#550056", label: "> 1800 mm" },
+  ];
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Precipitación - {activePeriod}
           </div>
-        `;
-        legendsDiv.appendChild(ptLegend);
-      }
+          {precipitacionRanges.map((range, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "6px",
+                fontSize: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  backgroundColor: range.color,
+                  marginRight: "8px",
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ lineHeight: "1.2" }}>{range.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
-      if (activeLayers.rasterTEMP) {
-        const tempLegend = document.createElement("div");
-        tempLegend.innerHTML = `
-          <div style="
-          color: white;
-            background-color: #1E3C20;
-            padding: 15px;
-            min-width: 180px;
-            max-width: 220px;
-            font-family: Inter, sans-serif;
-            font-size: 12px;
-            margin-bottom: 8px;
-          ">
-            <div style="
-              font-weight: bold;
-              margin-bottom: 10px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            ">
-              <span>Temperatura - ${activePeriod}</span>
-            </div>
-            <div style="margin-top: 8px;">
-              <div style="
-                display: flex;
-                justify-content: space-between;
-                font-size: 10px;
-                margin-bottom: 4px;
-              ">
-                <span>4°C</span>
-                <span>36°C</span>
-              </div>
-              <div style="
-                height: 20px;
-                background: linear-gradient(to right, #7b39d4, #224988, #306190, #4a8e9f, #66bfaf, #73dc9a, #79f178, #a1fa7e, #defb9d, #fff099, #ffd76d, #ffbf41, #f99b20, #e4581f, #b73b1f, #8a1f1f, #4a2121);
-              "></div>
-              <div style="
-                display: flex;
-                justify-content: center;
-                font-size: 10px;
-                margin-top: 4px;
-                font-style: italic;
-              ">
-                <span>Temperatura Media (°C)</span>
-              </div>
-            </div>
+// Componente de leyenda para Temperatura
+const TemperaturaLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  activePeriod,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "270px"; // Espacio suficiente para evitar superposición con el control expandido
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Temperatura - {activePeriod}
           </div>
-        `;
-        legendsDiv.appendChild(tempLegend);
-      }
-    }
-  }, [map, activeLayers, activePeriod]);
-
-  return null;
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "10px",
+              color: "white",
+              marginBottom: "4px",
+            }}
+          >
+            <span>4°C</span>
+            <span>36°C</span>
+          </div>
+          <div
+            style={{
+              height: "20px",
+              background:
+                "linear-gradient(to right, #7b39d4, #224988, #306190, #4a8e9f, #66bfaf, #73dc9a, #79f178, #a1fa7e, #defb9d, #fff099, #ffd76d, #ffbf41, #f99b20, #e4581f, #b73b1f, #8a1f1f, #4a2121)",
+              border: "1px solid #999",
+              borderRadius: "2px",
+              margin: "8px 0",
+            }}
+          ></div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              fontSize: "10px",
+              marginTop: "4px",
+              fontStyle: "italic",
+            }}
+          >
+            <span>Temperatura Media (°C)</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // Componente para el control de capas agrupadas
@@ -355,6 +414,7 @@ const GroupedLayerControl = ({
   opacity,
   setOpacity,
   activePeriod,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -367,6 +427,14 @@ const GroupedLayerControl = ({
     "2045-2069": "4569",
     "2075-2099": "7599",
   };
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const baseLayers = {
@@ -487,32 +555,30 @@ const GroupedLayerControl = ({
 
   const controlStyle = {
     color: "white",
-    backgroundColor: "#1e3c20",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
-    padding: isCollapsed ? "4px" : "4px",
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
-    maxHeight: isCollapsed ? "auto" : "80vh",
-    overflowY: isCollapsed ? "visible" : "auto",
-    overflowX: "hidden",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    padding: isCollapsed ? "8px 10px" : "10px 15px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    fontSize: isCollapsed ? "12px" : "13px",
-    whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -524,18 +590,19 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "1px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "3px",
-          gap: "6px",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
         }}
       >
         <input
@@ -543,7 +610,7 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
         {showDownload && data && (
@@ -555,8 +622,8 @@ const GroupedLayerControl = ({
               borderRadius: "3px",
               cursor: "pointer",
               marginLeft: "2px",
-              width: "16px",
-              height: "16px",
+              width: "18px",
+              height: "18px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -565,15 +632,15 @@ const GroupedLayerControl = ({
             onClick={() => downloadGeoJSON(data, title)}
           >
             <svg
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#ffffffff"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -584,59 +651,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#ffffffff"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.touchZoom.disable();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.touchZoom.enable();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
-            }}
-            style={{ width: "100%", marginBottom: "4px" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -644,18 +723,19 @@ const GroupedLayerControl = ({
   const RasterLayerItem = ({ layerKey, title, filename }) => (
     <div
       style={{
-        marginBottom: "1px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
+          alignContent: "center",
           marginBottom: "2px",
-          gap: "6px",
+          gap: "8px",
         }}
       >
         <input
@@ -663,7 +743,7 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
         <button
@@ -674,8 +754,8 @@ const GroupedLayerControl = ({
             borderRadius: "3px",
             cursor: "pointer",
             marginLeft: "2px",
-            width: "16px",
-            height: "16px",
+            width: "18px",
+            height: "18px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -684,133 +764,157 @@ const GroupedLayerControl = ({
           onClick={() => downloadRaster(filename, title)}
         >
           <svg
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#ffffffff"
+              stroke="white"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect
-              x="3"
-              y="13"
-              width="10"
-              height="1.5"
-              rx="0.75"
-              fill="#ffffffff"
-            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="white" />
           </svg>
         </button>
       </div>
-      <div style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}>
-        Opacidad: {Math.round(opacity[layerKey] * 100)}%
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          marginTop: "2px",
+        }}
+      >
+        <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
+          Opacidad: {Math.round(opacity[layerKey] * 100)}%
+        </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+            setOpacity((prev) => ({
+              ...prev,
+              [layerKey]: newOpacity,
+            }));
+          }}
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          disabled={opacity[layerKey] <= 0}
+        >
+          -
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+            setOpacity((prev) => ({
+              ...prev,
+              [layerKey]: newOpacity,
+            }));
+          }}
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          disabled={opacity[layerKey] >= 1}
+        >
+          +
+        </button>
       </div>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.1"
-        value={opacity[layerKey]}
-        onChange={(e) =>
-          setOpacity((prev) => ({
-            ...prev,
-            [layerKey]: parseFloat(e.target.value),
-          }))
-        }
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          map.dragging.disable();
-        }}
-        onMouseUp={(e) => {
-          e.stopPropagation();
-          map.dragging.enable();
-        }}
-        onMouseLeave={(e) => {
-          e.stopPropagation();
-          map.dragging.enable();
-        }}
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          map.touchZoom.disable();
-          map.dragging.disable();
-        }}
-        onTouchEnd={(e) => {
-          e.stopPropagation();
-          map.touchZoom.enable();
-          map.dragging.enable();
-        }}
-        style={{ width: "100%", marginBottom: "4px" }}
-      />
     </div>
   );
 
   return (
     <div style={controlStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>{isCollapsed ? "Capas" : "Capas"}</span>
-        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+        <span>Capas</span>
       </div>
 
       {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            maxHeight: "80vh",
-            overflowY: "auto",
-            overflowX: "hidden",
-          }}
-        >
+        <div style={{ padding: "15px" }}>
           {/* Capas Base */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
-              Mapa Base
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {["Satelital (ESRI)", "Hillshade (ESRI)"].map((layerName) => (
+                <div key={layerName} style={{ marginBottom: "5px" }}>
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === layerName}
+                    onChange={() => changeBaseLayer(layerName)}
+                  />
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {layerName}
+                  </span>
+                </div>
+              ))}
             </div>
-            {["Satelital (ESRI)", "Hillshade (ESRI)"].map((layerName) => (
-              <div
-                key={layerName}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "3px",
-                }}
-              >
-                <input
-                  type="radio"
-                  name="baseLayer"
-                  checked={activeBaseLayer === layerName}
-                  onChange={() => changeBaseLayer(layerName)}
-                />
-                <span style={{ marginLeft: "8px", fontSize: "11px" }}>
-                  {layerName}
-                </span>
-              </div>
-            ))}
           </div>
 
           {/* Límites */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Límites
-            </div>
+            </strong>
             <LayerItem
               layerKey="area"
               title="Área de estudio"
@@ -831,17 +935,24 @@ const GroupedLayerControl = ({
             />
           </div>
 
-          {/* Grupo de Datos Climáticos - Periodo Actual */}
+          {/* Cambio Climático */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "4px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Cambio Climático - {activePeriod}
-            </div>
+            </strong>
             <RasterLayerItem
               layerKey="rasterPT"
               title="Precipitación Total Anual"
@@ -866,10 +977,15 @@ const EscenarioCC = () => {
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
 
-  // Estado para controlar el centro y zoom del mapa
-  const [mapCenter, setMapCenter] = useState([19.5, -99.0]); // Coordenadas de México central
-  const [mapZoom, setMapZoom] = useState(6);
-  const [mapKey, setMapKey] = useState(0); // Para forzar re-render del mapa
+  // Estados para visualización
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
+
+  // Estados para leyendas - solo una visible a la vez
+  const [precipitacionLegendVisible, setPrecipitacionLegendVisible] =
+    useState(true);
+  const [temperaturaLegendVisible, setTemperaturaLegendVisible] =
+    useState(false);
 
   // Estado para el periodo activo
   const [activePeriod, setActivePeriod] = useState("2015-2039");
@@ -902,6 +1018,39 @@ const EscenarioCC = () => {
     "2075-2099": "7599",
   };
 
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
+  };
+
+  // Efecto para controlar la visibilidad de las leyendas (solo una a la vez)
+  useEffect(() => {
+    let activeCount = 0;
+    let lastActive = null;
+
+    // Contar capas activas y encontrar la última activa
+    if (activeLayers.rasterPT) {
+      activeCount++;
+      lastActive = "precipitacion";
+    }
+    if (activeLayers.rasterTEMP) {
+      activeCount++;
+      lastActive = "temperatura";
+    }
+
+    // Ocultar todas las leyendas primero
+    setPrecipitacionLegendVisible(false);
+    setTemperaturaLegendVisible(false);
+
+    // Mostrar solo la leyenda de la última capa activada
+    if (lastActive === "precipitacion") {
+      setPrecipitacionLegendVisible(true);
+    } else if (lastActive === "temperatura") {
+      setTemperaturaLegendVisible(true);
+    }
+  }, [activeLayers.rasterPT, activeLayers.rasterTEMP]);
+
   // Cargar datos vectoriales
   useEffect(() => {
     const loadData = async () => {
@@ -911,44 +1060,6 @@ const EscenarioCC = () => {
         if (areaResponse.ok) {
           const areaData = await areaResponse.json();
           setArea(areaData);
-
-          // Calcular centro del área para el mapa
-          if (areaData.features && areaData.features.length > 0) {
-            try {
-              const geometry = areaData.features[0].geometry;
-              if (
-                geometry &&
-                geometry.coordinates &&
-                geometry.coordinates.length > 0
-              ) {
-                const coordinates = geometry.coordinates[0];
-                if (coordinates && coordinates.length > 0) {
-                  const lats = coordinates
-                    .map((coord) => coord[1])
-                    .filter((lat) => !isNaN(lat));
-                  const lngs = coordinates
-                    .map((coord) => coord[0])
-                    .filter((lng) => !isNaN(lng));
-
-                  if (lats.length > 0 && lngs.length > 0) {
-                    const centerLat =
-                      (Math.min(...lats) + Math.max(...lats)) / 2;
-                    const centerLng =
-                      (Math.min(...lngs) + Math.max(...lngs)) / 2;
-
-                    if (!isNaN(centerLat) && !isNaN(centerLng)) {
-                      setMapCenter([centerLat, centerLng]);
-                      setMapZoom(15); // Zoom mucho mayor para escala ~5-10km
-                      setMapKey((prev) => prev + 1); // Forzar re-render del mapa
-                    }
-                  }
-                }
-              }
-            } catch (error) {
-              console.warn("Error calculando centro del área:", error);
-              // Mantener coordenadas por defecto
-            }
-          }
         }
 
         // Cargar paisajes
@@ -973,12 +1084,12 @@ const EscenarioCC = () => {
   }, []);
 
   return (
-    <div style={{ position: "relative", height: "80vh", width: "100%" }}>
+    <div style={{ height: "100vh", width: "100%" }}>
       <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
+        center={[16.67566, -95.96711]}
+        zoom={10}
         style={{ height: "100%", width: "100%" }}
-        key={`map-${mapKey}`}
+        zoomControl={false}
       >
         <PeriodTabs
           activePeriod={activePeriod}
@@ -994,13 +1105,14 @@ const EscenarioCC = () => {
           opacity={opacity}
           setOpacity={setOpacity}
           activePeriod={activePeriod}
+          onControlStateChange={handleControlStateChange}
         />
 
         {/* Capas raster */}
         {activeLayers.rasterPT && (
           <RasterOverlay
             fileName={`PT_${periodMap[activePeriod]}.tif`}
-            baseUrl="http://localhost:3000"
+            baseUrl="/"
             overlayOpacity={opacity.rasterPT}
             colorMap={[
               "#fffee3", // Valores bajos (≤ 400)
@@ -1021,7 +1133,7 @@ const EscenarioCC = () => {
         {activeLayers.rasterTEMP && (
           <RasterOverlay
             fileName={`TEMP_${periodMap[activePeriod]}.tif`}
-            baseUrl="http://localhost:3000"
+            baseUrl="/"
             overlayOpacity={opacity.rasterTEMP}
             colorMap={[
               "#7b39d4", // 4°C
@@ -1047,13 +1159,23 @@ const EscenarioCC = () => {
           />
         )}
 
+        {/* Leyenda de Precipitación */}
+        <PrecipitacionLegend
+          isVisible={precipitacionLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          activePeriod={activePeriod}
+        />
+
+        {/* Leyenda de Temperatura */}
+        <TemperaturaLegend
+          isVisible={temperaturaLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          activePeriod={activePeriod}
+        />
+
         <CoordinateControl />
         <ScaleControl />
         <PixelValueDisplay pixelValue={pixelValue} />
-        <LegendsControl
-          activeLayers={activeLayers}
-          activePeriod={activePeriod}
-        />
       </MapContainer>
     </div>
   );

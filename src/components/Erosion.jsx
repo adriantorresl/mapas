@@ -430,7 +430,7 @@ const ErosionSerieVIIRasterLegend = ({
     "#fafa00", // Amarillo (valores medios)
     "#e1b304", // Naranja
     "#c46d08", // Naranja rojizo
-    "#98000e", // Rojo muy oscuro (valores altos)
+    "#fd041dff", // Rojo muy oscuro (valores altos)
   ];
 
   return (

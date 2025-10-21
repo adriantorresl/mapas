@@ -168,32 +168,38 @@ const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
 };
 
 // Componente de leyenda para Anoura geoffroyi
-const AnouraLegend = ({ isVisible, season }) => {
+const AnouraLegend = ({ isVisible, season, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "8px" : "15px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
@@ -258,41 +264,60 @@ const AnouraLegend = ({ isVisible, season }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Anoura geoffroyi - {seasonNames[season] || season}</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
-      {!isCollapsed && createColorRamp()}
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Anoura geoffroyi - {seasonNames[season] || season}
+          </div>
+          {createColorRamp()}
+        </div>
+      )}
     </div>
   );
 };
 
 // Componente de leyenda para Polinizadores generales
-const PolinizadoresLegend = ({ isVisible, season }) => {
+const PolinizadoresLegend = ({ isVisible, season, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
     return null;
   }
 
+  // Calcular posición dinámica basada en el estado del control de capas
+  const rightPosition = layerControlCollapsed
+    ? "105px" // Posición normal cuando está colapsado
+    : "250px"; // Espacio suficiente para evitar superposición con el control expandido
+
   const legendStyle = {
     color: "white",
     position: "absolute",
-    bottom: "60px",
-    right: "20px",
+    top: "10px",
+    right: rightPosition,
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "8px" : "15px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
@@ -355,10 +380,23 @@ const PolinizadoresLegend = ({ isVisible, season }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Polinizadores - {seasonNames[season] || season}</span>
+        <span>Simbología</span>
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
-      {!isCollapsed && createColorRamp()}
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
+            }}
+          >
+            Polinizadores - {seasonNames[season] || season}
+          </div>
+          {createColorRamp()}
+        </div>
+      )}
     </div>
   );
 };
@@ -372,11 +410,20 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
   const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const baseLayers = {
@@ -498,33 +545,29 @@ const GroupedLayerControl = ({
   const controlStyle = {
     color: "white",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
-    border: "2px solid rgba(0,0,0,0.2)",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "2px" : "3px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
-    maxHeight: isCollapsed ? "auto" : "85vh",
-    overflowY: isCollapsed ? "visible" : "auto",
-    overflowX: "hidden",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    padding: isCollapsed ? "8px 10px" : "10px 15px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
-    fontSize: isCollapsed ? "12px" : "12px",
-    whiteSpace: "nowrap",
+    backgroundColor: "#1E3C20",
+    paddingBottom: "10px",
   };
 
   const LayerItem = ({
@@ -536,18 +579,19 @@ const GroupedLayerControl = ({
   }) => (
     <div
       style={{
-        marginBottom: "1px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          marginBottom: "3px",
-          gap: "6px",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
         }}
       >
         <input
@@ -555,7 +599,7 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
         {showDownload && data && (
@@ -567,8 +611,8 @@ const GroupedLayerControl = ({
               borderRadius: "3px",
               cursor: "pointer",
               marginLeft: "2px",
-              width: "16px",
-              height: "16px",
+              width: "18px",
+              height: "18px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -577,15 +621,15 @@ const GroupedLayerControl = ({
             onClick={() => downloadGeoJSON(data, title)}
           >
             <svg
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 16 16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 d="M8 2v8m0 0l-3-3m3 3l3-3"
-                stroke="#ffffffff"
+                stroke="white"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -596,59 +640,71 @@ const GroupedLayerControl = ({
                 width="10"
                 height="1.5"
                 rx="0.75"
-                fill="#ffffffff"
+                fill="white"
               />
             </svg>
           </button>
         )}
       </div>
       {showOpacity && (
-        <>
-          <div
-            style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}
-          >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
             Opacidad: {Math.round(opacity[layerKey] * 100)}%
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey]}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.touchZoom.disable();
-              map.dragging.disable();
-              e.target.style.cursor = "grabbing";
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.touchZoom.enable();
-              map.dragging.enable();
-              e.target.style.cursor = "grab";
-            }}
-            style={{ width: "100%", marginBottom: "4px" }}
-          />
-        </>
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
       )}
     </div>
   );
@@ -656,18 +712,19 @@ const GroupedLayerControl = ({
   const RasterLayerItem = ({ layerKey, title, filename }) => (
     <div
       style={{
-        marginBottom: "1px",
-        padding: "0px",
+        marginBottom: "2px",
+        padding: "2px 10px",
         backgroundColor: "transparent",
-        borderRadius: "0px",
+        borderRadius: "4px",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
+          alignContent: "center",
           marginBottom: "2px",
-          gap: "6px",
+          gap: "8px",
         }}
       >
         <input
@@ -675,7 +732,7 @@ const GroupedLayerControl = ({
           checked={activeLayers[layerKey] || false}
           onChange={() => toggleLayer(layerKey)}
         />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
         <button
@@ -686,8 +743,8 @@ const GroupedLayerControl = ({
             borderRadius: "3px",
             cursor: "pointer",
             marginLeft: "2px",
-            width: "16px",
-            height: "16px",
+            width: "18px",
+            height: "18px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -696,70 +753,81 @@ const GroupedLayerControl = ({
           onClick={() => downloadRaster(filename, title)}
         >
           <svg
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#ffffffff"
+              stroke="white"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect
-              x="3"
-              y="13"
-              width="10"
-              height="1.5"
-              rx="0.75"
-              fill="#ffffffff"
-            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="white" />
           </svg>
         </button>
       </div>
-      <div style={{ fontSize: "9px", color: "#ffffffff", marginBottom: "2px" }}>
-        Opacidad: {Math.round(opacity[layerKey] * 100)}%
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          marginTop: "2px",
+        }}
+      >
+        <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
+          Opacidad: {Math.round(opacity[layerKey] * 100)}%
+        </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+            setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+          }}
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          disabled={opacity[layerKey] <= 0}
+        >
+          -
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+            setOpacity((prev) => ({ ...prev, [layerKey]: newOpacity }));
+          }}
+          style={{
+            backgroundColor: "transparent",
+            border: "1px solid white",
+            color: "white",
+            width: "16px",
+            height: "16px",
+            borderRadius: "2px",
+            cursor: "pointer",
+            fontSize: "9px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          disabled={opacity[layerKey] >= 1}
+        >
+          +
+        </button>
       </div>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.1"
-        value={opacity[layerKey]}
-        onChange={(e) =>
-          setOpacity((prev) => ({
-            ...prev,
-            [layerKey]: parseFloat(e.target.value),
-          }))
-        }
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          map.dragging.disable();
-        }}
-        onMouseUp={(e) => {
-          e.stopPropagation();
-          map.dragging.enable();
-        }}
-        onMouseLeave={(e) => {
-          e.stopPropagation();
-          map.dragging.enable();
-        }}
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          map.touchZoom.disable();
-          map.dragging.disable();
-        }}
-        onTouchEnd={(e) => {
-          e.stopPropagation();
-          map.touchZoom.enable();
-          map.dragging.enable();
-        }}
-        style={{ width: "100%", marginBottom: "4px" }}
-      />
     </div>
   );
 
@@ -771,58 +839,66 @@ const GroupedLayerControl = ({
       </div>
 
       {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            maxHeight: "80vh",
-            overflowY: "auto",
-            overflowX: "hidden",
-          }}
-        >
+        <div style={{ padding: "15px" }}>
           {/* Capas Base */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
-              Capa Base
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
+              Capas Base
+            </strong>
+            <div style={{ marginLeft: "10px" }}>
+              {["Hillshade (ESRI)", "Satelital (ESRI)"].map((layerName) => (
+                <div key={layerName} style={{ marginBottom: "5px" }}>
+                  <input
+                    type="radio"
+                    name="baseLayer"
+                    checked={activeBaseLayer === layerName}
+                    onChange={() => changeBaseLayer(layerName)}
+                  />
+                  <span
+                    style={{
+                      marginLeft: "8px",
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {layerName}
+                  </span>
+                </div>
+              ))}
             </div>
-            {["Hillshade (ESRI)", "Satelital (ESRI)"].map((layerName) => (
-              <div
-                key={layerName}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "3px",
-                }}
-              >
-                <input
-                  type="radio"
-                  name="baseLayer"
-                  checked={activeBaseLayer === layerName}
-                  onChange={() => changeBaseLayer(layerName)}
-                />
-                <span style={{ marginLeft: "8px", fontSize: "11px" }}>
-                  {layerName}
-                </span>
-              </div>
-            ))}
           </div>
 
           {/* Límites */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Límites
-            </div>
+            </strong>
             <LayerItem
               layerKey="area"
               title="Área de estudio"
@@ -843,54 +919,78 @@ const GroupedLayerControl = ({
             />
           </div>
 
-          {/* Grupo de Anoura geoffroyi */}
-          <div
-            style={{
-              marginBottom: "8px",
-              borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "4px",
-            }}
-          >
-            <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
-              Anoura geoffroyi
-            </div>
-            <RasterLayerItem
-              layerKey="rasterAG_PRI"
-              title="Primavera"
-              filename="AG_PRI.tif"
-            />
-            <RasterLayerItem
-              layerKey="rasterAG_VER"
-              title="Verano"
-              filename="AG_VER.tif"
-            />
-            <RasterLayerItem
-              layerKey="rasterAG_OTO"
-              title="Otoño"
-              filename="AG_OTO.tif"
-            />
-            <RasterLayerItem
-              layerKey="rasterAG_INV"
-              title="Invierno"
-              filename="AG_INV.tif"
-            />
-          </div>
-
           {/* Grupo de Polinizadores */}
-          <div style={{ marginBottom: "0px" }}>
-            <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+          <div style={{ marginBottom: "10px" }}>
+            <strong
+              style={{
+                color: "white",
+                marginBottom: "10px",
+                display: "block",
+                fontSize: "16px",
+              }}
+            >
               Polinizadores
+            </strong>
+
+            {/* Anoura geoffroyi */}
+            <div style={{ marginBottom: "15px" }}>
+              <strong
+                style={{
+                  color: "white",
+                  marginBottom: "8px",
+                  display: "block",
+                  fontSize: "14px",
+                  marginLeft: "10px",
+                }}
+              >
+                Anoura geoffroyi
+              </strong>
+              <RasterLayerItem
+                layerKey="rasterAG_PRI"
+                title="Primavera"
+                filename="AG_PRI.tif"
+              />
+              <RasterLayerItem
+                layerKey="rasterAG_VER"
+                title="Verano"
+                filename="AG_VER.tif"
+              />
+              <RasterLayerItem
+                layerKey="rasterAG_OTO"
+                title="Otoño"
+                filename="AG_OTO.tif"
+              />
+              <RasterLayerItem
+                layerKey="rasterAG_INV"
+                title="Invierno"
+                filename="AG_INV.tif"
+              />
             </div>
-            <RasterLayerItem
-              layerKey="rasterPOLIN_PRI"
-              title="Primavera"
-              filename="POLIN_PRI.tif"
-            />
-            <RasterLayerItem
-              layerKey="rasterPOLIN_VER"
-              title="Verano"
-              filename="POLIN_VER.tif"
-            />
+
+            {/* Polinizadores generales */}
+            <div style={{ marginBottom: "10px" }}>
+              <strong
+                style={{
+                  color: "white",
+                  marginBottom: "8px",
+                  display: "block",
+                  fontSize: "14px",
+                  marginLeft: "10px",
+                }}
+              >
+                Polinizadores generales
+              </strong>
+              <RasterLayerItem
+                layerKey="rasterPOLIN_PRI"
+                title="Primavera"
+                filename="POLIN_PRI.tif"
+              />
+              <RasterLayerItem
+                layerKey="rasterPOLIN_VER"
+                title="Verano"
+                filename="POLIN_VER.tif"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -908,9 +1008,9 @@ const Polinizadores = () => {
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
-    paisajes: false,
-    municipios: false,
-    rasterAG_PRI: false,
+    paisajes: true,
+    municipios: true,
+    rasterAG_PRI: true,
     rasterAG_VER: false,
     rasterAG_OTO: false,
     rasterAG_INV: false,
@@ -951,8 +1051,18 @@ const Polinizadores = () => {
     setTooltipsEnabled(!tooltipsEnabled);
   };
 
+  // Estado para controlar la posición dinámica de la leyenda
+  const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
+  const [layerControlWidth, setLayerControlWidth] = useState(300);
+
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (collapsed, width) => {
+    setLayerControlCollapsed(collapsed);
+    setLayerControlWidth(width);
+  };
+
   // Estado para el centro del mapa
-  const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
+  const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
   const [mapZoom, setMapZoom] = useState(10);
 
   // Cargar datos GeoJSON al montar el componente
@@ -966,26 +1076,27 @@ const Polinizadores = () => {
           setArea(areaData);
 
           // Calcular el centro y zoom basado en el área de estudio
-          if (areaData && areaData.features && areaData.features.length > 0) {
-            const bounds = L.geoJSON(areaData).getBounds();
-            const center = bounds.getCenter();
-            setMapCenter([center.lat, center.lng]);
+          // Comentado para mantener el centro fijo en [16.67566, -95.96711]
+          // if (areaData && areaData.features && areaData.features.length > 0) {
+          //   const bounds = L.geoJSON(areaData).getBounds();
+          //   const center = bounds.getCenter();
+          //   setMapCenter([center.lat, center.lng]);
 
-            // Calcular zoom apropiado basado en el tamaño del área
-            const latDiff = bounds.getNorth() - bounds.getSouth();
-            const lngDiff = bounds.getEast() - bounds.getWest();
-            const maxDiff = Math.max(latDiff, lngDiff);
+          //   // Calcular zoom apropiado basado en el tamaño del área
+          //   const latDiff = bounds.getNorth() - bounds.getSouth();
+          //   const lngDiff = bounds.getEast() - bounds.getWest();
+          //   const maxDiff = Math.max(latDiff, lngDiff);
 
-            // Ajustar zoom basado en el tamaño del área
-            let zoom = 10;
-            if (maxDiff > 2) zoom = 8;
-            else if (maxDiff > 1) zoom = 9;
-            else if (maxDiff > 0.5) zoom = 10;
-            else if (maxDiff > 0.2) zoom = 11;
-            else zoom = 12;
+          //   // Ajustar zoom basado en el tamaño del área
+          //   let zoom = 10;
+          //   if (maxDiff > 2) zoom = 8;
+          //   else if (maxDiff > 1) zoom = 9;
+          //   else if (maxDiff > 0.5) zoom = 10;
+          //   else if (maxDiff > 0.2) zoom = 11;
+          //   else zoom = 12;
 
-            setMapZoom(zoom);
-          }
+          //   setMapZoom(zoom);
+          // }
         }
 
         // Cargar paisajes
@@ -1157,6 +1268,7 @@ const Polinizadores = () => {
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
+          onControlStateChange={handleControlStateChange}
         />
 
         {/* Indicador de carga */}
@@ -1202,10 +1314,12 @@ const Polinizadores = () => {
         <AnouraLegend
           isVisible={anouraLegendVisible}
           season={anouraLegendSeason}
+          layerControlCollapsed={layerControlCollapsed}
         />
         <PolinizadoresLegend
           isVisible={polinizadoresLegendVisible}
           season={polinizadoresLegendSeason}
+          layerControlCollapsed={layerControlCollapsed}
         />
 
         {/* Controles de coordenadas y escala */}

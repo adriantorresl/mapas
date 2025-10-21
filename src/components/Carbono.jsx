@@ -1176,9 +1176,9 @@ const Carbono = ({
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
-    paisajes: false,
-    municipios: false,
-    co2Cuenca: false,
+    paisajes: true,
+    municipios: true,
+    co2Cuenca: true,
     co2Cuenca2100: false,
     rasterCO2: false,
   });
@@ -1217,7 +1217,7 @@ const Carbono = ({
   };
 
   // Estado para el centro del mapa
-  const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
+  const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
   const [mapZoom, setMapZoom] = useState(10);
 
   // Cargar datos GeoJSON al montar el componente
@@ -1231,26 +1231,27 @@ const Carbono = ({
           setArea(areaData);
 
           // Calcular el centro y zoom basado en el área de estudio
-          if (areaData && areaData.features && areaData.features.length > 0) {
-            const bounds = L.geoJSON(areaData).getBounds();
-            const center = bounds.getCenter();
-            setMapCenter([center.lat, center.lng]);
+          // Comentado para mantener el centro fijo en [16.67566, -95.96711]
+          // if (areaData && areaData.features && areaData.features.length > 0) {
+          //   const bounds = L.geoJSON(areaData).getBounds();
+          //   const center = bounds.getCenter();
+          //   setMapCenter([center.lat, center.lng]);
 
-            // Calcular zoom apropiado basado en el tamaño del área
-            const latDiff = bounds.getNorth() - bounds.getSouth();
-            const lngDiff = bounds.getEast() - bounds.getWest();
-            const maxDiff = Math.max(latDiff, lngDiff);
+          //   // Calcular zoom apropiado basado en el tamaño del área
+          //   const latDiff = bounds.getNorth() - bounds.getSouth();
+          //   const lngDiff = bounds.getEast() - bounds.getWest();
+          //   const maxDiff = Math.max(latDiff, lngDiff);
 
-            // Ajustar zoom basado en el tamaño del área
-            let zoom = 10;
-            if (maxDiff > 2) zoom = 8;
-            else if (maxDiff > 1) zoom = 9;
-            else if (maxDiff > 0.5) zoom = 10;
-            else if (maxDiff > 0.2) zoom = 11;
-            else zoom = 12;
+          //   // Ajustar zoom basado en el tamaño del área
+          //   let zoom = 10;
+          //   if (maxDiff > 2) zoom = 8;
+          //   else if (maxDiff > 1) zoom = 9;
+          //   else if (maxDiff > 0.5) zoom = 10;
+          //   else if (maxDiff > 0.2) zoom = 11;
+          //   else zoom = 12;
 
-            setMapZoom(zoom);
-          }
+          //   setMapZoom(zoom);
+          // }
         }
 
         // Cargar paisajes

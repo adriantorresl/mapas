@@ -982,10 +982,11 @@ const GroupedLayerControl = ({
     setLayers(newLayers);
 
     // Configurar el zoom inicial basado en el área
-    if (area && area.features && area.features.length > 0) {
-      const layer = L.geoJSON(area);
-      map.fitBounds(layer.getBounds());
-    }
+    // Comentado para mantener el centro fijo en [16.67566, -95.96711]
+    // if (area && area.features && area.features.length > 0) {
+    //   const layer = L.geoJSON(area);
+    //   map.fitBounds(layer.getBounds());
+    // }
   }, [
     map,
     area,
@@ -1581,11 +1582,11 @@ const Poblacion = () => {
     area: 1,
     municipios: 1,
     paisajes: 1,
-    poblacion: 1,
-    pobreza: 1,
-    pobrezaModerada: 1,
-    pobrezaExtrema: 1,
-    marginacion: 1,
+    poblacion: 0.7,
+    pobreza: 0.7,
+    pobrezaModerada: 0.7,
+    pobrezaExtrema: 0.7,
+    marginacion: 0.7,
     concentracionPoblacion: 0.7,
   });
 

@@ -443,12 +443,6 @@ const GroupedLayerControl = ({
 
     setLayers(newLayers);
 
-    // Zoom inicial basado en el área (solo una vez)
-    if (area && area.features && area.features.length > 0 && !layers.area) {
-      const areaLayer = L.geoJSON(area);
-      map.fitBounds(areaLayer.getBounds());
-    }
-
     // Cleanup
     return () => {
       Object.values(newLayers).forEach((layer) => {
@@ -907,10 +901,6 @@ const GroupedLayerControl = ({
                 showOpacity={true}
               />
               <RasterLayerItem
-                filename="ZONA_CONFLICTO.tif"
-                title="Zona de Conflicto"
-              />
-              <RasterLayerItem
                 filename="IMPORTANCIA_ECOLOGICA.tif"
                 title="Importancia Ecológica"
               />
@@ -935,7 +925,6 @@ const AreaProteccion = () => {
     area: true,
     paisajes: true,
     municipios: true,
-    "ZONA_CONFLICTO.tif": false,
     "IMPORTANCIA_ECOLOGICA.tif": false,
   });
   const [opacity, setOpacity] = useState({
@@ -943,7 +932,6 @@ const AreaProteccion = () => {
     area: 1.0,
     paisajes: 1.0,
     municipios: 1.0,
-    "ZONA_CONFLICTO.tif": 0.7,
     "IMPORTANCIA_ECOLOGICA.tif": 0.7,
   });
   const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
@@ -957,15 +945,7 @@ const AreaProteccion = () => {
 
   // Función para obtener el mapa de colores del raster activo
   const getRasterColorMap = () => {
-    if (activeLayers["ZONA_CONFLICTO.tif"]) {
-      return {
-        "1 - Muy Bajo": "#FFCCCC",
-        "2 - Bajo": "#FF9999",
-        "3 - Medio": "#FF6666",
-        "4 - Alto": "#FF3333",
-        "5 - Muy Alto": "#FF0000",
-      };
-    } else if (activeLayers["IMPORTANCIA_ECOLOGICA.tif"]) {
+    if (activeLayers["IMPORTANCIA_ECOLOGICA.tif"]) {
       return {
         "0 - Sin datos": "#FFFFFF",
         "1 - Muy Baja": "#E6FFE6",
@@ -1038,8 +1018,9 @@ const AreaProteccion = () => {
 
   return (
     <MapContainer
-      center={[19.5, -95.96711]}
+      center={[16.67566, -95.96711]}
       zoom={10}
+      scrollWheelZoom={true}
       doubleClickZoom={false}
       style={{ height: "100vh", width: "100%" }}
     >
@@ -1058,18 +1039,6 @@ const AreaProteccion = () => {
       />
 
       {/* Capas raster con configuración específica de valores y colores */}
-      <RasterOverlay
-        fileName="ZONA_CONFLICTO.tif"
-        colorMap={["#FFCCCC", "#FF9999", "#FF6666", "#FF3333", "#FF0000"]}
-        baseUrl="/"
-        continuous={false}
-        setError={() => {}}
-        setLoading={() => {}}
-        onPixelValue={() => {}}
-        overlayOpacity={opacity["ZONA_CONFLICTO.tif"] || 0.7}
-        visible={activeLayers["ZONA_CONFLICTO.tif"]}
-      />
-
       <RasterOverlay
         fileName="IMPORTANCIA_ECOLOGICA.tif"
         colorMap={[

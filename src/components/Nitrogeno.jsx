@@ -1435,9 +1435,9 @@ const Nitrogeno = () => {
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
-    paisajes: false,
-    municipios: false,
-    balanceNitrogeno2018: false,
+    paisajes: true,
+    municipios: true,
+    balanceNitrogeno2018: true,
     tendenciaNitrogeno2100: false,
     balanceNitrogenoRaster: false,
     tendenciaNitrogenoRaster: false,
@@ -1491,7 +1491,7 @@ const Nitrogeno = () => {
   };
 
   // Estado para el centro del mapa
-  const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
+  const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
   const [mapZoom, setMapZoom] = useState(10);
 
   // Cargar datos GeoJSON al montar el componente
@@ -1505,26 +1505,27 @@ const Nitrogeno = () => {
           setArea(areaData);
 
           // Calcular el centro y zoom basado en el área de estudio
-          if (areaData && areaData.features && areaData.features.length > 0) {
-            const bounds = L.geoJSON(areaData).getBounds();
-            const center = bounds.getCenter();
-            setMapCenter([center.lat, center.lng]);
+          // Comentado para mantener el centro fijo en [16.67566, -95.96711]
+          // if (areaData && areaData.features && areaData.features.length > 0) {
+          //   const bounds = L.geoJSON(areaData).getBounds();
+          //   const center = bounds.getCenter();
+          //   setMapCenter([center.lat, center.lng]);
 
-            // Calcular zoom apropiado basado en el tamaño del área
-            const latDiff = bounds.getNorth() - bounds.getSouth();
-            const lngDiff = bounds.getEast() - bounds.getWest();
-            const maxDiff = Math.max(latDiff, lngDiff);
+          //   // Calcular zoom apropiado basado en el tamaño del área
+          //   const latDiff = bounds.getNorth() - bounds.getSouth();
+          //   const lngDiff = bounds.getEast() - bounds.getWest();
+          //   const maxDiff = Math.max(latDiff, lngDiff);
 
-            // Ajustar zoom basado en el tamaño del área
-            let zoom = 10;
-            if (maxDiff > 2) zoom = 8;
-            else if (maxDiff > 1) zoom = 9;
-            else if (maxDiff > 0.5) zoom = 10;
-            else if (maxDiff > 0.2) zoom = 11;
-            else zoom = 12;
+          //   // Ajustar zoom basado en el tamaño del área
+          //   let zoom = 10;
+          //   if (maxDiff > 2) zoom = 8;
+          //   else if (maxDiff > 1) zoom = 9;
+          //   else if (maxDiff > 0.5) zoom = 10;
+          //   else if (maxDiff > 0.2) zoom = 11;
+          //   else zoom = 12;
 
-            setMapZoom(zoom);
-          }
+          //   setMapZoom(zoom);
+          // }
         }
 
         // Cargar paisajes

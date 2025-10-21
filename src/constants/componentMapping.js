@@ -138,49 +138,43 @@ export const componentMapping = {
   },
 
   // 3.1.1 - Escenario actual
-  "3.1.1": {
-    component: EscenarioActual,
-    props: {},
-  },
-
-  // 3.1.2 - Escenarios con cambio climático
-  "3.1.2": {
+  3: {
     component: EscenarioCC,
     props: {},
   },
 
-  // 3.2.1 - Agave Arroqueño
-  "3.2.1": {
+  // Agave Arroqueño
+  4.1: {
     component: Americana,
     props: {},
   },
 
-  // 3.2.2 - Agave Angustifolia (Espadín)
-  "3.2.2": {
+  // 4.2 - Agave Angustifolia (Espadín)
+  4.2: {
     component: Angustifolia,
     props: {},
   },
 
-  // 3.2.3 - Agave Iyoba
-  "3.2.3": {
+  // 4.3 - Agave Iyoba
+  4.3: {
     component: Iyoba,
     props: {},
   },
 
-  // 3.2.4 - Agave Karwinskii
-  "3.2.4": {
+  // 4.4 - Agave Karwinskii
+  4.4: {
     component: Karwinskii,
     props: {},
   },
 
-  // 3.2.5 - Agave Marmorata (Tepeztate)
-  "3.2.5": {
+  // 4.5 - Agave Marmorata (Tepeztate)
+  4.5: {
     component: Marmorata,
     props: {},
   },
 
-  // 4.1 - Zonificación
-  4.1: {
+  // 5.1 - Zonificación
+  5.1: {
     component: GeoLayerCompare,
     props: {
       layers: [
@@ -195,8 +189,8 @@ export const componentMapping = {
     },
   },
 
-  // 4.2 - Story map
-  4.2: {
+  // 5.2 - Story map
+  5.2: {
     component: MapChart,
     props: {
       geoJsonUrl: "/AREA.geojson",
@@ -207,8 +201,8 @@ export const componentMapping = {
     },
   },
 
-  // 4.3 - Sistema de monitoreo
-  4.3: {
+  // 5.3 - Sistema de monitoreo
+  5.3: {
     component: Heatmap,
     props: {
       pointsUrl: "/puntos_monitoreo.geojson", // Asumiendo que tienes puntos de monitoreo

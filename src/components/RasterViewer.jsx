@@ -418,21 +418,21 @@ export const RasterOverlay = React.memo(
             rasterCache.set(cacheKey, cacheData);
           }
 
-          // Solo hacer fitBounds si los bounds son válidos
-          if (
-            isFinite(bounds[0]) &&
-            isFinite(bounds[1]) &&
-            isFinite(bounds[2]) &&
-            isFinite(bounds[3]) &&
-            bounds[0] !== bounds[2] &&
-            bounds[1] !== bounds[3]
-          ) {
-            map.fitBounds(rasterBounds);
-          } else {
-            console.warn(
-              "[RasterViewer] Bounds inválidos, no se hace fitBounds"
-            );
-          }
+          // Solo hacer fitBounds si los bounds son válidos (comentado para mantener centro fijo)
+          // if (
+          //   isFinite(bounds[0]) &&
+          //   isFinite(bounds[1]) &&
+          //   isFinite(bounds[2]) &&
+          //   isFinite(bounds[3]) &&
+          //   bounds[0] !== bounds[2] &&
+          //   bounds[1] !== bounds[3]
+          // ) {
+          //   map.fitBounds(rasterBounds);
+          // } else {
+          //   console.warn(
+          //     "[RasterViewer] Bounds inválidos, no se hace fitBounds"
+          //   );
+          // }
 
           if (isMounted && !loadedRef.current) {
             loadedRef.current = true;
@@ -668,7 +668,7 @@ const RasterViewer = ({
         </div>
       )}
       <MapContainer
-        center={[216.67566, -95.96711]}
+        center={[16.67566, -95.96711]}
         zoom={10}
         style={{ height: "500px", width: "100%" }}
         scrollWheelZoom={true}
