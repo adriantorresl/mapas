@@ -148,8 +148,6 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-
-
 // Componente de leyenda para Anoura geoffroyi
 const AnouraLegend = ({ isVisible, season, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
