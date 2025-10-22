@@ -955,12 +955,12 @@ const GroupedLayerControl = ({
             </strong>
             <RasterLayerItem
               layerKey="rasterPT"
-              title="Precipitación Total Anual"
+              title="Precipitación total anual"
               filename={`PT_${periodMap[activePeriod]}.tif`}
             />
             <RasterLayerItem
               layerKey="rasterTEMP"
-              title="Temperatura Media"
+              title="Temperatura media anual"
               filename={`TEMP_${periodMap[activePeriod]}.tif`}
             />
           </div>

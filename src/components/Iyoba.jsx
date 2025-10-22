@@ -35,7 +35,7 @@ const downloadGeoJSON = (data, filename) => {
 };
 
 // Componente de leyenda para Iyoba
-const IyobaLegend = ({ isVisible, layerType }) => {
+const IyobaLegend = ({ isVisible, layerType, legendPosition }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!isVisible) {
@@ -43,24 +43,25 @@ const IyobaLegend = ({ isVisible, layerType }) => {
   }
 
   const legendStyle = {
-    color: "white",
     position: "absolute",
-    bottom: "60px", // Subido un poco más arriba
-    right: "20px",
+    top: "10px",
+    right: `${legendPosition}px`,
     backgroundColor: "#1E3C20",
+    color: "white",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "8px" : "15px",
-    zIndex: 1000,
-    minWidth: isCollapsed ? "auto" : "180px",
-    maxWidth: "220px",
-    fontFamily: "Inter, sans-serif",
-    fontSize: "12px",
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Arial, sans-serif",
+    fontSize: "11px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
   };
 
   const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
     fontWeight: "bold",
-    marginBottom: isCollapsed ? "0" : "10px",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
@@ -113,7 +114,7 @@ const IyobaLegend = ({ isVisible, layerType }) => {
               fontStyle: "italic",
             }}
           >
-            <span>Impacto del Cambio Climático</span>
+            <span>Impacto del cambio climático</span>
           </div>
         </div>
       );
@@ -163,7 +164,7 @@ const IyobaLegend = ({ isVisible, layerType }) => {
               fontStyle: "italic",
             }}
           >
-            <span>Idoneidad Agave Iyoba</span>
+            <span>Idoneidad Agave iyoba</span>
           </div>
         </div>
       );
@@ -178,10 +179,18 @@ const IyobaLegend = ({ isVisible, layerType }) => {
   return (
     <div style={legendStyle}>
       <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>{getTitle()}</span>
-        <span style={{ fontSize: "12px" }}>{isCollapsed ? " " : " "}</span>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
-      {!isCollapsed && createColorRamp()}
+      {!isCollapsed && (
+        <div
+          style={{
+            padding: "10px",
+          }}
+        >
+          {createColorRamp()}
+        </div>
+      )}
     </div>
   );
 };
@@ -285,24 +294,30 @@ const GroupedLayerControl = ({
   setActiveLayers,
   opacity,
   setOpacity,
+  onControlStateChange,
 }) => {
   const map = useMap();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [layers, setLayers] = useState({});
-  const [activeBaseLayer, setActiveBaseLayer] = useState(
-    "Topográfico (OpenTopoMap)"
-  );
+  const [activeBaseLayer, setActiveBaseLayer] = useState("Hillshade (ESRI)");
+
+  // Notificar cambios en el estado del control para posicionamiento dinámico
+  useEffect(() => {
+    if (onControlStateChange) {
+      const width = isCollapsed ? 90 : 300; // Ancho colapsado vs expandido
+      onControlStateChange(isCollapsed, width);
+    }
+  }, [isCollapsed, onControlStateChange]);
 
   useEffect(() => {
     const baseLayers = {
-      "Topográfico (OpenTopoMap)": L.tileLayer(
-        "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "Hillshade (ESRI)": L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+          attribution: "Tiles &copy; Esri &mdash; Source: Esri",
         }
       ),
-      "Satelital (ESRI)": L.tileLayer(
+      "Satélite (ESRI)": L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "Tiles &copy; Esri &mdash; Source: Esri",
@@ -410,40 +425,47 @@ const GroupedLayerControl = ({
   const controlStyle = {
     color: "white",
     position: "absolute",
-    top: "20px",
+    top: "10px",
     right: "10px",
     backgroundColor: "#1E3C20",
+    border: "1px solid white",
     borderRadius: "0px",
-    padding: isCollapsed ? "6px" : "8px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
     zIndex: 1000,
     fontFamily: "Inter, sans-serif",
     fontSize: "12px",
-    maxWidth: isCollapsed ? "auto" : "220px",
-    minWidth: isCollapsed ? "auto" : "200px",
-    width: isCollapsed ? "fit-content" : "auto",
-    maxHeight: isCollapsed ? "auto" : "85vh",
-    overflowY: isCollapsed ? "visible" : "auto",
-    overflowX: "hidden",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    maxWidth: "300px",
   };
 
   const headerStyle = {
-    padding: isCollapsed ? "8px 10px" : "10px 15px",
+    fontSize: "16px",
+    padding: "10px 15px",
     fontWeight: "bold",
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: isCollapsed ? "none" : "1px solid #e0e0e0",
-    fontSize: isCollapsed ? "12px" : "13px",
-    whiteSpace: "nowrap",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
     backgroundColor: "#1E3C20",
   };
 
   const LayerItem = ({ layerKey, title, data, showOpacity = true }) => (
-    <div style={{ marginBottom: "4px" }}>
+    <div
+      style={{
+        marginBottom: "2px",
+        padding: "2px 10px",
+        backgroundColor: "transparent",
+        borderRadius: "4px",
+      }}
+    >
       <div
-        style={{ display: "flex", alignItems: "center", marginBottom: "2px" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
+        }}
       >
         <input
           type="checkbox"
@@ -451,49 +473,7 @@ const GroupedLayerControl = ({
           onChange={() => toggleLayer(layerKey)}
           disabled={!data}
         />
-        <span style={{ marginLeft: "8px", fontSize: "11px" }}>{title}</span>
-      </div>
-      {showOpacity && activeLayers[layerKey] && (
-        <div style={{ marginLeft: "16px", marginTop: "2px" }}>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey] ?? 0.7}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            style={{ width: "100%", marginBottom: "4px" }}
-          />
-        </div>
-      )}
-    </div>
-  );
-
-  const RasterLayerItem = ({ layerKey, title, filename }) => (
-    <div
-      style={{
-        marginBottom: "1px",
-        padding: "0px",
-        backgroundColor: "transparent",
-        borderRadius: "0px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: "2px",
-          gap: "6px",
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={activeLayers[layerKey] || false}
-          onChange={() => toggleLayer(layerKey)}
-        />
-        <span style={{ fontWeight: "normal", flex: 1, fontSize: "11px" }}>
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
           {title}
         </span>
         <button
@@ -504,8 +484,133 @@ const GroupedLayerControl = ({
             borderRadius: "3px",
             cursor: "pointer",
             marginLeft: "2px",
-            width: "16px",
-            height: "16px",
+            width: "18px",
+            height: "18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          title={`Descargar ${title}`}
+          onClick={() => downloadGeoJSON(data, title)}
+          disabled={!data}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 2v8m0 0l-3-3m3 3l3-3"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="white" />
+          </svg>
+        </button>
+      </div>
+      {showOpacity && activeLayers[layerKey] && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
+            }}
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
+            }}
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const RasterLayerItem = ({ layerKey, title, filename }) => (
+    <div
+      style={{
+        marginBottom: "2px",
+        padding: "2px 10px",
+        backgroundColor: "transparent",
+        borderRadius: "4px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          alignContent: "center",
+          marginBottom: "2px",
+          gap: "8px",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={activeLayers[layerKey] || false}
+          onChange={() => toggleLayer(layerKey)}
+        />
+        <span style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}>
+          {title}
+        </span>
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            padding: "0px",
+            borderRadius: "3px",
+            cursor: "pointer",
+            marginLeft: "2px",
+            width: "18px",
+            height: "18px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -514,66 +619,81 @@ const GroupedLayerControl = ({
           onClick={() => downloadRaster(filename, title)}
         >
           <svg
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M8 2v8m0 0l-3-3m3 3l3-3"
-              stroke="#ffffffff"
+              stroke="white"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <rect
-              x="3"
-              y="13"
-              width="10"
-              height="1.5"
-              rx="0.75"
-              fill="#ffffffff"
-            />
+            <rect x="3" y="13" width="10" height="1.5" rx="0.75" fill="white" />
           </svg>
         </button>
       </div>
       {activeLayers[layerKey] && (
-        <div style={{ marginLeft: "16px", marginTop: "2px" }}>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity[layerKey] ?? 0.7}
-            onChange={(e) =>
-              handleOpacityChange(layerKey, parseFloat(e.target.value))
-            }
-            onMouseDown={(e) => {
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginTop: "2px",
+          }}
+        >
+          <span style={{ fontSize: "9px", color: "white", minWidth: "55px" }}>
+            Opacidad: {Math.round(opacity[layerKey] * 100)}%
+          </span>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.disable();
+              const newOpacity = Math.max(0, opacity[layerKey] - 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseUp={(e) => {
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            disabled={opacity[layerKey] <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={(e) => {
               e.stopPropagation();
-              map.dragging.enable();
+              const newOpacity = Math.min(1, opacity[layerKey] + 0.1);
+              handleOpacityChange(layerKey, newOpacity);
             }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              map.dragging.enable();
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid white",
+              color: "white",
+              width: "16px",
+              height: "16px",
+              borderRadius: "2px",
+              cursor: "pointer",
+              fontSize: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              map.touchZoom.disable();
-              map.dragging.disable();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              map.touchZoom.enable();
-              map.dragging.enable();
-            }}
-            style={{ width: "100%", marginBottom: "4px" }}
-          />
+            disabled={opacity[layerKey] >= 1}
+          >
+            +
+          </button>
         </div>
       )}
     </div>
@@ -587,72 +707,65 @@ const GroupedLayerControl = ({
       </div>
 
       {!isCollapsed && (
-        <div
-          style={{
-            padding: "8px",
-            maxHeight: "80vh",
-            overflowY: "auto",
-            overflowX: "hidden",
-          }}
-        >
+        <div style={{ padding: "15px" }}>
           {/* Capas Base */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div
+            <strong
               style={{
-                fontWeight: "bold",
-                marginBottom: "6px",
                 color: "white",
+                fontSize: "14px",
+                marginBottom: "8px",
+                display: "block",
               }}
             >
-              Mapa Base
-            </div>
-            {["Topográfico (OpenTopoMap)", "Satelital (ESRI)"].map(
-              (layerName) => (
-                <div
-                  key={layerName}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "3px",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="baseLayer"
-                    checked={activeBaseLayer === layerName}
-                    onChange={() => changeBaseLayer(layerName)}
-                  />
-                  <span style={{ marginLeft: "8px", fontSize: "11px" }}>
-                    {layerName}
-                  </span>
-                </div>
-              )
-            )}
+              Capas base
+            </strong>
+            {["Hillshade (ESRI)", "Satélite (ESRI)"].map((layerName) => (
+              <div
+                key={layerName}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "3px",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="baseLayer"
+                  checked={activeBaseLayer === layerName}
+                  onChange={() => changeBaseLayer(layerName)}
+                />
+                <span style={{ marginLeft: "8px", fontSize: "11px" }}>
+                  {layerName}
+                </span>
+              </div>
+            ))}
           </div>
 
           {/* Límites */}
           <div
             style={{
-              marginBottom: "8px",
+              marginBottom: "20px",
               borderBottom: "1px solid #e0e0e0",
-              paddingBottom: "6px",
+              paddingBottom: "10px",
             }}
           >
-            <div
+            <strong
               style={{
-                fontWeight: "bold",
-                marginBottom: "6px",
                 color: "white",
+                fontSize: "14px",
+                marginBottom: "8px",
+                display: "block",
               }}
             >
               Límites
-            </div>
+            </strong>
             <LayerItem
               layerKey="area"
               title="Área de estudio"
@@ -673,30 +786,31 @@ const GroupedLayerControl = ({
             />
           </div>
 
-          {/* Grupo de Agave Iyoba */}
+          {/* Grupo de Agave iyoba */}
           <div style={{ marginBottom: "0px" }}>
-            <div
+            <strong
               style={{
-                fontWeight: "bold",
-                marginBottom: "6px",
                 color: "white",
+                fontSize: "14px",
+                marginBottom: "8px",
+                display: "block",
               }}
             >
-              Agave Iyoba
-            </div>
+              Agave iyoba
+            </strong>
             <RasterLayerItem
               layerKey="rasterIyoba"
-              title="Idoneidad Actual"
+              title="Idoneidad actual"
               filename="A_Iyoba_4326.tif"
             />
             <RasterLayerItem
               layerKey="rasterIyobaCC"
-              title="Idoneidad Cambio Climático"
+              title="Idoneidad cambio climático"
               filename="A_Iyoba_CC_4326.tif"
             />
             <RasterLayerItem
               layerKey="rasterImpacto"
-              title="Impacto del Cambio Climático"
+              title="Impacto del cambio climático"
               filename="IMP_IYO.tif"
             />
           </div>
@@ -716,9 +830,9 @@ const Iyoba = () => {
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
-    paisajes: false,
-    municipios: false,
-    rasterIyoba: false,
+    paisajes: true,
+    municipios: true,
+    rasterIyoba: true,
     rasterIyobaCC: false,
     rasterImpacto: false,
   });
@@ -738,11 +852,20 @@ const Iyoba = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Estado para la posición de la leyenda
+  const [legendPosition, setLegendPosition] = useState(105);
+
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
 
+  // Función para manejar cambios en el estado del control de capas
+  const handleControlStateChange = (isCollapsed, width) => {
+    const newPosition = isCollapsed ? 105 : 320;
+    setLegendPosition(newPosition);
+  };
+
   // Estado para el centro del mapa
-  const [mapCenter, setMapCenter] = useState([19.5, -99.0]);
+  const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
   const [mapZoom, setMapZoom] = useState(10);
 
   // Colores personalizados basados en los rangos proporcionados
@@ -761,27 +884,7 @@ const Iyoba = () => {
           const areaData = await areaResponse.json();
           setArea(areaData);
 
-          // Calcular el centro y zoom basado en el área de estudio
-          if (areaData && areaData.features && areaData.features.length > 0) {
-            const bounds = L.geoJSON(areaData).getBounds();
-            const center = bounds.getCenter();
-            setMapCenter([center.lat, center.lng]);
-
-            // Calcular zoom apropiado basado en el tamaño del área
-            const latDiff = bounds.getNorth() - bounds.getSouth();
-            const lngDiff = bounds.getEast() - bounds.getWest();
-            const maxDiff = Math.max(latDiff, lngDiff);
-
-            // Ajustar zoom basado en el tamaño del área
-            let zoom = 10;
-            if (maxDiff > 2) zoom = 8;
-            else if (maxDiff > 1) zoom = 9;
-            else if (maxDiff > 0.5) zoom = 10;
-            else if (maxDiff > 0.2) zoom = 11;
-            else zoom = 12;
-
-            setMapZoom(zoom);
-          }
+          // Mantener coordenadas fijas consistentes con otros componentes
         }
 
         // Cargar paisajes
@@ -831,11 +934,10 @@ const Iyoba = () => {
   return (
     <div style={{ height: "100vh", width: "100%" }}>
       <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
+        center={[16.67566, -95.96711]}
+        zoom={10}
         style={{ height: "100%", width: "100%" }}
         zoomControl={false}
-        key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
       >
         {/* RasterOverlays para Iyoba */}
         {activeLayers.rasterIyoba && (
@@ -884,6 +986,7 @@ const Iyoba = () => {
           setActiveLayers={setActiveLayers}
           opacity={opacity}
           setOpacity={setOpacity}
+          onControlStateChange={handleControlStateChange}
         />
 
         {/* Indicador de carga */}
@@ -929,6 +1032,7 @@ const Iyoba = () => {
         <IyobaLegend
           isVisible={iyobaLegendVisible}
           layerType={iyobaLegendType}
+          legendPosition={legendPosition}
         />
 
         {/* Controles de coordenadas y escala */}

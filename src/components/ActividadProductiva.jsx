@@ -934,31 +934,31 @@ const GroupedLayerControl = ({
               <>
                 <LayerItem
                   layerKey="agave"
-                  title="Superficie Agave (ha)"
+                  title="Superficie agave (ha)"
                   data={productividadData}
                   showOpacity={true}
                 />
                 <LayerItem
                   layerKey="maiz"
-                  title="Superficie Maíz (ha)"
+                  title="Superficie maíz (ha)"
                   data={productividadData}
                   showOpacity={true}
                 />
                 <LayerItem
                   layerKey="riego"
-                  title="Superficie Riego (ha)"
+                  title="Superficie riego (ha)"
                   data={productividadData}
                   showOpacity={true}
                 />
                 <LayerItem
                   layerKey="temporal"
-                  title="Superficie Temporal (ha)"
+                  title="Superficie temporal (ha)"
                   data={productividadData}
                   showOpacity={true}
                 />
                 <LayerItem
                   layerKey="sembrada"
-                  title="Superficie Sembrada Total (ha)"
+                  title="Superficie sembrada total (ha)"
                   data={productividadData}
                   showOpacity={true}
                 />

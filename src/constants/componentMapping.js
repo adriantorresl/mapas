@@ -32,6 +32,7 @@ import Karwinskii from "../components/Karwinskii";
 import Marmorata from "../components/Marmorata";
 import Nitrogeno from "../components/Nitrogeno";
 import Fosforo from "../components/Fosforo";
+import Zonificacion from "../components/Zonificacion";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
@@ -175,18 +176,8 @@ export const componentMapping = {
 
   // 5.1 - Zonificación
   5.1: {
-    component: GeoLayerCompare,
-    props: {
-      layers: [
-        { url: "/CUS.geojson", name: "Uso Actual", categoriaCol: "uso_actual" },
-        {
-          url: "/CUS_cambios.geojson",
-          name: "Cambios Propuestos",
-          categoriaCol: "cambio_prop",
-        },
-      ],
-      title: "Comparación de Zonificación",
-    },
+    component: Zonificacion,
+    props: {},
   },
 
   // 5.2 - Story map

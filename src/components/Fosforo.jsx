@@ -1134,7 +1134,7 @@ const GroupedLayerControl = ({
                       fontSize: "12px",
                     }}
                   >
-                    Balance de Fósforo (2018)
+                    Balance de fósforo (2018)
                   </span>
                   {ndrPTendenciaWS && (
                     <button
@@ -1283,7 +1283,7 @@ const GroupedLayerControl = ({
                       fontSize: "12px",
                     }}
                   >
-                    Tendencia de Fósforo (2100)
+                    Tendencia de fósforo (2100)
                   </span>
                   {ndrPTendenciaWS && (
                     <button
@@ -1450,7 +1450,7 @@ const GroupedLayerControl = ({
                       fontSize: "12px",
                     }}
                   >
-                    Balance de Fósforo (2018)
+                    Balance de fósforo (2018)
                   </span>
                   <button
                     style={{
@@ -1597,7 +1597,7 @@ const GroupedLayerControl = ({
                       fontSize: "12px",
                     }}
                   >
-                    Tendencia de Fósforo (2100)
+                    Tendencia de fósforo (2100)
                   </span>
                   <button
                     style={{

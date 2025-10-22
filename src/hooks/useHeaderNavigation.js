@@ -1,11 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
-import { findSectionById, navigationData } from '../constants/navigationData';
-import { useNavigationActions } from '../contexts/NavigationContext';
+import { useState, useCallback, useMemo } from "react";
+import { findSectionById, navigationData } from "../constants/navigationData";
+import { useNavigationActions } from "../contexts/NavigationContext";
 
 // Constantes para evitar re-creaciones
 const INITIAL_HEADER_ITEMS = [{ key: "home", label: "Home" }];
 const INITIAL_SELECTED_SUB_ITEMS = {
-  "home": { key: "localizacion", label: "Localización" }
+  home: { key: "localizacion", label: "Localización" },
 };
 
 /**
@@ -17,7 +17,9 @@ export const useHeaderNavigation = (onNavigate) => {
   const [currentMainSection, setCurrentMainSection] = useState(null);
   const [currentSubSection, setCurrentSubSection] = useState(null);
   const [headerItems, setHeaderItems] = useState(INITIAL_HEADER_ITEMS);
-  const [selectedSubItems, setSelectedSubItems] = useState(INITIAL_SELECTED_SUB_ITEMS);
+  const [selectedSubItems, setSelectedSubItems] = useState(
+    INITIAL_SELECTED_SUB_ITEMS
+  );
   const [selectedHeaderItem, setSelectedHeaderItem] = useState(null);
   const [selectedSubSection, setSelectedSubSection] = useState(null);
   const [selectedSubItem, setSelectedSubItem] = useState(null);
@@ -38,24 +40,27 @@ export const useHeaderNavigation = (onNavigate) => {
   }, []);
 
   // Función memoizada para navegar
-  const navigate = useCallback((pageId, sectionKey = null) => {
-    const key = sectionKey || pageId;
-    onNavigate?.(key);
-    navigateToPage(pageId);
-  }, [onNavigate, navigateToPage]);
+  const navigate = useCallback(
+    (pageId, sectionKey = null) => {
+      const key = sectionKey || pageId;
+      onNavigate?.(key);
+      navigateToPage(pageId);
+    },
+    [onNavigate, navigateToPage]
+  );
 
   // Función para procesar subsecciones y crear items del header
   const processSubsections = useCallback((subsections) => {
-    return subsections.map(sub => ({
+    return subsections.map((sub) => ({
       key: sub.id,
-      label: sub.titulo
+      label: sub.titulo,
     }));
   }, []);
 
   // Función para calcular items seleccionados por defecto
   const calculateDefaultSelectedItems = useCallback((headerItems) => {
     const newSelectedSubItems = {};
-    headerItems.forEach(item => {
+    headerItems.forEach((item) => {
       const subsection = findSectionById(item.key);
       if (subsection?.subsecciones?.length > 0) {
         newSelectedSubItems[item.key] = subsection.subsecciones[0];
@@ -67,86 +72,96 @@ export const useHeaderNavigation = (onNavigate) => {
   }, []);
 
   // Manejador principal para clics en secciones del dropdown
-  const handleMainSectionClick = useCallback((sectionId) => {
-    setIsDrawerOpen(prev => !prev);
-    
-    const section = findSectionById(sectionId);
-    if (!section?.subsecciones) return;
+  const handleMainSectionClick = useCallback(
+    (sectionId) => {
+      setIsDrawerOpen((prev) => !prev);
 
-    setCurrentMainSection(section);
-    setCurrentSubSection(null);
-    setSelectedHeaderItem(null);
+      const section = findSectionById(sectionId);
+      if (!section?.subsecciones) return;
 
-    const newHeaderItems = processSubsections(section.subsecciones);
-    setHeaderItems(newHeaderItems);
+      setCurrentMainSection(section);
+      setCurrentSubSection(null);
+      setSelectedHeaderItem(null);
 
-    const newSelectedSubItems = calculateDefaultSelectedItems(newHeaderItems);
-    setSelectedSubItems(newSelectedSubItems);
+      const newHeaderItems = processSubsections(section.subsecciones);
+      setHeaderItems(newHeaderItems);
 
-    // Navegar al primer item por defecto
-    const firstKey = Object.keys(newSelectedSubItems)[0];
-    if (firstKey) {
-      const firstItem = newSelectedSubItems[firstKey];
-      setSelectedHeaderItem(firstKey);
-      
-      const hasNestedSubsections = section.subsecciones?.length > 1 && 
-        section.subsecciones[0]?.subsecciones?.length > 0;
-      
-      if (hasNestedSubsections) {
-        const firstSubsection = section.subsecciones[0].subsecciones[0];
-        navigate(firstSubsection.id, firstSubsection.key);
-      } else {
-        navigate(firstItem.key);
+      const newSelectedSubItems = calculateDefaultSelectedItems(newHeaderItems);
+      setSelectedSubItems(newSelectedSubItems);
+
+      // Navegar al primer item por defecto
+      const firstKey = Object.keys(newSelectedSubItems)[0];
+      if (firstKey) {
+        const firstItem = newSelectedSubItems[firstKey];
+        setSelectedHeaderItem(firstKey);
+
+        const hasNestedSubsections =
+          section.subsecciones?.length > 1 &&
+          section.subsecciones[0]?.subsecciones?.length > 0;
+
+        if (hasNestedSubsections) {
+          const firstSubsection = section.subsecciones[0].subsecciones[0];
+          navigate(firstSubsection.id, firstSubsection.key);
+        } else {
+          navigate(firstItem.key);
+        }
       }
-    }
-  }, [processSubsections, calculateDefaultSelectedItems, navigate]);
+    },
+    [processSubsections, calculateDefaultSelectedItems, navigate]
+  );
 
   // Manejador para clics en items del header
-  const handleHeaderItemClick = useCallback((itemKey) => {
-    setExpandedItems(new Set([itemKey]));
-    setSelectedHeaderItem(null);
-    setSelectedSubSection(null);
+  const handleHeaderItemClick = useCallback(
+    (itemKey) => {
+      setExpandedItems(new Set([itemKey]));
+      setSelectedHeaderItem(null);
+      setSelectedSubSection(null);
 
-    // Caso especial: volver al inicio
-    if (itemKey === "0") {
-      resetToInitialState();
-      navigate("0", "localizacion");
-      return;
-    }
+      // Caso especial: volver al inicio
+      if (itemKey === "0") {
+        resetToInitialState();
+        navigate("0", "localizacion");
+        return;
+      }
 
-    const subsection = findSectionById(itemKey);
-    if (!subsection) return;
+      const subsection = findSectionById(itemKey);
+      if (!subsection) return;
 
-    // Si tiene subsecciones, actualizar header items
-    if (subsection.subsecciones?.length > 0) {
-      setHeaderItems(processSubsections(subsection.subsecciones));
+      // Si tiene subsecciones, actualizar header items
+      if (subsection.subsecciones?.length > 0) {
+        setHeaderItems(processSubsections(subsection.subsecciones));
+        setSelectedHeaderItem(itemKey);
+        return;
+      }
+
+      // Navegar directamente si no hay más subsecciones
+      setCurrentSubSection(subsection);
       setSelectedHeaderItem(itemKey);
-      return;
-    }
 
-    // Navegar directamente si no hay más subsecciones
-    setCurrentSubSection(subsection);
-    setSelectedHeaderItem(itemKey);
-    
-    if (subsection.subsecciones?.length > 0) {
-      const defaultSubItem = subsection.subsecciones[0];
-      navigate(defaultSubItem.key);
-    } else {
-      setIsDrawerOpen(false); // Cerrar drawer cuando no hay subsecciones
-      navigate(itemKey);
-    }
-  }, [resetToInitialState, navigate, processSubsections]);
+      if (subsection.subsecciones?.length > 0) {
+        const defaultSubItem = subsection.subsecciones[0];
+        navigate(defaultSubItem.key);
+      } else {
+        setIsDrawerOpen(false); // Cerrar drawer cuando no hay subsecciones
+        navigate(itemKey);
+      }
+    },
+    [resetToInitialState, navigate, processSubsections]
+  );
 
   // Manejador para cambios en subitems
-  const handleSubItemChange = useCallback((subItem) => {
-    setSelectedSubItem(subItem.key);
-    setIsDrawerOpen(false); // Cerrar drawer al seleccionar subitem
-    navigate(subItem.key);
-  }, [navigate]);
+  const handleSubItemChange = useCallback(
+    (subItem) => {
+      setSelectedSubItem(subItem.key);
+      setIsDrawerOpen(false); // Cerrar drawer al seleccionar subitem
+      navigate(subItem.key);
+    },
+    [navigate]
+  );
 
   // Manejador para toggle de expansión
   const toggleExpanded = useCallback((itemKey) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemKey)) {
         newSet.delete(itemKey);
@@ -159,28 +174,34 @@ export const useHeaderNavigation = (onNavigate) => {
   }, []);
 
   // Manejador para clics en botón expandir
-  const handleExpandClick = useCallback((itemKey, event) => {
-    event.stopPropagation();
-    toggleExpanded(itemKey);
-  }, [toggleExpanded]);
+  const handleExpandClick = useCallback(
+    (itemKey, event) => {
+      event.stopPropagation();
+      toggleExpanded(itemKey);
+    },
+    [toggleExpanded]
+  );
 
   // Manejador para clics en submenú
-  const handleSubmenuClick = useCallback((subItem) => {
-    setSelectedSubSection(null);
-    setSelectedHeaderItem(null);
-    setSelectedSubSection(subItem.id);
-    setIsDrawerOpen(false);
+  const handleSubmenuClick = useCallback(
+    (subItem) => {
+      setSelectedSubSection(null);
+      setSelectedHeaderItem(null);
+      setSelectedSubSection(subItem.id);
+      setIsDrawerOpen(false);
 
-    if (subItem.subsecciones?.length > 0) {
-      setSelectedSubItems(processSubsections(subItem.subsecciones));
-      setSelectedSubItem(subItem.subsecciones[0].id);
-      navigate(subItem.subsecciones[0].id);
-    } else {
-      setSelectedSubItems([]);
-      setSelectedHeaderItem(subItem.id);
-      navigate(subItem.id);
-    }
-  }, [navigate, processSubsections]);
+      if (subItem.subsecciones?.length > 0) {
+        setSelectedSubItems(processSubsections(subItem.subsecciones));
+        setSelectedSubItem(subItem.subsecciones[0].id);
+        navigate(subItem.subsecciones[0].id);
+      } else {
+        setSelectedSubItems([]);
+        setSelectedHeaderItem(subItem.id);
+        navigate(subItem.id);
+      }
+    },
+    [navigate, processSubsections]
+  );
 
   // Función para cerrar el drawer
   const closeDrawer = useCallback(() => {
@@ -189,10 +210,10 @@ export const useHeaderNavigation = (onNavigate) => {
 
   // Estado computado para el dropdown - memoizado para evitar re-creaciones
   const dropdownItems = useMemo(() => {
-    return navigationData.indice.map(section => ({
+    return navigationData.indice.map((section) => ({
       key: section.id,
       label: section.titulo,
-      onClick: () => handleMainSectionClick(section.id)
+      onClick: () => handleMainSectionClick(section.id),
     }));
   }, [handleMainSectionClick]);
 
@@ -208,7 +229,7 @@ export const useHeaderNavigation = (onNavigate) => {
     isDrawerOpen,
     expandedItems,
     dropdownItems,
-    
+
     // Acciones
     handleMainSectionClick,
     handleHeaderItemClick,
@@ -216,6 +237,6 @@ export const useHeaderNavigation = (onNavigate) => {
     handleExpandClick,
     handleSubmenuClick,
     closeDrawer,
-    resetToInitialState
+    resetToInitialState,
   };
 };

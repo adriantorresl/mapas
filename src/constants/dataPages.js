@@ -457,7 +457,7 @@ export const dataPages = {
             "Los procesos de cambios de uso de suelo de áreas con vegetación primaria y secundaria a usos de suelo antropogénico, modifican dramáticamente el ciclo natural de nutrientes.",
         },
       ],
-    }, 
+    },
     {
       id: "2.3",
       data: [

@@ -902,7 +902,7 @@ const GroupedLayerControl = ({
               />
               <RasterLayerItem
                 filename="IMPORTANCIA_ECOLOGICA.tif"
-                title="Importancia Ecológica"
+                title="Importancia ecológica"
               />
             </div>
           </div>

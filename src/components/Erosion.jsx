@@ -229,7 +229,7 @@ const TendenciaErosionLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de Exportación de Sedimentos (2100)
+            Tendencia de exportación de sedimentos (2100)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -336,7 +336,7 @@ const TendenciaErosionRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de Exportación de Sedimentos (2100)
+            Tendencia de exportación de sedimentos (2100)
           </div>
           <div
             style={{
@@ -452,7 +452,7 @@ const ErosionSerieVIIRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Exportación de Sedimentos (2018)
+            Exportación de sedimentos (2018)
           </div>
           <div
             style={{
@@ -587,7 +587,7 @@ const ErosionSerieVIILegend = ({
               fontSize: "12px",
             }}
           >
-            Exportación de Sedimentos (2018)
+            Exportación de sedimentos (2018)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -730,7 +730,7 @@ const GroupedLayerControl = ({
           const tenValue = feature.properties.TEN_100 || "N/A";
           layer.bindPopup(
             `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Tendencia de Exportación de Sedimentos (2100):</strong><br/>
+              <strong>Tendencia de exportación de sedimentos (2100):</strong><br/>
               <strong>TEN_100:</strong> ${tenValue}
             </div>`
           );
@@ -772,7 +772,7 @@ const GroupedLayerControl = ({
           const sdrValue = feature.properties.SDR_S7 || "N/A";
           layer.bindPopup(
             `<div style="font-family: Arial, sans-serif; font-size: 12px;">
-              <strong>Exportación de Sedimentos (2018):</strong><br/>
+              <strong>Exportación de sedimentos (2018):</strong><br/>
               <strong>SDR_S7:</strong> ${sdrValue}
             </div>`
           );
@@ -1153,12 +1153,12 @@ const GroupedLayerControl = ({
                 fontSize: "16px",
               }}
             >
-              Erosión
+              Erosión en cuencas
             </strong>
             {usleData && (
               <LayerItem
                 layerKey="tendenciaErosion"
-                title="Tendencia de Exportación de Sedimentos (2100)"
+                title="Tendencia de exportación de sedimentos (2100)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1166,7 +1166,7 @@ const GroupedLayerControl = ({
             {usleData && (
               <LayerItem
                 layerKey="erosionSerieVII"
-                title="Exportación de Sedimentos (2018)"
+                title="Exportación de sedimentos (2018)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1343,7 +1343,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Exportación de Sedimentos (2018)
+                  Exportación de sedimentos (2018)
                 </span>
                 <button
                   style={{
@@ -1483,8 +1483,8 @@ const Erosion = () => {
   // Estados para visualización
   const [activeLayers, setActiveLayers] = useState({
     area: true,
-    paisajes: false,
-    municipios: false,
+    paisajes: true,
+    municipios: true,
     tendenciaErosion: true,
     erosionSerieVII: false,
     erosionSerieVIIRaster: false,

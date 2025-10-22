@@ -1013,13 +1013,13 @@ const GroupedLayerControl = ({
             </div>
             <LayerItem
               layerKey="co2Cuenca"
-              title="Balance de Carbono (2018)"
+              title="Balance de carbono (2018)"
               data={co2Cuenca}
               showOpacity={true}
             />
             <LayerItem
               layerKey="co2Cuenca2100"
-              title="Balance de Carbono (2100)"
+              title="Balance de carbono (2100)"
               data={co2Cuenca}
               showOpacity={true}
             />
@@ -1048,7 +1048,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Tendencia de Carbono
+                  Tendencia de carbono
                 </span>
                 <button
                   style={{

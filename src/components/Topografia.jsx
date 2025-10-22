@@ -542,10 +542,11 @@ const GroupedLayerControl = ({
     setLayers(newLayers);
 
     // Configurar el zoom inicial basado en el área
-    if (area && area.features && area.features.length > 0) {
-      const layer = L.geoJSON(area);
-      map.fitBounds(layer.getBounds());
-    }
+    // Comentado para mantener el centro y zoom especificados inicialmente
+    // if (area && area.features && area.features.length > 0) {
+    //   const layer = L.geoJSON(area);
+    //   map.fitBounds(layer.getBounds());
+    // }
   }, [
     map,
     area,

@@ -429,6 +429,7 @@ const BalanceNitrogenoRasterLegend = ({
         />
         <div
           style={{
+            color: "white",
             display: "flex",
             justifyContent: "center",
             fontSize: "10px",
@@ -436,7 +437,7 @@ const BalanceNitrogenoRasterLegend = ({
             fontStyle: "italic",
           }}
         >
-          <span>Balance de Nitrógeno (kg/ha/año)</span>
+          <span>Balance de nitrógeno (kg/ha/año)</span>
         </div>
       </div>
     );
@@ -532,7 +533,7 @@ const TendenciaNitrogenoRasterLegend = ({
             fontStyle: "italic",
           }}
         >
-          <span>Tendencia de Nitrógeno (kg/ha/año)</span>
+          <span>Tendencia de nitrógeno (kg/ha/año)</span>
         </div>
       </div>
     );
@@ -1092,13 +1093,13 @@ const GroupedLayerControl = ({
               </strong>
               <LayerItem
                 layerKey="balanceNitrogeno2018"
-                title="Balance de Nitrógeno (2018)"
+                title="Balance de nitrógeno (2018)"
                 data={ndrNTendenciaWS}
                 showOpacity={true}
               />
               <LayerItem
                 layerKey="tendenciaNitrogeno2100"
-                title="Tendencia de Nitrógeno (2100)"
+                title="Tendencia de nitrógeno (2100)"
                 data={ndrNTendenciaWS}
                 showOpacity={true}
               />
@@ -1142,7 +1143,7 @@ const GroupedLayerControl = ({
                   <span
                     style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                   >
-                    Balance de Nitrógeno (2018)
+                    Balance de nitrógeno (2018)
                   </span>
                   <button
                     style={{
@@ -1289,7 +1290,7 @@ const GroupedLayerControl = ({
                   <span
                     style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                   >
-                    Tendencia de Nitrógeno (2100)
+                    Tendencia de nitrógeno (2100)
                   </span>
                   <button
                     style={{
