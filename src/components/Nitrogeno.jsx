@@ -46,15 +46,18 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px"; // Mismo nivel exacto que la escala
+    coordinateDiv.style.left = "80px"; // Más cerca de la escala
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
-    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
+    coordinateDiv.style.padding = "1px 4px"; // Padding más pequeño
+    coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontSize = "11px";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif"; // Inter como pediste
+    coordinateDiv.style.lineHeight = "1.2";
+    coordinateDiv.style.height = "auto";
     coordinateDiv.style.zIndex = "999";
-    coordinateDiv.style.innerHTML = "Lat: 0.00000, Lon: 0.00000";
+    coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
     // Agregar directamente al contenedor del mapa
     map.getContainer().appendChild(coordinateDiv);
@@ -84,7 +87,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -104,27 +107,48 @@ const PixelValueDisplay = ({ pixelValue }) => {
   if (!pixelValue) return null;
 
   const displayStyle = {
+    color: "white",
     position: "absolute",
-    bottom: "18px",
+    bottom: "45px", // Arriba de la escala y coordenadas
     left: "10px",
     backgroundColor: "#1E3C20",
-    color: "white",
-    padding: "8px 12px",
     borderRadius: "0px",
-    fontSize: "12px",
-    fontFamily: "Inter, sans-serif",
-    fontWeight: "bold",
     zIndex: 1000,
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    minWidth: "120px",
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    padding: "8px 12px",
+    minWidth: "180px",
+  };
+
+  const headerStyle = {
+    fontWeight: "bold",
+    marginBottom: "6px",
+    fontSize: "12px",
+    color: "white",
+  };
+
+  const valueStyle = {
+    marginBottom: "3px",
+    display: "flex",
+    justifyContent: "space-between",
+  };
+
+  const labelStyle = {
+    color: "white",
+  };
+
+  const valueNumberStyle = {
+    fontWeight: "bold",
+    color: "white",
   };
 
   return (
     <div style={displayStyle}>
-      <div style={{ fontSize: "10px", marginBottom: "2px", opacity: 0.8 }}>
-        Valor del pixel:
+      <div style={headerStyle}>Valor del pixel</div>
+      <div style={valueStyle}>
+        <span style={labelStyle}>Nitrógeno:</span>
+        <span style={valueNumberStyle}>{pixelValue.toFixed(2)}</span>
       </div>
-      <div>{pixelValue.toFixed(2)}</div>
     </div>
   );
 };

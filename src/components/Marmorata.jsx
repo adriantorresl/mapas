@@ -202,13 +202,14 @@ const CoordinateControl = () => {
     // Crear el div de coordenadas con posicionamiento absoluto
     const coordinateDiv = L.DomUtil.create("div", "coordinate-control");
     coordinateDiv.style.position = "absolute";
-    coordinateDiv.style.bottom = "18px";
-    coordinateDiv.style.right = "80px"; // A la izquierda de donde está la escala
+    coordinateDiv.style.bottom = "5px";
+    coordinateDiv.style.left = "80px"; // Posicionado en la esquina inferior izquierda
     coordinateDiv.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-    coordinateDiv.style.padding = "2px";
+    coordinateDiv.style.padding = "4px 8px";
     coordinateDiv.style.border = "2px solid rgba(0, 0, 0, 0.26)";
     coordinateDiv.style.borderRadius = "0px";
-    coordinateDiv.style.font = "10px, Inter, sans-serif";
+    coordinateDiv.style.fontFamily = "Inter, sans-serif";
+    coordinateDiv.style.fontSize = "10px";
     coordinateDiv.style.zIndex = "999";
     coordinateDiv.innerHTML = "Lat: 0.00000, Lon: 0.00000";
 
@@ -240,7 +241,7 @@ const ScaleControl = () => {
 
   useEffect(() => {
     const scaleControl = L.control.scale({
-      position: "bottomright",
+      position: "bottomleft",
       metric: true,
       imperial: false,
     });
@@ -261,7 +262,7 @@ const PixelValueDisplay = ({ pixelValue }) => {
 
   const displayStyle = {
     position: "absolute",
-    bottom: "18px",
+    bottom: "45px",
     left: "10px",
     backgroundColor: "#1E3C20",
     color: "white",
@@ -272,13 +273,13 @@ const PixelValueDisplay = ({ pixelValue }) => {
     fontWeight: "bold",
     zIndex: 1000,
     boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    minWidth: "120px",
+    minWidth: "160px",
   };
 
   return (
     <div style={displayStyle}>
       <div style={{ fontSize: "10px", marginBottom: "2px", opacity: 0.8 }}>
-        Valor del pixel:
+        Marmorata:
       </div>
       <div>{pixelValue.toFixed(2)}</div>
     </div>
