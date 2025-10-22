@@ -148,48 +148,7 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "120px", // Debajo del control de capas
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
 
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
 
 // Componente de leyenda para Anoura geoffroyi
 const AnouraLegend = ({ isVisible, season, layerControlCollapsed }) => {
@@ -1067,14 +1026,6 @@ const Polinizadores = () => {
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
 
-  // Estado para tooltips
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
-
-  // Función para toggle de tooltips
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
-  };
-
   // Estado para controlar la posición dinámica de la leyenda
   const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
   const [layerControlWidth, setLayerControlWidth] = useState(300);
@@ -1352,12 +1303,6 @@ const Polinizadores = () => {
 
         {/* Componente para mostrar el valor del pixel */}
         <PixelValueDisplay pixelValue={pixelValue} />
-
-        {/* Control de información (tooltips) */}
-        <InfoControl
-          onToggleTooltips={toggleTooltips}
-          tooltipsEnabled={tooltipsEnabled}
-        />
       </MapContainer>
     </div>
   );

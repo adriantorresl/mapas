@@ -153,47 +153,6 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "120px", // Debajo del control de capas
-    left: "10px",
-    backgroundColor: "white",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Inter, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
 // Componente para la leyenda de Balance de Fósforo
 const BalanceFosforoLegend = ({
   isVisible,
@@ -656,6 +615,20 @@ const GroupedLayerControl = ({
     if (area) {
       newLayers.area = L.geoJSON(area, {
         style: { color: "black", weight: 6, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Área de estudio</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.area) {
         newLayers.area.addTo(map);
@@ -666,6 +639,20 @@ const GroupedLayerControl = ({
     if (paisajes) {
       newLayers.paisajes = L.geoJSON(paisajes, {
         style: { color: "white", weight: 4, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Paisajes bioculturales</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.paisajes) {
         newLayers.paisajes.addTo(map);
@@ -676,6 +663,20 @@ const GroupedLayerControl = ({
     if (municipios) {
       newLayers.municipios = L.geoJSON(municipios, {
         style: { color: "black", weight: 2, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Municipios</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.municipios) {
         newLayers.municipios.addTo(map);
@@ -740,6 +741,25 @@ const GroupedLayerControl = ({
               opacity: 0.8,
             };
           },
+          onEachFeature: (feature, layer) => {
+            if (feature.properties) {
+              let popupContent =
+                "<strong>Balance de Fósforo (2018)</strong><br>";
+              popupContent += `<strong>Valor S7:</strong> ${
+                feature.properties.S7 || "N/A"
+              } kg P/ha/año<br>`;
+              Object.keys(feature.properties).forEach((key) => {
+                if (
+                  key !== "S7" &&
+                  feature.properties[key] !== null &&
+                  feature.properties[key] !== undefined
+                ) {
+                  popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+                }
+              });
+              layer.bindPopup(popupContent);
+            }
+          },
         });
 
         if (!layers.balanceFosforo2018) {
@@ -787,6 +807,25 @@ const GroupedLayerControl = ({
               fillOpacity: opacity.tendenciaFosforo2100,
               opacity: 0.8,
             };
+          },
+          onEachFeature: (feature, layer) => {
+            if (feature.properties) {
+              let popupContent =
+                "<strong>Tendencia de Fósforo (2100)</strong><br>";
+              popupContent += `<strong>Valor A_2100:</strong> ${
+                feature.properties.A_2100 || "N/A"
+              } kg P/ha/año<br>`;
+              Object.keys(feature.properties).forEach((key) => {
+                if (
+                  key !== "A_2100" &&
+                  feature.properties[key] !== null &&
+                  feature.properties[key] !== undefined
+                ) {
+                  popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+                }
+              });
+              layer.bindPopup(popupContent);
+            }
           },
         });
 
@@ -1781,9 +1820,6 @@ const Fosforo = () => {
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
 
-  // Estado para tooltips
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
-
   // Estados para leyendas
   const [balanceFosforoLegendVisible, setBalanceFosforoLegendVisible] =
     useState(false);
@@ -1801,11 +1837,6 @@ const Fosforo = () => {
   // Estado para controlar la posición dinámica de la leyenda
   const [layerControlCollapsed, setLayerControlCollapsed] = useState(true);
   const [layerControlWidth, setLayerControlWidth] = useState(300);
-
-  // Función para toggle de tooltips
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
-  };
 
   // Función para manejar cambios en el estado del control de capas
   const handleControlStateChange = (collapsed, width) => {
@@ -2038,12 +2069,6 @@ const Fosforo = () => {
 
         {/* Componente para mostrar el valor del pixel */}
         <PixelValueDisplay pixelValue={pixelValue} />
-
-        {/* Control de información (tooltips) */}
-        <InfoControl
-          onToggleTooltips={toggleTooltips}
-          tooltipsEnabled={tooltipsEnabled}
-        />
       </MapContainer>
     </div>
   );

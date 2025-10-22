@@ -149,49 +149,6 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente para el control de información (tooltips)
-const InfoControl = ({ onToggleTooltips, tooltipsEnabled }) => {
-  const controlStyle = {
-    position: "absolute",
-    top: "120px", // Debajo del control de capas
-    left: "10px",
-    backgroundColor: "white",
-    borderRadius: "0%",
-    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
-    zIndex: 999,
-    fontFamily: "Arial, sans-serif",
-    fontSize: "16px",
-    width: "30px",
-    height: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    border: "2px solid rgba(0,0,0,0.2)",
-    userSelect: "none",
-  };
-
-  const activeStyle = {
-    ...controlStyle,
-    backgroundColor: tooltipsEnabled ? "#4ECDC4" : "white",
-    color: tooltipsEnabled ? "white" : "black",
-  };
-
-  return (
-    <div
-      style={activeStyle}
-      onClick={onToggleTooltips}
-      title={
-        tooltipsEnabled
-          ? "Desactivar información al pasar el mouse"
-          : "Activar información al pasar el mouse"
-      }
-    >
-      ℹ︎
-    </div>
-  );
-};
-
 // Componente de leyenda para Balance de Carbono (2018)
 const Carbono2018Legend = ({ isVisible, layerControlCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -565,6 +522,20 @@ const GroupedLayerControl = ({
     if (area) {
       newLayers.area = L.geoJSON(area, {
         style: { color: "black", weight: 6, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Área de estudio</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.area) {
         newLayers.area.addTo(map);
@@ -575,6 +546,20 @@ const GroupedLayerControl = ({
     if (paisajes) {
       newLayers.paisajes = L.geoJSON(paisajes, {
         style: { color: "white", weight: 4, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Paisajes bioculturales</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.paisajes) {
         newLayers.paisajes.addTo(map);
@@ -585,6 +570,20 @@ const GroupedLayerControl = ({
     if (municipios) {
       newLayers.municipios = L.geoJSON(municipios, {
         style: { color: "black", weight: 2, fillOpacity: 0 },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Municipios</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.municipios) {
         newLayers.municipios.addTo(map);
@@ -653,6 +652,24 @@ const GroupedLayerControl = ({
             fillColor: fillColor,
           };
         },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Balance de Carbono (2018)</strong><br>";
+            popupContent += `<strong>Valor S7:</strong> ${
+              feature.properties[field] || "N/A"
+            } Ton CO₂/ha<br>`;
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                key !== field &&
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
       });
       if (activeLayers.co2Cuenca) {
         newLayers.co2Cuenca.addTo(map);
@@ -716,6 +733,24 @@ const GroupedLayerControl = ({
             fillOpacity: 0.6,
             fillColor: fillColor,
           };
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Balance de Carbono (2100)</strong><br>";
+            popupContent += `<strong>Valor A_2100:</strong> ${
+              feature.properties[field2100] || "N/A"
+            } Ton CO₂/ha<br>`;
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                key !== field2100 &&
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
         },
       });
       if (activeLayers.co2Cuenca2100) {
@@ -1033,7 +1068,7 @@ const GroupedLayerControl = ({
           {/* Grupo de Carbono */}
           <div style={{ marginBottom: "10px" }}>
             <div style={{ fontWeight: "bold", marginBottom: "10px" }}>
-              Carbono
+              Carbono en cuencas
             </div>
             <LayerItem
               layerKey="co2Cuenca"
@@ -1229,16 +1264,8 @@ const Carbono = ({
   // Estado para el valor del pixel
   const [pixelValue, setPixelValue] = useState(null);
 
-  // Estado para tooltips
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
-
   // Estado para el control de capas colapsado
   const [isCollapsed, setIsCollapsed] = useState(true);
-
-  // Función para toggle de tooltips
-  const toggleTooltips = () => {
-    setTooltipsEnabled(!tooltipsEnabled);
-  };
 
   // Estado para el centro del mapa
   const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
@@ -1450,12 +1477,6 @@ const Carbono = ({
 
         {/* Componente para mostrar el valor del pixel */}
         <PixelValueDisplay pixelValue={pixelValue} />
-
-        {/* Control de información (tooltips) */}
-        <InfoControl
-          onToggleTooltips={toggleTooltips}
-          tooltipsEnabled={tooltipsEnabled}
-        />
       </MapContainer>
     </div>
   );
