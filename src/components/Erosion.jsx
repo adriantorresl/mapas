@@ -253,7 +253,7 @@ const TendenciaErosionLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de exportación de sedimentos (2100)
+            Tendencia de exportación de sedimentos por subcuenca (2100)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -360,7 +360,7 @@ const TendenciaErosionRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Tendencia de exportación de sedimentos (2100)
+            Tendencia de exportación de sedimentos por subcuenca (2100)
           </div>
           <div
             style={{
@@ -476,7 +476,7 @@ const ErosionSerieVIIRasterLegend = ({
               fontSize: "12px",
             }}
           >
-            Exportación de sedimentos (2018)
+            Exportación de sedimentos por subcuenca (2018)
           </div>
           <div
             style={{
@@ -611,7 +611,7 @@ const ErosionSerieVIILegend = ({
               fontSize: "12px",
             }}
           >
-            Exportación de sedimentos (2018)
+            Exportación de sedimentos por subcuenca (2018)
           </div>
           {sldRanges.map((range, index) => (
             <div
@@ -1177,12 +1177,12 @@ const GroupedLayerControl = ({
                 fontSize: "16px",
               }}
             >
-              Erosión en cuencas
+              Erosión
             </strong>
             {usleData && (
               <LayerItem
                 layerKey="tendenciaErosion"
-                title="Tendencia de exportación de sedimentos (2100)"
+                title="Tendencia de exportación de sedimentos por subcuenca (2100)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1190,7 +1190,7 @@ const GroupedLayerControl = ({
             {usleData && (
               <LayerItem
                 layerKey="erosionSerieVII"
-                title="Exportación de sedimentos (2018)"
+                title="Exportación de sedimentos por subcuenca(2018)"
                 data={usleData}
                 showOpacity={true}
               />
@@ -1220,7 +1220,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Tendencia de exportación de sedimentos (2100)
+                  Tendencia de exportación de sedimentos por subcuenca (2100)
                 </span>
                 <button
                   style={{
@@ -1367,7 +1367,7 @@ const GroupedLayerControl = ({
                 <span
                   style={{ fontWeight: "normal", flex: 1, fontSize: "12px" }}
                 >
-                  Exportación de sedimentos (2018)
+                  Exportación de sedimentos por subcuenca (2018)
                 </span>
                 <button
                   style={{
