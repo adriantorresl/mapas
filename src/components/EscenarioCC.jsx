@@ -5,6 +5,51 @@ import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
 import { color } from "framer-motion";
 
+// Función para parsear archivos SLD
+const parseSLD = async (sldPath) => {
+  try {
+    const response = await fetch(sldPath);
+    if (!response.ok) {
+      return null;
+    }
+    const sldText = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(sldText, "text/xml");
+
+    const colorMapEntries = xmlDoc.querySelectorAll("ColorMapEntry");
+    const colorMapType =
+      xmlDoc.querySelector("ColorMap")?.getAttribute("type") || "ramp";
+
+    const colors = [];
+    const intervals = {};
+
+    colorMapEntries.forEach((entry) => {
+      const color = entry.getAttribute("color");
+      const quantity = entry.getAttribute("quantity");
+      const label = entry.getAttribute("label");
+
+      if (colorMapType === "intervals") {
+        // Mantener "inf" como string, parseFloat para números
+        const key = quantity === "inf" ? "inf" : quantity;
+        intervals[key] = color;
+      } else {
+        // Para ramp, también necesitamos las quantities, no solo los colores
+        const key = quantity === "inf" ? "inf" : quantity;
+        intervals[key] = color;
+      }
+    });
+
+    return {
+      type: colorMapType,
+      colors: intervals, // Siempre devolver objeto con quantity:color
+      continuous: colorMapType === "ramp",
+    };
+  } catch (error) {
+    console.error(`Error parseando SLD ${sldPath}:`, error);
+    return null;
+  }
+};
+
 // Función para descargar archivos raster
 const downloadRaster = async (filename, displayName) => {
   try {
@@ -75,6 +120,7 @@ const PeriodTabs = ({ activePeriod, onPeriodChange }) => {
   };
 
   const periods = [
+    { key: "Actual", label: "Actual" },
     { key: "2015-2039", label: "2015-2039" },
     { key: "2045-2069", label: "2045-2069" },
     { key: "2075-2099", label: "2075-2099" },
@@ -215,13 +261,48 @@ const PixelValueDisplay = ({ pixelValue }) => {
   );
 };
 
-// Componente de leyenda para Precipitación
+// Componente de leyenda dinámica para Precipitación
 const PrecipitacionLegend = ({
   isVisible,
   layerControlCollapsed,
   activePeriod,
+  sldCache,
+  getSLDColors,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [precipitacionRanges, setPrecipitacionRanges] = useState([]);
+
+  useEffect(() => {
+    const loadLegendData = async () => {
+      const sldData = await getSLDColors("precipitation", activePeriod);
+      if (sldData && sldData.type === "intervals") {
+        const ranges = Object.entries(sldData.colors)
+          .sort(([a], [b]) => {
+            if (a === "inf") return 1;
+            if (b === "inf") return -1;
+            return parseFloat(a) - parseFloat(b);
+          })
+          .map(([value, color], index, array) => {
+            let label;
+            if (index === 0) {
+              label = `≤ ${value} mm`;
+            } else if (value === "inf") {
+              const prevValue = array[index - 1][0];
+              label = `> ${prevValue} mm`;
+            } else {
+              const prevValue = array[index - 1][0];
+              label = `${prevValue} - ${value} mm`;
+            }
+            return { color, label };
+          });
+        setPrecipitacionRanges(ranges);
+      }
+    };
+
+    if (isVisible) {
+      loadLegendData();
+    }
+  }, [isVisible, activePeriod, getSLDColors]);
 
   if (!isVisible) {
     return null;
@@ -259,18 +340,6 @@ const PrecipitacionLegend = ({
     borderBottom: isCollapsed ? "none" : "1px solid #eee",
     backgroundColor: "#1E3C20",
   };
-
-  const precipitacionRanges = [
-    { color: "#fffee3", label: "≤ 400 mm" },
-    { color: "#deea51", label: "400 - 600 mm" },
-    { color: "#ccf162", label: "600 - 800 mm" },
-    { color: "#68d849", label: "800 - 1000 mm" },
-    { color: "#2db242", label: "1000 - 1200 mm" },
-    { color: "#3a8a79", label: "1200 - 1400 mm" },
-    { color: "#5c6fd1", label: "1400 - 1600 mm" },
-    { color: "#4843d4", label: "1600 - 1800 mm" },
-    { color: "#550056", label: "> 1800 mm" },
-  ];
 
   return (
     <div style={legendStyle}>
@@ -323,22 +392,40 @@ const PrecipitacionLegend = ({
   );
 };
 
-// Componente de leyenda para Temperatura
-const TemperaturaLegend = ({
+// Componente de leyenda dinámica para Temperatura Mínima
+const TemperaturaMinLegend = ({
   isVisible,
   layerControlCollapsed,
   activePeriod,
+  getSLDColors,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [tempRanges, setTempRanges] = useState([]);
+
+  useEffect(() => {
+    const loadLegendData = async () => {
+      const sldData = await getSLDColors("tempMin", activePeriod);
+      if (sldData && sldData.type === "ramp") {
+        const ranges = Object.entries(sldData.colors)
+          .sort(([a], [b]) => parseFloat(a) - parseFloat(b))
+          .map(([value, color]) => ({
+            color,
+            label: `${value}°C`,
+          }));
+        setTempRanges(ranges);
+      }
+    };
+
+    if (isVisible) {
+      loadLegendData();
+    }
+  }, [isVisible, activePeriod, getSLDColors]);
 
   if (!isVisible) {
     return null;
   }
 
-  // Calcular posición dinámica basada en el estado del control de capas
-  const rightPosition = layerControlCollapsed
-    ? "105px" // Posición normal cuando está colapsado
-    : "270px"; // Espacio suficiente para evitar superposición con el control expandido
+  const rightPosition = layerControlCollapsed ? "105px" : "270px";
 
   const legendStyle = {
     color: "white",
@@ -375,11 +462,7 @@ const TemperaturaLegend = ({
         <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
       </div>
       {!isCollapsed && (
-        <div
-          style={{
-            padding: "10px",
-          }}
-        >
+        <div style={{ padding: "10px" }}>
           <div
             style={{
               fontWeight: "bold",
@@ -387,41 +470,294 @@ const TemperaturaLegend = ({
               fontSize: "12px",
             }}
           >
-            Temperatura - {activePeriod}
+            Temperatura Mínima - {activePeriod}
           </div>
+          {tempRanges.length > 0 && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  color: "white",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>{tempRanges[0].label}</span>
+                <span>{tempRanges[tempRanges.length - 1].label}</span>
+              </div>
+              <div
+                style={{
+                  height: "20px",
+                  background: `linear-gradient(to right, ${tempRanges
+                    .map((r) => r.color)
+                    .join(", ")})`,
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  margin: "8px 0",
+                }}
+              ></div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  marginTop: "4px",
+                  fontStyle: "italic",
+                }}
+              >
+                <span>Temperatura Mínima (°C)</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda dinámica para Temperatura Media
+const TemperaturaMedLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  activePeriod,
+  getSLDColors,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [tempRanges, setTempRanges] = useState([]);
+
+  useEffect(() => {
+    const loadLegendData = async () => {
+      const sldData = await getSLDColors("tempMed", activePeriod);
+      if (sldData && sldData.type === "ramp") {
+        const ranges = Object.entries(sldData.colors)
+          .sort(([a], [b]) => parseFloat(a) - parseFloat(b))
+          .map(([value, color]) => ({
+            color,
+            label: `${value}°C`,
+          }));
+        setTempRanges(ranges);
+      }
+    };
+
+    if (isVisible) {
+      loadLegendData();
+    }
+  }, [isVisible, activePeriod, getSLDColors]);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  const rightPosition = layerControlCollapsed ? "105px" : "270px";
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "10px",
-              color: "white",
-              marginBottom: "4px",
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
             }}
           >
-            <span>4°C</span>
-            <span>36°C</span>
+            Temperatura Media - {activePeriod}
           </div>
+          {tempRanges.length > 0 && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  color: "white",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>{tempRanges[0].label}</span>
+                <span>{tempRanges[tempRanges.length - 1].label}</span>
+              </div>
+              <div
+                style={{
+                  height: "20px",
+                  background: `linear-gradient(to right, ${tempRanges
+                    .map((r) => r.color)
+                    .join(", ")})`,
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  margin: "8px 0",
+                }}
+              ></div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  marginTop: "4px",
+                  fontStyle: "italic",
+                }}
+              >
+                <span>Temperatura Media (°C)</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de leyenda dinámica para Temperatura Máxima
+const TemperaturaMaxLegend = ({
+  isVisible,
+  layerControlCollapsed,
+  activePeriod,
+  getSLDColors,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [tempRanges, setTempRanges] = useState([]);
+
+  useEffect(() => {
+    const loadLegendData = async () => {
+      const sldData = await getSLDColors("tempMax", activePeriod);
+      if (sldData && sldData.type === "ramp") {
+        const ranges = Object.entries(sldData.colors)
+          .sort(([a], [b]) => parseFloat(a) - parseFloat(b))
+          .map(([value, color]) => ({
+            color,
+            label: `${value}°C`,
+          }));
+        setTempRanges(ranges);
+      }
+    };
+
+    if (isVisible) {
+      loadLegendData();
+    }
+  }, [isVisible, activePeriod, getSLDColors]);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  const rightPosition = layerControlCollapsed ? "105px" : "270px";
+
+  const legendStyle = {
+    color: "white",
+    position: "absolute",
+    top: "10px",
+    right: rightPosition,
+    backgroundColor: "#1E3C20",
+    border: "1px solid white",
+    borderRadius: "0px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    zIndex: 1000,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "12px",
+    maxWidth: "200px",
+    transition: "right 0.3s ease",
+  };
+
+  const headerStyle = {
+    padding: "10px 15px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: isCollapsed ? "none" : "1px solid #eee",
+    backgroundColor: "#1E3C20",
+  };
+
+  return (
+    <div style={legendStyle}>
+      <div style={headerStyle} onClick={() => setIsCollapsed(!isCollapsed)}>
+        <span>Simbología</span>
+        <span style={{ fontSize: "10px" }}>{isCollapsed ? "" : ""}</span>
+      </div>
+      {!isCollapsed && (
+        <div style={{ padding: "10px" }}>
           <div
             style={{
-              height: "20px",
-              background:
-                "linear-gradient(to right, #7b39d4, #224988, #306190, #4a8e9f, #66bfaf, #73dc9a, #79f178, #a1fa7e, #defb9d, #fff099, #ffd76d, #ffbf41, #f99b20, #e4581f, #b73b1f, #8a1f1f, #4a2121)",
-              border: "1px solid #999",
-              borderRadius: "2px",
-              margin: "8px 0",
-            }}
-          ></div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              fontSize: "10px",
-              marginTop: "4px",
-              fontStyle: "italic",
+              fontWeight: "bold",
+              marginBottom: "8px",
+              fontSize: "12px",
             }}
           >
-            <span>Temperatura Media (°C)</span>
+            Temperatura Máxima - {activePeriod}
           </div>
+          {tempRanges.length > 0 && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  color: "white",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>{tempRanges[0].label}</span>
+                <span>{tempRanges[tempRanges.length - 1].label}</span>
+              </div>
+              <div
+                style={{
+                  height: "20px",
+                  background: `linear-gradient(to right, ${tempRanges
+                    .map((r) => r.color)
+                    .join(", ")})`,
+                  border: "1px solid #999",
+                  borderRadius: "2px",
+                  margin: "8px 0",
+                }}
+              ></div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  marginTop: "4px",
+                  fontStyle: "italic",
+                }}
+              >
+                <span>Temperatura Máxima (°C)</span>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -447,9 +783,10 @@ const GroupedLayerControl = ({
 
   // Mapeo de periodos a códigos de archivo
   const periodMap = {
-    "2015-2039": "1539",
-    "2045-2069": "4569",
-    "2075-2099": "7599",
+    Actual: "", // Sin sufijo para archivos actuales
+    "2015-2039": "_1539",
+    "2045-2069": "_4569",
+    "2075-2099": "_7599",
   };
 
   // Notificar cambios en el estado del control para posicionamiento dinámico
@@ -980,12 +1317,22 @@ const GroupedLayerControl = ({
             <RasterLayerItem
               layerKey="rasterPT"
               title="Precipitación total anual"
-              filename={`PT_${periodMap[activePeriod]}.tif`}
+              filename={`Prec_Total_Anual${periodMap[activePeriod]}.tif`}
             />
             <RasterLayerItem
-              layerKey="rasterTEMP"
+              layerKey="rasterTEMPMin"
+              title="Temperatura mínima anual"
+              filename={`Temp_min_anual${periodMap[activePeriod]}.tif`}
+            />
+            <RasterLayerItem
+              layerKey="rasterTEMPMed"
               title="Temperatura media anual"
-              filename={`TEMP_${periodMap[activePeriod]}.tif`}
+              filename={`Temp_med_anual${periodMap[activePeriod]}.tif`}
+            />
+            <RasterLayerItem
+              layerKey="rasterTEMPMax"
+              title="Temperatura máxima anual"
+              filename={`Temp_max_anual${periodMap[activePeriod]}.tif`}
             />
           </div>
         </div>
@@ -1008,11 +1355,12 @@ const EscenarioCC = () => {
   // Estados para leyendas - solo una visible a la vez
   const [precipitacionLegendVisible, setPrecipitacionLegendVisible] =
     useState(true);
-  const [temperaturaLegendVisible, setTemperaturaLegendVisible] =
-    useState(false);
+  const [tempMinLegendVisible, setTempMinLegendVisible] = useState(false);
+  const [tempMedLegendVisible, setTempMedLegendVisible] = useState(false);
+  const [tempMaxLegendVisible, setTempMaxLegendVisible] = useState(false);
 
   // Estado para el periodo activo
-  const [activePeriod, setActivePeriod] = useState("2015-2039");
+  const [activePeriod, setActivePeriod] = useState("Actual");
 
   // Estado para las capas activas
   const [activeLayers, setActiveLayers] = useState({
@@ -1020,7 +1368,9 @@ const EscenarioCC = () => {
     paisajes: true,
     municipios: true,
     rasterPT: true, // Precipitación activada por defecto
-    rasterTEMP: false,
+    rasterTEMPMin: false,
+    rasterTEMPMed: false,
+    rasterTEMPMax: false,
   });
 
   // Estado para opacidad de las capas
@@ -1029,17 +1379,247 @@ const EscenarioCC = () => {
     paisajes: 0.8,
     municipios: 0.8,
     rasterPT: 0.7,
-    rasterTEMP: 0.7,
+    rasterTEMPMin: 0.7,
+    rasterTEMPMed: 0.7,
+    rasterTEMPMax: 0.7,
   });
 
   // Estados para información del mapa
   const [pixelValue, setPixelValue] = useState(null);
 
+  // Cache para archivos SLD parseados
+  const [sldCache, setSldCache] = useState({});
+
   // Mapeo de periodos a códigos de archivo
   const periodMap = {
-    "2015-2039": "1539",
-    "2045-2069": "4569",
-    "2075-2099": "7599",
+    Actual: "", // Sin sufijo para archivos actuales
+    "2015-2039": "_1539",
+    "2045-2069": "_4569",
+    "2075-2099": "_7599",
+  };
+
+  // Función para obtener colores SLD dinámicamente
+  const getSLDColors = async (layerType, period) => {
+    console.log(
+      `getSLDColors llamada: layerType=${layerType}, period=${period}`
+    );
+    const periodSuffix = periodMap[period];
+
+    // Mapeo correcto de archivos SLD y TIF
+    const layerConfigs = {
+      precipitation: {
+        sldName: "Prec_Tot_anual",
+        tifName: "Prec_Total_Anual",
+      },
+      tempMin: {
+        sldName: "temp_min_anual",
+        tifName: "Temp_min_anual",
+      },
+      tempMed: {
+        sldName: "temp_med_anual",
+        tifName: "Temp_med_anual",
+      },
+      tempMax: {
+        sldName: "temp_max_anual",
+        tifName: "Temp_max_anual",
+      },
+    };
+
+    const config = layerConfigs[layerType];
+    if (!config) {
+      console.error(`Configuración no encontrada para layerType: ${layerType}`);
+      return null;
+    }
+
+    const sldKey = `${config.sldName}${periodSuffix}`;
+
+    // Verificar caché
+    if (sldCache[sldKey]) {
+      return sldCache[sldKey];
+    }
+
+    // Cargar y parsear SLD
+    const sldPath = `/Clima/${config.sldName}${periodSuffix}.sld`;
+    const sldData = await parseSLD(sldPath);
+
+    if (sldData) {
+      // Actualizar caché
+      setSldCache((prev) => ({
+        ...prev,
+        [sldKey]: sldData,
+      }));
+    }
+
+    return sldData;
+  };
+
+  // Función para obtener el nombre del archivo TIF (usando nombres reales de archivos)
+  const getTifFileName = (layerType, period) => {
+    const periodSuffix = periodMap[period];
+    console.log(
+      `getTifFileName: layerType=${layerType}, period=${period}, periodSuffix=${periodSuffix}`
+    );
+
+    let fileName = null;
+
+    if (layerType === "precipitation") {
+      fileName = `Prec_Total_Anual${periodSuffix}.tif`;
+    } else if (layerType === "tempMin") {
+      // Actual: Temp_min_anual.tif, Otros: Temp_min_1539.tif, etc.
+      fileName =
+        periodSuffix === ""
+          ? "Temp_min_anual.tif"
+          : `Temp_min${periodSuffix}.tif`;
+    } else if (layerType === "tempMed") {
+      // Actual: Temp_med_anual.tif, Otros: Temp_med_1539.tif, etc.
+      fileName =
+        periodSuffix === ""
+          ? "Temp_med_anual.tif"
+          : `Temp_med${periodSuffix}.tif`;
+    } else if (layerType === "tempMax") {
+      // Actual: Temp_max_anual.tif, Otros: Temp_max_1539.tif, etc.
+      fileName =
+        periodSuffix === ""
+          ? "Temp_max_anual.tif"
+          : `Temp_max${periodSuffix}.tif`;
+    }
+
+    console.log(`getTifFileName resultado: ${fileName}`);
+    return fileName;
+  };
+
+  // Componente para RasterOverlay con SLD dinámico
+  const DynamicRasterOverlay = ({
+    layerType,
+    isActive,
+    opacity,
+    onPixelValue,
+  }) => {
+    const [colorData, setColorData] = useState(null);
+    const [key, setKey] = useState(0); // Para forzar re-render
+
+    useEffect(() => {
+      console.log(
+        `[${layerType}] useEffect ejecutado - isActive: ${isActive}, período: ${activePeriod}`
+      );
+
+      // Limpiar datos anteriores cuando cambia el período o se desactiva
+      setColorData(null);
+
+      if (!isActive) {
+        console.log(`[${layerType}] Capa inactiva, no cargando`);
+        return;
+      }
+
+      const loadColors = async () => {
+        console.log(
+          `[${layerType}] Cargando colores para período: ${activePeriod}`
+        );
+        const sldData = await getSLDColors(layerType, activePeriod);
+        if (sldData) {
+          console.log(`[${layerType}] SLD cargado, configurando datos`);
+          setColorData(sldData);
+          setKey((prev) => prev + 1); // Forzar re-render del RasterOverlay
+        } else {
+          console.error(
+            `[${layerType}] Error cargando SLD para período ${activePeriod}`
+          );
+        }
+      };
+
+      loadColors();
+    }, [layerType, activePeriod, isActive]);
+
+    if (!isActive || !colorData) return null;
+
+    // Para intervals, necesitamos crear un mapeo de valores del TIF a colores
+    // Los SLD definen rangos: valor <= quantity → color
+    let colorMapProp;
+
+    if (colorData.type === "intervals") {
+      // INTERVALS: Valores discretos - cada quantity es un límite superior del rango
+      colorMapProp = {};
+
+      const sortedEntries = Object.entries(colorData.colors).sort(
+        ([a], [b]) => {
+          if (a === "inf") return 1;
+          if (b === "inf") return -1;
+          return parseFloat(a) - parseFloat(b);
+        }
+      );
+
+      // Cubrir un rango amplio de valores posibles (-1000 a 5000)
+      for (let value = -1000; value <= 5000; value++) {
+        let assignedColor = "#00000000"; // transparente por defecto
+
+        // Buscar el color correcto según los intervalos
+        for (const [quantity, color] of sortedEntries) {
+          if (quantity === "inf") {
+            assignedColor = color;
+            break;
+          } else if (value <= parseFloat(quantity)) {
+            assignedColor = color;
+            break;
+          }
+        }
+
+        colorMapProp[value] = assignedColor;
+      }
+    } else if (colorData.type === "ramp") {
+      // RAMP: También categorizar por intervalos discretos, NO gradiente continuo
+      colorMapProp = {};
+
+      const sortedEntries = Object.entries(colorData.colors).sort(
+        ([a], [b]) => parseFloat(a) - parseFloat(b)
+      );
+
+      // Para cada valor posible del TIF, asignar el color correcto según el rango más cercano
+      for (let value = -10; value <= 50; value++) {
+        let assignedColor = "#00000000"; // transparente por defecto
+
+        // Buscar el rango correcto - valor debe estar <= quantity para tomar ese color
+        for (const [quantity, color] of sortedEntries) {
+          if (value <= parseFloat(quantity)) {
+            assignedColor = color;
+            break;
+          }
+        }
+
+        // Si el valor es mayor que el último quantity, usar el último color
+        if (assignedColor === "#00000000" && sortedEntries.length > 0) {
+          assignedColor = sortedEntries[sortedEntries.length - 1][1];
+        }
+
+        colorMapProp[value] = assignedColor;
+      }
+    } else {
+      // Fallback para otros tipos
+      colorMapProp = colorData.colors;
+    }
+
+    const fileName = getTifFileName(layerType, activePeriod);
+    if (!fileName) {
+      console.error(
+        `[${layerType}] getTifFileName devolvió null para período ${activePeriod}`
+      );
+      return null;
+    }
+
+    console.log(
+      `[${layerType}] Renderizando RasterOverlay con archivo: ${fileName}, período: ${activePeriod}`
+    );
+
+    return (
+      <RasterOverlay
+        key={`${layerType}-${activePeriod}-${key}`}
+        fileName={fileName}
+        baseUrl="/Clima/"
+        overlayOpacity={opacity}
+        colorMap={colorMapProp}
+        continuous={false} // SIEMPRE false - usar categorización discreta para todos los tipos
+        onPixelValue={onPixelValue}
+      />
+    );
   };
 
   // Función para manejar cambios en el estado del control de capas
@@ -1050,30 +1630,44 @@ const EscenarioCC = () => {
 
   // Efecto para controlar la visibilidad de las leyendas (solo una a la vez)
   useEffect(() => {
-    let activeCount = 0;
     let lastActive = null;
 
-    // Contar capas activas y encontrar la última activa
+    // Encontrar la última capa activada
     if (activeLayers.rasterPT) {
-      activeCount++;
       lastActive = "precipitacion";
     }
-    if (activeLayers.rasterTEMP) {
-      activeCount++;
-      lastActive = "temperatura";
+    if (activeLayers.rasterTEMPMin) {
+      lastActive = "tempMin";
+    }
+    if (activeLayers.rasterTEMPMed) {
+      lastActive = "tempMed";
+    }
+    if (activeLayers.rasterTEMPMax) {
+      lastActive = "tempMax";
     }
 
     // Ocultar todas las leyendas primero
     setPrecipitacionLegendVisible(false);
-    setTemperaturaLegendVisible(false);
+    setTempMinLegendVisible(false);
+    setTempMedLegendVisible(false);
+    setTempMaxLegendVisible(false);
 
     // Mostrar solo la leyenda de la última capa activada
     if (lastActive === "precipitacion") {
       setPrecipitacionLegendVisible(true);
-    } else if (lastActive === "temperatura") {
-      setTemperaturaLegendVisible(true);
+    } else if (lastActive === "tempMin") {
+      setTempMinLegendVisible(true);
+    } else if (lastActive === "tempMed") {
+      setTempMedLegendVisible(true);
+    } else if (lastActive === "tempMax") {
+      setTempMaxLegendVisible(true);
     }
-  }, [activeLayers.rasterPT, activeLayers.rasterTEMP]);
+  }, [
+    activeLayers.rasterPT,
+    activeLayers.rasterTEMPMin,
+    activeLayers.rasterTEMPMed,
+    activeLayers.rasterTEMPMax,
+  ]);
 
   // Cargar datos vectoriales
   useEffect(() => {
@@ -1133,68 +1727,65 @@ const EscenarioCC = () => {
         />
 
         {/* Capas raster */}
-        {activeLayers.rasterPT && (
-          <RasterOverlay
-            fileName={`PT_${periodMap[activePeriod]}.tif`}
-            baseUrl="/"
-            overlayOpacity={opacity.rasterPT}
-            colorMap={[
-              "#fffee3", // Valores bajos (≤ 400)
-              "#deea51", // 400 - 600
-              "#ccf162", // 600 - 800
-              "#68d849", // 800 - 1000
-              "#2db242", // 1000 - 1200
-              "#3a8a79", // 1200 - 1400
-              "#5c6fd1", // 1400 - 1600
-              "#4843d4", // 1600 - 1800
-              "#550056", // Valores altos (> 1800)
-            ]}
-            continuous={true}
-            onPixelValue={setPixelValue}
-          />
-        )}
+        <DynamicRasterOverlay
+          layerType="precipitation"
+          isActive={activeLayers.rasterPT}
+          opacity={opacity.rasterPT}
+          onPixelValue={setPixelValue}
+        />
 
-        {activeLayers.rasterTEMP && (
-          <RasterOverlay
-            fileName={`TEMP_${periodMap[activePeriod]}.tif`}
-            baseUrl="/"
-            overlayOpacity={opacity.rasterTEMP}
-            colorMap={[
-              "#7b39d4", // 4°C
-              "#224988", // 6°C
-              "#306190", // 8°C
-              "#4a8e9f", // 10°C
-              "#66bfaf", // 12°C
-              "#73dc9a", // 14°C
-              "#79f178", // 16°C
-              "#a1fa7e", // 18°C
-              "#defb9d", // 20°C
-              "#fff099", // 22°C
-              "#ffd76d", // 24°C
-              "#ffbf41", // 26°C
-              "#f99b20", // 28°C
-              "#e4581f", // 30°C
-              "#b73b1f", // 32°C
-              "#8a1f1f", // 34°C
-              "#4a2121", // 36°C
-            ]}
-            continuous={true}
-            onPixelValue={setPixelValue}
-          />
-        )}
+        <DynamicRasterOverlay
+          layerType="tempMin"
+          isActive={activeLayers.rasterTEMPMin}
+          opacity={opacity.rasterTEMPMin}
+          onPixelValue={setPixelValue}
+        />
+
+        <DynamicRasterOverlay
+          layerType="tempMed"
+          isActive={activeLayers.rasterTEMPMed}
+          opacity={opacity.rasterTEMPMed}
+          onPixelValue={setPixelValue}
+        />
+
+        <DynamicRasterOverlay
+          layerType="tempMax"
+          isActive={activeLayers.rasterTEMPMax}
+          opacity={opacity.rasterTEMPMax}
+          onPixelValue={setPixelValue}
+        />
 
         {/* Leyenda de Precipitación */}
         <PrecipitacionLegend
           isVisible={precipitacionLegendVisible}
           layerControlCollapsed={layerControlCollapsed}
           activePeriod={activePeriod}
+          sldCache={sldCache}
+          getSLDColors={getSLDColors}
         />
 
-        {/* Leyenda de Temperatura */}
-        <TemperaturaLegend
-          isVisible={temperaturaLegendVisible}
+        {/* Leyenda de Temperatura Mínima */}
+        <TemperaturaMinLegend
+          isVisible={tempMinLegendVisible}
           layerControlCollapsed={layerControlCollapsed}
           activePeriod={activePeriod}
+          getSLDColors={getSLDColors}
+        />
+
+        {/* Leyenda de Temperatura Media */}
+        <TemperaturaMedLegend
+          isVisible={tempMedLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          activePeriod={activePeriod}
+          getSLDColors={getSLDColors}
+        />
+
+        {/* Leyenda de Temperatura Máxima */}
+        <TemperaturaMaxLegend
+          isVisible={tempMaxLegendVisible}
+          layerControlCollapsed={layerControlCollapsed}
+          activePeriod={activePeriod}
+          getSLDColors={getSLDColors}
         />
 
         <CoordinateControl />
