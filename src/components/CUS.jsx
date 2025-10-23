@@ -61,24 +61,24 @@ const getCUSClassification = (feature) => {
   return "A"; // valor por defecto
 };
 
-// Función para generar colores para SERIE7 USV_S7
+// Función para generar colores para SERIE7 USV_S7 basada en el archivo SLD
 const generateSerie7ColorPalette = () => {
-  // Mapeo específico basado en la Serie VII (2018) de la guía
+  // Mapeo específico basado en el archivo SLD Serie7.sld oficial
   const colorMap = {
-    Agua: "#4ed6ff", // Agua - azul cielo
-    "Agricultura de temporal": "#eee9fd", // Agricultura de temporal - lavanda
-    "Agricultura de riego": "#e99dfd", // Agricultura de riego - púrpura medio
-    Ganaderia: "#ffe0a5", // Ganadería - khaki
-    Urbano: "#4d4d4d", // Urbano - gris oscuro
-    "Vegetacion secundaria arbustiva": "#f7f7a3", // Vegetación sec. arbustiva - beige
-    "Selva baja caducifolia": "#acac7c", // Selva baja caducifolia - verde mar oscuro
-    "Bosque de mezquite": "#e4c8bb", // Bosque de mezquite - marrón arena
-    "Bosque de encino": "#dcc492", // Bosque de encino - tostado
-    "Bosque de encino-pino": "#c3dc94", // Bosque de encino-pino - verde amarillento
-    "Bosque de pino": "#9bc24b", // Bosque de pino - verde bosque
-    "Bosque de pino-encino": "#4dc1a8", // Bosque de pino-encino - turquesa
-    "Bosque de oyamel": "#94dcc4", // Bosque de oyamel - verde mar claro
-    "Bosque mesófilo": "#4c9d81", // Bosque mesófilo - verde mar
+    Agua: "#00ceff", // Agua - azul cielo
+    "Agricultura de temporal": "#f0deff", // Agricultura de temporal - lavanda claro
+    "Agricultura de riego": "#b39eb3", // Agricultura de riego - púrpura grisáceo
+    Ganaderia: "#ffbd23", // Ganadería - amarillo dorado
+    Urbano: "#484848", // Urbano - gris oscuro
+    "Vegetacion secundaria arbustiva": "#f0e46e", // Vegetación sec. arbustiva - amarillo verdoso
+    "Selva baja caducifolia": "#bfbe7a", // Selva baja caducifolia - verde oliva claro
+    "Bosque de mezquite": "#9a8f53", // Bosque de mezquite - verde oliva oscuro
+    "Bosque de encino": "#b7f3d0", // Bosque de encino - verde menta claro
+    "Bosque de encino-pino": "#2fc879", // Bosque de encino-pino - verde brillante
+    "Bosque de pino": "#379836", // Bosque de pino - verde bosque
+    "Bosque de pino-encino": "#6a8157", // Bosque de pino-encino - verde oliva medio
+    "Bosque de oyamel": "#007c5d", // Bosque de oyamel - verde oscuro
+    "Bosque mesofilo": "#004a3a", // Bosque mesófilo - verde muy oscuro
   };
 
   return colorMap;
