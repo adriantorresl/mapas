@@ -118,6 +118,8 @@ const PixelValueDisplay = ({ pixelValue }) => {
         return "Aprovechamiento sustentable";
       case 5:
         return "Otros sistemas productivos";
+      case 6:
+        return "Sin datos/No aplicable";
       default:
         return `Valor: ${roundedValue}`;
     }
@@ -196,11 +198,12 @@ const ZonificacionLegend = ({
 
   // Valores y colores del archivo Zonificacion.sld
   const zonificationCategories = [
-    { value: 1, color: "#00734c", label: "Preservación" },
-    { value: 2, color: "#aaff00", label: "Conservación" },
-    { value: 3, color: "#ff0000", label: "Restauración" },
-    { value: 4, color: "#ffbee8", label: "Aprovechamiento sustentable" },
-    { value: 5, color: "#c500ff", label: "Otros sistemas productivos" },
+    { value: 1, color: "#097a00", label: "Preservación" },
+    { value: 2, color: "#7dff4e", label: "Conservación" },
+    { value: 3, color: "#f6050d", label: "Restauración" },
+    { value: 4, color: "#d5b3d0", label: "Aprovechamiento sustentable" },
+    { value: 5, color: "#bc0092", label: "Otros sistemas productivos" },
+    { value: 6, color: "#000000", label: "Sin datos/No aplicable" },
   ];
 
   return (
@@ -737,7 +740,7 @@ const GroupedLayerControl = ({
                   }}
                   title="Descargar Zonificación"
                   onClick={() =>
-                    downloadRaster("ZonificacionCortado.tif", "Zonificación")
+                    downloadRaster("Zonificacion2.tif", "Zonificación")
                   }
                 >
                   <svg
@@ -915,7 +918,7 @@ const Zonificacion = () => {
 
   // Colores basados en el archivo Zonificacion.sld
   const zonificacionColors =
-    "1:#00734c,2:#aaff00,3:#ff0000,4:#ffbee8,5:#c500ff";
+    "1:#097a00,2:#7dff4e,3:#f6050d,4:#d5b3d0,5:#bc0092,6:#000000";
 
   return (
     <div style={{ height: "100vh", width: "100%" }}>
@@ -923,13 +926,13 @@ const Zonificacion = () => {
         center={[16.67566, -95.96711]}
         zoom={10}
         scrollWheelZoom={true}
-        dragging={false}
+        dragging={true}
         style={{ height: "100%", width: "100%" }}
       >
         {/* RasterOverlay para Zonificación */}
         {activeLayers.zonificacion && (
           <RasterOverlay
-            fileName="ZonificacionCortado.tif"
+            fileName="Zonificacion2.tif"
             colorMap={zonificacionColors}
             baseUrl="/"
             continuous={false}

@@ -35,6 +35,22 @@ const downloadRaster = async (filename, displayName) => {
   }
 };
 
+// Componente para crear pane personalizado para raster
+const CustomPaneCreator = ({ paneName }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Crear pane personalizado si no existe
+    if (!map.getPane(paneName)) {
+      const rasterPane = map.createPane(paneName);
+      rasterPane.style.zIndex = 450; // Mayor que overlayPane (400) pero menor que popupPane (600)
+      console.log(`Created custom pane: ${paneName} with zIndex 450`);
+    }
+  }, [map, paneName]);
+
+  return null;
+};
+
 // Componente para mostrar coordenadas
 const CoordinateControl = () => {
   const map = useMap();
@@ -288,55 +304,11 @@ const TendenciaCarbonoLegend = ({ isVisible, layerControlCollapsed }) => {
     alignItems: "center",
   };
 
-  // Rampa de colores para tendencia de CO2 basada en CO2_Tendencia.sld
-  const createColorRamp = () => {
-    const colors = [
-      "#a50026", // Rojo muy oscuro (pérdida muy alta)
-      "#d73027", // Rojo oscuro
-      "#f46d43", // Rojo
-      "#fdae61", // Naranja
-      "#fee08b", // Amarillo claro
-      "#ffffbf", // Amarillo muy claro (neutro)
-      "#e6f598", // Verde muy claro
-      "#abdda4", // Verde claro
-      "#66c2a5", // Verde
-      "#3288bd", // Azul
-      "#5e4fa2", // Púrpura (ganancia muy alta)
-    ];
-
-    return (
-      <div style={{ marginTop: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "10px",
-            marginBottom: "4px",
-          }}
-        >
-          <span>Pérdida alta</span>
-          <span>Ganancia alta</span>
-        </div>
-        <div
-          style={{
-            height: "20px",
-            background: `linear-gradient(to right, ${colors.join(", ")})`,
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            fontSize: "10px",
-            marginTop: "4px",
-            fontStyle: "italic",
-          }}
-        >
-          <span>Tendencia de CO₂ (Ton/ha/año)</span>
-        </div>
-      </div>
-    );
-  };
+  // Categorías discretas para tendencia de CO2 basada en Tendencia_CO2.sld
+  const categories = [
+    { value: 1, color: "#bf1007", label: "Alta" },
+    { value: 2, color: "#000000", label: "Muy alta" },
+  ];
 
   return (
     <div style={legendStyle}>
@@ -356,7 +328,34 @@ const TendenciaCarbonoLegend = ({ isVisible, layerControlCollapsed }) => {
           >
             Tendencia CO₂
           </div>
-          {createColorRamp()}
+          {categories.map((category) => (
+            <div
+              key={category.value}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "8px",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <div
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    backgroundColor: category.color,
+                    border: "1px solid white",
+                    marginRight: "8px",
+                    flexShrink: 0,
+                    display: "inline-block",
+                  }}
+                />
+                <span style={{ fontSize: "12px", lineHeight: "1.2" }}>
+                  {category.label}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1271,6 +1270,9 @@ const Carbono = ({
   const [mapCenter, setMapCenter] = useState([16.67566, -95.96711]);
   const [mapZoom, setMapZoom] = useState(10);
 
+  // Crear pane personalizado para raster con zIndex alto
+  const [rasterPaneName] = useState("rasterTopPane");
+
   // Cargar datos GeoJSON al montar el componente
   useEffect(() => {
     const loadGeoData = async () => {
@@ -1378,31 +1380,8 @@ const Carbono = ({
         zoomControl={false}
         key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
       >
-        {/* RasterOverlay para tendencia de CO2 */}
-        {activeLayers.rasterCO2 && (
-          <RasterOverlay
-            fileName="TEND_CO2.tif"
-            colorMap={[
-              "#a50026",
-              "#d73027",
-              "#f46d43",
-              "#fdae61",
-              "#fee08b",
-              "#ffffbf",
-              "#e6f598",
-              "#abdda4",
-              "#66c2a5",
-              "#3288bd",
-              "#5e4fa2",
-            ]}
-            baseUrl="/"
-            continuous={true}
-            setError={setError}
-            setLoading={setLoading}
-            onPixelValue={setPixelValue}
-            overlayOpacity={opacity.rasterCO2}
-          />
-        )}
+        {/* Crear pane personalizado para raster */}
+        <CustomPaneCreator paneName={rasterPaneName} />
 
         {/* Control de capas agrupadas */}
         <GroupedLayerControl
@@ -1417,6 +1396,21 @@ const Carbono = ({
           isCollapsed={isCollapsed}
           setIsCollapsed={setIsCollapsed}
         />
+
+        {/* RasterOverlay para tendencia de CO2 */}
+        {activeLayers.rasterCO2 && (
+          <RasterOverlay
+            fileName="TEND_CO2.tif"
+            colorMap="1:#bf1007,2:#000000"
+            baseUrl="/"
+            continuous={false}
+            setError={setError}
+            setLoading={setLoading}
+            onPixelValue={setPixelValue}
+            overlayOpacity={opacity.rasterCO2}
+            pane={rasterPaneName}
+          />
+        )}
 
         {/* Indicador de carga */}
         {loading && (
