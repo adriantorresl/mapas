@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import MapChart from "./components/MapChart";
 import logo from "./assets/logo.png";
 import "./App.css";
 import CoreTemplate from "./components/templates/core";

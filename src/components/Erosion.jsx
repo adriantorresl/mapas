@@ -3,7 +3,6 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
-import { color } from "framer-motion";
 
 // Función para descargar GeoJSON
 const downloadGeoJSON = (data, filename) => {

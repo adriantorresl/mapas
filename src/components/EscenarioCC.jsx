@@ -3,7 +3,6 @@ import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { RasterOverlay } from "./RasterViewer";
-import { color } from "framer-motion";
 
 // Función para parsear archivos SLD
 const parseSLD = async (sldPath) => {
@@ -20,13 +19,11 @@ const parseSLD = async (sldPath) => {
     const colorMapType =
       xmlDoc.querySelector("ColorMap")?.getAttribute("type") || "ramp";
 
-    const colors = [];
     const intervals = {};
 
     colorMapEntries.forEach((entry) => {
       const color = entry.getAttribute("color");
       const quantity = entry.getAttribute("quantity");
-      const label = entry.getAttribute("label");
 
       if (colorMapType === "intervals") {
         // Mantener "inf" como string, parseFloat para números

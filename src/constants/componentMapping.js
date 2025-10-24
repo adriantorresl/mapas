@@ -1,14 +1,6 @@
 // Importar todos los componentes de visualización
 import MapChart from "../components/MapChart";
-import RasterViewer from "../components/RasterViewer";
-import GeoJsonLayerWithLegend from "../components/GeoJsonLayerWithLegend";
-import SideBySideRasters from "../components/SideBySideRasters";
-import RasterSlideCompare from "../components/RasterSlideCompare";
-import TimeSeriesMapViewer from "../components/TimeSeriesMapViewer";
-import Heatmap from "../components/Heatmap";
-import GeoLayerCompare from "../components/GeoLayerCompare";
 import DefaultVisualization from "../components/DefaultVisualization";
-import GeoMapViewer from "../components/GeoMapViewer";
 import Topografia from "../components/Topografia";
 import Localizacion from "../components/Localizacion";
 import Edafologia from "../components/Edafologia";
@@ -17,13 +9,9 @@ import AreaProteccion from "../components/AreaProteccion";
 import Poblacion from "../components/Poblacion";
 import ActividadProductiva from "../components/ActividadProductiva";
 import Erosion from "../components/Erosion";
-import Nutrientes from "../components/Nutrientes";
 import Carbono from "../components/Carbono";
 import Polinizadores from "../components/Polinizadores";
 import CUS from "../components/CUS";
-import Productiva from "../components/Productiva";
-import { color } from "framer-motion";
-import EscenarioActual from "../components/EscenarioActual";
 import EscenarioCC from "../components/EscenarioCC";
 import Americana from "../components/Americana";
 import Angustifolia from "../components/Angustifolia";
@@ -33,6 +21,7 @@ import Marmorata from "../components/Marmorata";
 import Nitrogeno from "../components/Nitrogeno";
 import Fosforo from "../components/Fosforo";
 import Zonificacion from "../components/Zonificacion";
+import Heatmap from "../components/Heatmap";
 
 // Mapeo de ID de sección/subsección a componente de visualización
 export const componentMapping = {
