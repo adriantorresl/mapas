@@ -119,7 +119,7 @@ const PixelValueDisplay = ({ pixelValue }) => {
       case 5:
         return "Otros sistemas productivos";
       case 6:
-        return "Sin datos/No aplicable";
+        return "Urbano";
       default:
         return `Valor: ${roundedValue}`;
     }
@@ -203,7 +203,7 @@ const ZonificacionLegend = ({
     { value: 3, color: "#f6050d", label: "Restauración" },
     { value: 4, color: "#d5b3d0", label: "Aprovechamiento sustentable" },
     { value: 5, color: "#bc0092", label: "Otros sistemas productivos" },
-    { value: 6, color: "#000000", label: "Sin datos/No aplicable" },
+    { value: 6, color: "#000000", label: "Urbano" },
   ];
 
   return (
