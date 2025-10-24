@@ -8,7 +8,8 @@ const TextBlock = ({ content }) => {
           color: "#fff",
           textAlign: "justify",
           lineHeight: "1.6",
-          margin: "0"
+          margin: "0",
+          whiteSpace: "pre-line"
         }}
       >
         {content}

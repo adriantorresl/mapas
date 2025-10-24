@@ -74,7 +74,7 @@ export const navigationData = {
         },
         {
           id: "2.3",
-          titulo: "Secuestro de Carbono",
+          titulo: "Balance de Carbono",
         },
         {
           id: "2.4",

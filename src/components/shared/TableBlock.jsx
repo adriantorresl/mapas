@@ -40,26 +40,29 @@ const TableBlock = ({ title, header, body }) => {
         }}
       >
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          {/* Allow header to be a single array (1 row) or an array of arrays (multi-row) */}
           {header && (
             <thead>
-              <tr>
-                {header.map((headerCell, headerIndex) => (
-                  <th
-                    key={headerIndex}
-                    style={{
-                      padding: "12px 8px",
-                      backgroundColor: "#FFE699",
-                      borderBottom: "2px solid #BF9000",
-                      textAlign: "center",
-                      fontWeight: "600",
-                      fontSize: "0.8rem",
-                      color: "#1E3620",
-                    }}
-                  >
-                    {headerCell}
-                  </th>
-                ))}
-              </tr>
+              {(Array.isArray(header[0]) ? header : [header]).map((headerRow, headerRowIdx) => (
+                <tr key={headerRowIdx}>
+                  {headerRow.map((headerCell, headerIndex) => (
+                    <th
+                      key={headerIndex}
+                      style={{
+                        padding: "12px 8px",
+                        backgroundColor: "#FFE699",
+                        borderBottom: "2px solid #BF9000",
+                        textAlign: "center",
+                        fontWeight: "600",
+                        fontSize: "0.8rem",
+                        color: "#1E3620",
+                      }}
+                    >
+                      {headerCell}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
           )}
 
