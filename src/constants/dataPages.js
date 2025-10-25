@@ -1,6 +1,9 @@
 import duracionHumedad from "../assets/media/duracion-humedad-suelo.png";
 import piramidePoblacional from "../assets/media/piramide-poblacional.png";
 import tendenciaClimatica from "../assets/media/tendencia-climatica.png";
+import zonaCentralPieChart from "../assets/media/zona-central-pie-chart.png";
+import pieChartTerritorio from "../assets/media/pie-chart-territorio.png";
+import temperaturaPrecipitacion from "../assets/media/temperature-precipitacion.png";
 
 export const dataPages = {
   pages: [
@@ -14,20 +17,28 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Un paisaje biocultural es un área geográfica donde se da reconocimiento a los valores culturales y su vinculación con la riqueza natural de un territorio, en este caso asociada a la producción del agave y mezcal.",
+            "El área de estudio se localiza en la zona central del estado de Oaxaca, con una superficie total de 816,566.9 hectáreas.",
+        },
+        {
+          type: "image",
+          src: zonaCentralPieChart,
+          title: "",
+          alt: "Gráfica de zona central del estado de Oaxaca",
+          caption:
+            "",
         },
         {
           type: "text",
           content:
-            "El área que integran los paisajes bioculturales de la Sierra de Yautepec y Los Valles Centrales suman un total de 816,566.9 hectáreas.",
+            "Los municipios incluidos en el paisaje biocultural de la Sierra de Yautepec y Valles Centrales: 59",
         },
         {
           type: "table",
           title: "Distribución de paisajes bioculturales",
-          header: ["Paisaje", "Municipios", "Superficie"],
+          header: ["Paisaje", "Municipios", "Superficie", "%"],
           body: [
-            ["Valles Centrales", "48", "415,358 has"],
-            ["Sierra de Yautepec", "11", "401,208 has"],
+            ["Valles Centrales", "11", "401,208 has", "41%"],
+            ["Sierra de Yautepec", "48", "415,358 has", "49%"],
           ],
         },
       ],
@@ -42,20 +53,21 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Resultado de su variada geografía, topografía y clima, los suelos del área de estudio incluyen formaciones volcánicas, aluviales y sedimentarias.",
+          "En el área de estudio se identifican 11 tipos de suelo, de los cuales ocho presentan condiciones óptimas para la producción de agaves, equivalentes al 90 % de la superficie total (macados en color amarillo)."
         },
         {
           type: "table",
           title: "Distribución de suelos por textura (hectáreas)",
-          header: [
+          header: [[
             "Suelo / textura",
-            "Sierra de Yautepec Fina",
-            "Sierra de Yautepec Media",
-            "Sierra de Yautepec Gruesa",
-            "Valles Centrales Fina",
-            "Valles Centrales Media",
-            "Valles Centrales Gruesa",
+            "",
+            "Sierra de Yautepec ",
+            "",
+            "",
+            "Valles Centrales ",
+            "",
           ],
+        ["","Fina", "Media", "Gruesa","Fina", "Media", "Gruesa"]],
           body: [
             ["Regosol", "0", "25,278", "24,255", "0", "66,154", "4,694"],
             [
@@ -81,7 +93,12 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "En la zona de estudio, la duración de la humedad en los suelos varía de dos a doce meses por año, predominando las zonas con seis meses de humedad en suelos.",
+          "La humedad del suelo varía entre 2 y 12 meses por año, predominando las zonas con 6 meses de humedad (212 mil has aproximadamente)."
+        },
+        {
+          type: "text",
+          content:
+          "El periodo de lluvias se concentra de junio–septiembre, base de la agricultura de temporal."
         },
         {
           type: "image",
@@ -103,7 +120,20 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "La variabilidad altitudinal va de los 250 a los 3319 msnm. Siendo el límite de los dos paisajes bioculturales la zona más alta, delimitando el parte aguas de las dos cuencas.",
+          "La altitud varía entre 250 y 3,319 msnm, siendo las zonas más altas el parteaguas entre ambos paisajes."
+        },
+        {
+          type: "text",
+          content:
+          "El 34 % del territorio son valles (0–10°), el 38 % laderas medias (11–20°) y el 28 % pendientes fuertes (21–60°)."
+        },
+        {
+          type: "image",
+          src: pieChartTerritorio,
+          title: "",
+          alt: "Gráfica de distribución de territorio",
+          caption:
+            "",
         },
       ],
     },
@@ -117,7 +147,7 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "En la entidad se presentan seis de los siete tipos de climas existentes en el país (INEGI, 2008), 'faltándole solo el clima frio'.",
+          "En la entidad se presentan seis de los siete tipos de clima del país, faltando solo el clima frío. Predomina el semicálido (59 %), seguido del templado (22 %), cálido (18 %) y semifrío (1 %)."
         },
         {
           type: "table",
@@ -139,15 +169,23 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Registros meteorológicos de 1985 a 2018 del estado indican aumento en la temperatura y disminución en la precipitación.",
+          "Los registros meteorológicos de 1985 a 2018 muestran un aumento de temperatura y una disminución de la precipitación en el estado."
+        },
+        {
+          type: "image",
+          src: temperaturaPrecipitacion,
+          title: "",
+          alt: "Gráfica de temperatura y precipitación",
+          caption:
+            "",
         },
         {
           type: "image",
           src: tendenciaClimatica,
-          title: "Tendencia climática 1985-2018",
-          alt: "Gráfica de tendencia climática",
+          title: "",
+          alt: "Gráfica de temperatura y precipitación",
           caption:
-            "Evolución de temperatura y precipitación en el período 1985-2018",
+            "",
         },
       ],
     },
@@ -161,12 +199,13 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "3 clases ocupan más del 78% de la superficie del área de estudio. Vegetación arbustiva 43%, Agricultura de temporal 18%, Selva baja caducifolia 17%.",
+          "En 2018 se identificaron 14 clases, 9 tipos de vegetación y 4 de uso de suelo. \n" +
+          "Predomina la vegetación arbustiva (43 %), la agricultura de temporal (18 %) y la selva baja caducifolia (17 %). "
         },
         {
           type: "table",
           title: "Distribución de vegetación y uso de suelo",
-          header: ["Tipo", "Hectáreas", "Porcentaje"],
+          header: ["", "Hectáreas", "Porcentaje"],
           body: [
             ["Agua", "1,251", "0.2%"],
             ["Agricultura de temporal", "149,394", "18.3%"],
@@ -183,6 +222,16 @@ export const dataPages = {
             ["Bosque de oyamel", "9", "0.0%"],
             ["Bosque mesófilo", "2,979", "0.4%"],
           ],
+        },
+        {
+          type: "text",
+          content:
+          "El cambio de uso de suelo permite entender la dinámica del territorio a lo largo del tiempo, el análisis incluye siete series de tiempo (INEGI, 1980–2018)."
+        },
+        {
+          type: "text",
+          content:
+          "Se clasificaron los usos en vegetación “V” y no vegetación “A”, obteniendo 14 combinaciones que muestran la edad y transformación."
         },
         {
           type: "table",
@@ -288,12 +337,12 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "En la zona de estudio hay 2 ANPs de carácter federal: Monumento nacional Yagui y Reserva Estatal Hierve el Agua.",
+          "Se identifican dos Áreas Naturales Protegidas de carácter federal: el Monumento Nacional Yagul (1,077 ha) y la Reserva Estatal Hierve el Agua (4,129 ha), que en su conjunto suman 5,206 hectáreas."
         },
         {
           type: "text",
           content:
-            "Hay también 6 áreas dedicadas voluntariamente a la conservación: El Campanario - Laacanloo Cruz, El Fuerte, Danii Idoo (Cerro Iglesia), La Mina, Cerro de Guinas, La Muralla.",
+          "Además de siete Áreas Destinadas Voluntariamente a la Conservación que en conjunto suman cerca de 27,000 ha."
         },
       ],
     },
@@ -307,14 +356,14 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "En la zona de estudio radican 306,142 habitantes, de los cuales 146,249 son hombres y 159,893 mujeres.",
+          "Según el Censo de Población y Vivienda 2020, habitan 306,142 personas, de las cuales 146,249 son hombres y 159,893 mujeres, distribuidas en distintos grupos de edad."
         },
         {
           type: "image",
           src: piramidePoblacional,
           title: "",
           alt: "Pirámide poblacional",
-          caption: "Pirámide poblacional del área de estudio",
+          caption: "",
         },
         {
           type: "table",
@@ -344,15 +393,23 @@ export const dataPages = {
           ],
         },
         {
+          type: "text",
+          content:
+          "El 15 % de los municipios presenta marginación muy alta y el 40 % alta, concentrando a la mayoría de la población en condiciones desfavorables. \n" +
+          "Solo el 10 % muestra niveles bajos o muy bajos. \n" +
+          "Estos datos reflejan una alta vulnerabilidad social en el territorio."
+        },
+        {
           type: "table",
           title: "Grado de marginación por región",
-          header: [
+          header: [[
             "Grado de marginación",
-            "Valles Centrales Nº de municipios",
-            "Valles Centrales Habitantes",
-            "Sierra de Yautepec Nº de municipios",
-            "Sierra de Yautepec Habitantes",
+            "Valles Centrales ",
+            "",
+            "Sierra de Yautepec",
+            "",
           ],
+        ["", "Nº de municipios", "Habitantes", "Nº de municipios", "Habitantes", ],],
           body: [
             ["Muy baja", "2", "14,154", "0", "0"],
             ["Baja", "3", "32,463", "1", "3,294"],
@@ -374,13 +431,14 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "De acuerdo a los Indicadores Laborales para los Municipios de México el 60.9% de la población es Población Económicamente Activa (+15 años). 98.8% es PEA ocupada y 90.1% de manera informal.",
+          "El 60.9 % de la población es económicamente activa, y de ella el 98.8 % tiene alguna ocupación. \n" +
+          "No obstante, el 90.1 % trabaja en el sector informal, principalmente en actividades agrícolas y ganaderas."
         },
         {
           type: "table",
           title: "Indicadores laborales por región",
           header: [
-            "Región",
+            "",
             "Población total",
             "PEA",
             "PEA ocupada",
@@ -390,6 +448,12 @@ export const dataPages = {
             ["Sierra de Yautepec", "38,844", "56.6%", "99.2%", "91.4%"],
             ["Valles Centrales", "267,405", "61.7%", "98.8%", "89.8%"],
           ],
+        },
+        {
+          type: "text",
+          content:
+          "En 2023, se registraron 64,776 ha de superficie sembrada. \n" +
+          "Diez municipios concentran el 69 % del total, destacando Miahuatlán de Porfirio Díaz con 9,636 ha (14.9 %)."
         },
         {
           type: "table",
@@ -426,7 +490,9 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "La erosión hídrica es uno de los procesos fundamentales que contribuyen a la degradación de los suelos a nivel mundial, nacional y provincial.",
+          "La erosión hídrica es la principal causa de degradación del suelo.\n" +
+          "Se identificaron zonas con alta pérdida de suelo por efecto de la lluvia, pendiente y uso del terreno. \n" +
+          "Los valores fueron normalizados de 0 a 1000 para destacar las áreas con mayor riesgo de erosión."
         },
       ],
     },
@@ -440,7 +506,8 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Los procesos de cambios de uso de suelo de áreas con vegetación primaria y secundaria a usos de suelo antropogénico, modifican dramáticamente el ciclo natural de nutrientes.",
+          "El cambio de uso de suelo y la actividad agropecuaria, por la aplicación de agroquímicos, elevan la acumulación de nitrógeno. \n" +
+          "Se destacan siete microcuencas críticas en Valles Centrales y una tendencia muy alta al 2100 en la Sierra de Yautepec."
         },
       ],
     },
@@ -454,7 +521,8 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Los procesos de cambios de uso de suelo de áreas con vegetación primaria y secundaria a usos de suelo antropogénico, modifican dramáticamente el ciclo natural de nutrientes.",
+          "En 2018, se identificaron 14 microcuencas con muy alta acumulación de fósforo y 12 con valores altos, abarcando gran parte de Valles Centrales. \n" +
+          "Hacia 2100, se proyectan 135,458 ha con tendencia alta y 22,995 ha muy alta, concentradas en la Sierra de Yautepec, donde se requiere acciones preventivas."
         },
       ],
     },
@@ -463,12 +531,14 @@ export const dataPages = {
       data: [
         {
           type: "heading",
-          content: "Secuestro de Carbono",
+          content: "Balance de Carbono",
         },
         {
           type: "text",
           content:
-            "El secuestro de carbono es el proceso de capturar dióxido de carbono (CO2) de la atmósfera y almacenarlo en depósitos naturales o artificiales para reducir la cantidad de CO2 en la atmósfera y mitigar el cambio climático.",
+          "El almacenamiento y balance de carbono reflejan la capacidad de los ecosistemas para capturar o emitir gases. \n" +
+          "En 2018, se estimaron 66.9 millones de toneladas de carbono concentradas en 9 microcuencas montañosas. \n" +
+          "Estas zonas presentan la mayor tendencia a pérdida, con 131,154 ha en riesgo alto y 25,527 ha muy alto."
         },
       ],
     },
@@ -482,7 +552,8 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Los polinizadores brindan un servicio ecosistémico vital para la agricultura, la biodiversidad y la seguridad alimentaria, ya que muchas plantas cultivadas dependen de los polinizadores para producir alimentos.",
+          "Los polinizadores son esenciales para la agricultura y la biodiversidad. En el sistema agave–mezcal, los murciélagos nectarívoros cumplen este papel; se evaluaron cinco especies durante el año. \n" +
+          "Los resultados muestran baja variación estacional y alta concentración en zonas agrícolas, por lo que se recomienda enfocar el análisis en los cultivos de agave para representar con mayor precisión este servicio ecosistémico."
         },
       ],
     },
@@ -496,7 +567,7 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Para evaluar la aptitud del territorio para diferentes cultivos, es necesario conocer la fisiología de las plantas/cultivos, con lo que se pueden determinar las características agroecológicas que determinan los diferentes niveles de productividad.",
+          ""
         },
         {
           type: "heading",
@@ -505,7 +576,7 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Los escenarios con cambio climático muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos prioritarios caracterizados anteriormente.",
+          "Se incorporaron proyecciones climáticas futuras (RCP 8.5, horizonte 2075–2099), sustituyendo las variables de temperatura y precipitación. Los resultados muestran un aumento de temperatura y disminución de lluvias, que modifican la aptitud del territorio y la distribución de zonas óptimas de producción agrícola."
         },
       ],
     },
@@ -519,7 +590,7 @@ export const dataPages = {
         {
           type: "text",
           content:
-            "Los escenarios con cambio climático muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos prioritarios caracterizados anteriormente.",
+          "El potencial productivo del territorio se determinó con base en variables agroclimáticas —edafología, precipitación, temperatura, pendiente y altitud—. Estas permiten identificar zonas con distintos niveles de productividad, mediante un análisis jerárquico que integra las condiciones físicas y climáticas actuales del paisaje."
         },
       ],
     },
@@ -528,12 +599,18 @@ export const dataPages = {
       data: [
         {
           type: "heading",
-          content: "Agave Arroqueño",
+          content: "Agave americana (Arroqueño)",
+        },
+        {
+          type: "text",
+          content:
+          "El agave presenta alto potencial productivo y amplia plasticidad ecológica, adaptándose a diversos suelos y pendientes. \n" +
+          "Es el prototipo de los magueyes, originario del noreste de México, y su mezcal destaca por su sabor dulce."
         },
         {
           type: "table",
           title: "Requerimientos agroecológicos - Agave Arroqueño",
-          header: ["Parámetro", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          header: ["", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
           body: [
             [
               "Productividad (t/ha)",
@@ -573,6 +650,34 @@ export const dataPages = {
             ],
           ],
         },
+        {
+          type: "text",
+          content:
+          "El 42 % del territorio (340,332 ha) presenta condiciones óptimas para el cultivo de Agave americana, y el 57 % condiciones medias."
+        } ,
+        {
+          type: "table",
+          header: [
+            "Potencial productivo actual",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Sierra de Yautepec", "232,283", "167,342", "101", "302"],
+            ["Valles Centrales", "108,049", "300,058", "3,887", "1,943"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Al comparar los mapas de potencial productivo bajo condiciones actuales y escenarios de cambio climático, se identificaron tres tipos de cambio:\n" +
+          "a) 244,831 ha (72 %) mantienen condición óptima, \n" +
+          "b) 96,609 ha mejoran sus condiciones, y \n" +
+          "c) 95,501 ha las pierden, principalmente en la Sierra de Yautepec. "
+        },
+
       ],
     },
     {
@@ -583,9 +688,14 @@ export const dataPages = {
           content: "Agave Angustifolia (Espadín)",
         },
         {
+          type: "text",
+          content:
+          "Es la especie más cultivada y distribuida en Oaxaca por su alto contenido de azúcares, rápido crecimiento y amplia adaptabilidad agroecológica, con rendimientos de hasta 75 t/ha."
+        },
+        {
           type: "table",
-          title: "Requerimientos agroecológicos - Agave Angustifolia (Espadín)",
-          header: ["Parámetro", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          title: "",
+          header: ["", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
           body: [
             [
               "Productividad (t/ha)",
@@ -621,8 +731,70 @@ export const dataPages = {
               "600 - 1800",
               "1800 - 2000 / 400 - 600",
               "2000 - 2,200 / 300 - 400",
-              "> 2,200 / < 300",
+              "> 2,200",
             ],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "El 67 % del área evaluada (729,734 ha) presenta condiciones óptimas para el cultivo, concentradas en los Valles Centrales y la Sierra de Yautepec. \n" +
+          "Un 12 % (81,889 ha) muestra aptitud media, y solo el 1 % (2,342 ha) se considera baja o no apta."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo actual",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Valles Centrales", "108,049", "300,058", "3,887", "1,943"],
+            ["Sierra de Yautepec", "232,283", "167,342", "101", "302"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Bajo los escenarios de cambio climático, el 92 % del territorio mantiene aptitud óptima, con 396,174 ha en Valles Centrales y 365,717 ha en la Sierra de Yautepec. \n" +
+          "Un 6 % presenta aptitud media, mientras que las áreas no aptas son mínimas, reflejando una alta resiliencia frente a futuros impactos climáticos."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo con cambio climático",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Valles Centrales", "396,174", "15,367", "0", "2,396"],
+            ["Sierra de Yautepec", "365,717", "34,117", "194", "0"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Al comparar los escenarios actual y futuro bajo condiciones de cambio climático, se identifican tres tendencias:\n" +
+          "a) 714,431 ha (92.7 %) mantienen condiciones óptimas, \n" +
+          "b) 44,460 ha (5.7 %) mejoran su aptitud, y \n" +
+          "c) 12,303 ha (1.6 %) la pierden, principalmente en la Sierra de Yautepec. "
+        },
+        {
+          type: "table",
+          header: [
+            "",
+            "Sin cambio",
+            "Incremento",
+            "Pérdida",
+            "No apto",
+          ],
+          body: [
+            ["Sierra de Yautepec", "36,0286", "5,431", "9,355", "24,956"],
+            ["Valles Centrales", "357,145", "39,029", "2,948", "14,815"],
           ],
         },
       ],
@@ -633,6 +805,12 @@ export const dataPages = {
         {
           type: "heading",
           content: "Agave Iyoba",
+        },
+        {
+          type: "text",
+          content:
+          "Es una especie silvestre con alta adaptabilidad en zonas semiáridas de los Valles Centrales. Crece entre 1,500–1,700 msnm y pendientes de hasta 45 %, mostrando alta plasticidad ecológica. \n" +
+          "Se recomienda su uso productivo en Valles Centrales y manejo silvestre en la Sierra de Yautepec."
         },
         {
           type: "table",
@@ -677,6 +855,66 @@ export const dataPages = {
             ],
           ],
         },
+        {
+          type: "text",
+          content:
+          "En el escenario actual, los Valles Centrales presentan 49 % (269,926 ha) con condición óptima, 25 % media y 12 % baja. \n" +
+          "En la Sierra de Yautepec, el 26 % (140,091 ha) es óptimo, el 30 % medio y el 20 % bajo, con áreas no aptas menores al 1 %."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo actual",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Valles Centrales", "269,926", "76,526", "65,542", "1,943"],
+            ["Sierra de Yautepec", "156,897", "102,738", "0", "302"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Bajo condiciones de cambio climático, los Valles Centrales conservan 15 % (81,989 ha) con aptitud óptima, mientras que el 33 % es media y el 26 % baja. \n" +
+          "En la Sierra de Yautepec, el 45 % (238,748 ha) se mantiene óptimo, el 22 % medio y el 11 % bajo, con solo 0.4 % no apto"
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo con cambio climático",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Valles Centrales", "81,989", "177,597", "140,442", "0"],
+            ["Sierra de Yautepec", "238,748", "114,405", "58,388", "2,396"],
+          ],
+        },
+        {type: "text",
+          content:
+          "La comparación entre escenarios muestra tres cambios principales:\n" +
+          "a) 258,620 ha (69 %) mantienen su aptitud productiva en Valles Centrales, \n" +
+          "b) 19,731 ha mejoran sus condiciones, y \n" +
+          "c) 87,701 ha las pierden, con mayor afectación en la Sierra de Yautepec. "
+        },
+        {type: "table",
+          header: [
+            "",
+            "Sin cambio",
+            "Incremento",
+            "Pérdida",
+            "No apto",
+          ],
+          body: [
+            ["Sierra de Yautepec", "104,228", "2,578", "62,427", "23,0795"],
+            ["Valles Centrales", "258,620", "17,153", "25,274", "112,890"],
+          ],
+        },
       ],
     },
     {
@@ -685,6 +923,12 @@ export const dataPages = {
         {
           type: "heading",
           content: "Agave Karwinskii",
+        },
+        {
+          type: "text",
+          content:
+          "Es una especie endémica de Oaxaca con alto potencial productivo entre 1,000–1,700 msnm. \n" +
+          "Crece en zonas con 500–700 mm de lluvia, 18–22 °C y suelos Luvisol, Leptosol y Cambisol, apta para producción sustentable y restauración ecológica."
         },
         {
           type: "table",
@@ -729,6 +973,68 @@ export const dataPages = {
             ],
           ],
         },
+        {
+          type: "text",
+          content:
+          "Los Valles Centrales concentran 59 % (303,111 ha) con condición óptima, y la Sierra de Yautepec 35 % (173,078 ha) con aptitud media. \n" +
+          "Las áreas no aptas son mínimas, favoreciendo el manejo sostenible."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo actual",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Sierra de Yautepec", "198,901", "173,078", "27,747", "302"],
+            ["Valles Centrales", "303,111", "86,967", "21,916", "1,943"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Con el cambio climático, los Valles Centrales mantienen 58 % (299,728 ha) con aptitud óptima, mientras que la Sierra de Yautepec reduce a 28 %, aumentando la aptitud media (47 %)."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo con cambio climático",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Sierra de Yautepec", "137,312", "226,439", "36,277", "0"],
+            ["Valles Centrales", "299,728", "104,556", "7,257", "2,396"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "La comparación entre escenarios muestra:\n" +
+          "a) Valles Centrales mantienen 54 % (280,001 ha) con condición óptima, \n" +
+          "b) Sierra de Yautepec reduce a 28 % y aumenta áreas no aptas (42 %), \n" +
+          "c) Mejoras mínimas (4 % y <1 %). \n" +
+          "Se requiere priorizar estrategias de adaptación en la Sierra de Yautepec."
+        },
+        {
+          type: "table",
+          header: [
+            "",
+            "Sin cambio",
+            "Incremento",
+            "Pérdida",
+            "No apto",
+          ],
+          body: [
+            ["Sierra de Yautepec", "134,925", "2,387", "63,976", "19,8740"],
+            ["Valles Centrales", "280,001", "19,727", "23,110", "91,099"],
+          ],
+        },
       ],
     },
     {
@@ -737,6 +1043,13 @@ export const dataPages = {
         {
           type: "heading",
           content: "Agave Marmorata (Tepeztate)",
+        },
+        {
+          type: "text",
+          content:
+          "También conocido como pichomel o maguey curadero, se distribuye desde la cuenca del Balsas hasta el Istmo de Tehuantepec entre 680–1,600 msnm. \n" +
+          "Alcanza 1.5–2 m y puede rendir hasta 75 t/ha en condiciones óptimas. \n" +
+          "Por su lento crecimiento (12 a 35 años), requiere manejo técnico y uso en restauración productiva sustentable."
         },
         {
           type: "table",
@@ -779,6 +1092,67 @@ export const dataPages = {
               "2000 - 2300 / 550 - 800",
               "> 2300 / < 550",
             ],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Bajo condiciones actuales, los Valles Centrales presentan 64 % (283,894 ha) con aptitud óptima, y la Sierra de Yautepec 37 % (166,655 ha). \n" +
+          "Esta última muestra baja área no apta (0.1 %) y alta continuidad territorial, favoreciendo la expansión y adaptación sustentable."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo actual",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Sierra de Yautepec", "166,655", "153,448", "79,623", "302"],
+            ["Valles Centrales", "283,894", "75,322", "52,778", "1,943"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "En el escenario futuro, la Sierra de Yautepec conservaría 58 % (275,773 ha) con aptitud óptima, mientras que los Valles Centrales reducirían a 22 % (106,806 ha). \n" +
+          "Las áreas no aptas son mínimas, reflejando alta capacidad de adaptación."
+        },
+        {
+          type: "table",
+          header: [
+            "Potencial productivo con cambio climático",
+            "Óptimo",
+            "Medio",
+            "Bajo",
+            "No apto/Marginal",
+          ],
+          body: [
+            ["Sierra de Yautepec", "275,773", "77,570", "58,198", "2,396"],
+            ["Valles Centrales", "106,806", "176,887", "116,335", "0"],
+          ],
+        },
+        {type: "text",
+          content:
+          "La comparación entre escenarios muestra:\n" +
+          "a) 362,848 ha (77.2 %) mantienen condición óptima, \n" +
+          "b) 19,731 ha (4.2 %) mejoran, y \n" +
+          "c) 87,701 ha (18.6 %) la pierden, principalmente en la Sierra de Yautepec, donde el 49 % resulta no apto. \n" +
+          "Se requiere priorizar estrategias de adaptación en la Sierra de Yautepec."
+        },
+        {type: "table",
+          header: [
+            "",
+            "Sin cambio",
+            "Incremento",
+            "Pérdida",
+            "No apto",
+          ],
+          body: [
+            ["Sierra de Yautepec", "104,228", "2,578", "62,427", "230,795"],
+            ["Valles Centrales", "258,620", "17,153", "25,274", "112,890"],
           ],
         },
       ],
