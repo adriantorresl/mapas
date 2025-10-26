@@ -92,23 +92,29 @@ export const navigationData = {
       subsecciones: [
         {
           id: "4.1",
-          titulo: "Agave Arroqueño",
-        },
-        {
-          id: "4.2",
-          titulo: "Agave Angustifolia (Espadín)",
-        },
-        {
-          id: "4.3",
-          titulo: "Agave Iyoba",
-        },
-        {
-          id: "4.4",
-          titulo: "Agave Karwinskii",
-        },
-        {
-          id: "4.5",
-          titulo: "Agave Marmorata (Tepeztate)",
+          titulo: "Agaves",
+          subsecciones: [
+            {
+              id: "4.1.1",
+              titulo: "Arroqueño",
+            },
+            {
+              id: "4.1.2",
+              titulo: "Angustifolia",
+            },
+            {
+              id: "4.1.3",
+              titulo: "Iyoba",
+            },
+            {
+              id: "4.1.4",
+              titulo: "Karwinskii",
+            },
+            {
+              id: "4.1.5",
+              titulo: "Marmorata",
+            },
+          ],
         },
       ],
     },

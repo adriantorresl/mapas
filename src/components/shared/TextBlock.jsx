@@ -6,6 +6,7 @@ const TextBlock = ({ content }) => {
         style={{
           fontSize: "0.95rem",
           color: "#fff",
+          // color: "#ffe699",
           textAlign: "justify",
           lineHeight: "1.6",
           margin: "0",

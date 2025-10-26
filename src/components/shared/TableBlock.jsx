@@ -51,7 +51,6 @@ const TableBlock = ({ title, header, body }) => {
                       style={{
                         padding: "12px 8px",
                         backgroundColor: "#FFE699",
-                        borderBottom: "2px solid #BF9000",
                         textAlign: "center",
                         fontWeight: "600",
                         fontSize: "0.8rem",
@@ -72,7 +71,7 @@ const TableBlock = ({ title, header, body }) => {
                 <tr
                   key={rowIndex}
                   style={{
-                    backgroundColor: rowIndex % 2 === 0 ? "#c1f0c8" : "#ffffff",
+                    backgroundColor: "#fff2cc",
                   }}
                 >
                   {row.map((cell, cellIndex) => (
