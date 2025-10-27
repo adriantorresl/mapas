@@ -134,31 +134,31 @@ export const componentMapping = {
   },
 
   // Agave Arroqueño
-  4.1: {
+  "4.1.1": {
     component: Americana,
     props: {},
   },
 
   // 4.2 - Agave Angustifolia (Espadín)
-  4.2: {
+  "4.1.2": {
     component: Angustifolia,
     props: {},
   },
 
   // 4.3 - Agave Iyoba
-  4.3: {
+  "4.1.3": {
     component: Iyoba,
     props: {},
   },
 
   // 4.4 - Agave Karwinskii
-  4.4: {
+  "4.1.4": {
     component: Karwinskii,
     props: {},
   },
 
   // 4.5 - Agave Marmorata (Tepeztate)
-  4.5: {
+  "4.1.5": {
     component: Marmorata,
     props: {},
   },
