@@ -468,6 +468,7 @@ const GroupedLayerControl = ({
   area,
   paisajes,
   municipios,
+  cuencas,
   co2Cuenca,
   activeLayers,
   setActiveLayers,
@@ -586,6 +587,62 @@ const GroupedLayerControl = ({
       });
       if (activeLayers.municipios) {
         newLayers.municipios.addTo(map);
+      }
+    }
+
+    // Cuencas
+    if (cuencas) {
+      newLayers.cuencas = L.geoJSON(cuencas, {
+        style: {
+          color: "#0f42b4", // Borde azul según SLD
+          weight: 2,
+          fillOpacity: 0, // Transparente según SLD
+          fillColor: "#729b6f", // Color de relleno (aunque transparente)
+        },
+        onEachFeature: (feature, layer) => {
+          // Agregar etiquetas con ID_WS según el SLD
+          const idWs = feature.properties.ID_WS || "N/A";
+          if (idWs !== "N/A") {
+            const center = layer.getBounds().getCenter();
+            const label = L.marker(center, {
+              icon: L.divIcon({
+                className: "cuenca-label",
+                html: `<div style="
+                  font-family: 'Open Sans', sans-serif;
+                  font-size: 13px;
+                  color: #323232;
+                  text-shadow: 3.5px 3.5px 3.5px #fffdfd, -3.5px -3.5px 3.5px #fffdfd, 3.5px -3.5px 3.5px #fffdfd, -3.5px 3.5px 3.5px #fffdfd;
+                  font-weight: normal;
+                  text-align: center;
+                ">${idWs}</div>`,
+                iconSize: [50, 20],
+                iconAnchor: [25, 10],
+              }),
+            });
+
+            // Guardar la referencia de la etiqueta en la capa
+            layer.cuencaLabel = label;
+          }
+
+          // Popup con información
+          layer.bindPopup(
+            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+              <strong>Cuenca:</strong><br/>
+              <strong>ID:</strong> ${idWs}
+            </div>`
+          );
+        },
+      });
+
+      // Solo agregar al mapa si la capa está activa
+      if (activeLayers.cuencas) {
+        newLayers.cuencas.addTo(map);
+        // Agregar las etiquetas también
+        newLayers.cuencas.eachLayer((sublayer) => {
+          if (sublayer.cuencaLabel) {
+            sublayer.cuencaLabel.addTo(map);
+          }
+        });
       }
     }
 
@@ -764,6 +821,14 @@ const GroupedLayerControl = ({
         if (map.hasLayer(layer)) {
           map.removeLayer(layer);
         }
+        // Limpiar etiquetas de cuencas
+        if (layer.eachLayer) {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel && map.hasLayer(sublayer.cuencaLabel)) {
+              map.removeLayer(sublayer.cuencaLabel);
+            }
+          });
+        }
       });
       Object.values(baseLayers).forEach((layer) => {
         if (map.hasLayer(layer)) {
@@ -776,11 +841,13 @@ const GroupedLayerControl = ({
     area,
     paisajes,
     municipios,
+    cuencas,
     co2Cuenca,
     activeBaseLayer,
     activeLayers.area,
     activeLayers.paisajes,
     activeLayers.municipios,
+    activeLayers.cuencas,
     activeLayers.co2Cuenca,
     activeLayers.co2Cuenca2100,
   ]);
@@ -802,8 +869,26 @@ const GroupedLayerControl = ({
     if (layer) {
       if (newActiveLayers[layerKey]) {
         layer.addTo(map);
+
+        // Agregar etiquetas especiales para cuencas
+        if (layerKey === "cuencas") {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel) {
+              sublayer.cuencaLabel.addTo(map);
+            }
+          });
+        }
       } else {
         map.removeLayer(layer);
+
+        // Remover etiquetas especiales para cuencas
+        if (layerKey === "cuencas") {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel && map.hasLayer(sublayer.cuencaLabel)) {
+              map.removeLayer(sublayer.cuencaLabel);
+            }
+          });
+        }
       }
     }
   };
@@ -1062,6 +1147,12 @@ const GroupedLayerControl = ({
               data={municipios}
               showOpacity={false}
             />
+            <LayerItem
+              layerKey="cuencas"
+              title="Cuencas"
+              data={cuencas}
+              showOpacity={false}
+            />
           </div>
 
           {/* Grupo de Carbono */}
@@ -1229,6 +1320,7 @@ const Carbono = ({
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
+  const [cuencas, setCuencas] = useState(null);
   const [co2Cuenca, setCo2Cuenca] = useState(null);
 
   // Estados para visualización
@@ -1236,6 +1328,7 @@ const Carbono = ({
     area: true,
     paisajes: true,
     municipios: true,
+    cuencas: false,
     co2Cuenca: true,
     co2Cuenca2100: false,
     rasterCO2: false,
@@ -1321,6 +1414,13 @@ const Carbono = ({
           setMunicipios(municipiosData);
         }
 
+        // Cargar cuencas
+        const cuencasResponse = await fetch("/CUENCAS.geojson");
+        if (cuencasResponse.ok) {
+          const cuencasData = await cuencasResponse.json();
+          setCuencas(cuencasData);
+        }
+
         // Cargar datos de CO2
         const co2Response = await fetch(geojsonUrl);
         if (co2Response.ok) {
@@ -1388,6 +1488,7 @@ const Carbono = ({
           area={area}
           paisajes={paisajes}
           municipios={municipios}
+          cuencas={cuencas}
           co2Cuenca={co2Cuenca}
           activeLayers={activeLayers}
           setActiveLayers={setActiveLayers}

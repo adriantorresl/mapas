@@ -554,6 +554,7 @@ const GroupedLayerControl = ({
   area,
   paisajes,
   municipios,
+  cuencas,
   ndrPTendenciaWS,
   activeLayers,
   setActiveLayers,
@@ -683,12 +684,176 @@ const GroupedLayerControl = ({
       }
     }
 
+    // Cuencas
+    if (cuencas) {
+      newLayers.cuencas = L.geoJSON(cuencas, {
+        style: {
+          color: "#0f42b4", // Borde azul según SLD
+          weight: 2,
+          fillOpacity: 0, // Transparente según SLD
+          fillColor: "#729b6f", // Color de relleno (aunque transparente)
+          opacity: 1, // Asegurar que el borde sea visible
+        },
+        onEachFeature: (feature, layer) => {
+          // Agregar etiquetas con ID_WS según el SLD
+          const idWs = feature.properties.ID_WS || "N/A";
+          if (idWs !== "N/A") {
+            const center = layer.getBounds().getCenter();
+            const label = L.marker(center, {
+              icon: L.divIcon({
+                className: "cuenca-label",
+                html: `<div style="
+                  font-family: 'Open Sans', sans-serif;
+                  font-size: 13px;
+                  color: #323232;
+                  text-shadow: 3.5px 3.5px 3.5px #fffdfd, -3.5px -3.5px 3.5px #fffdfd, 3.5px -3.5px 3.5px #fffdfd, -3.5px 3.5px 3.5px #fffdfd;
+                  font-weight: normal;
+                  text-align: center;
+                ">${idWs}</div>`,
+                iconSize: [50, 20],
+                iconAnchor: [25, 10],
+              }),
+            });
+
+            // Guardar la referencia de la etiqueta en la capa
+            layer.cuencaLabel = label;
+          }
+
+          // Popup con información
+          layer.bindPopup(
+            `<div style="font-family: Arial, sans-serif; font-size: 12px;">
+              <strong>Cuenca:</strong><br/>
+              <strong>ID:</strong> ${idWs}
+            </div>`
+          );
+        },
+      });
+
+      // Solo agregar al mapa si la capa está activa
+      if (activeLayers.cuencas) {
+        newLayers.cuencas.addTo(map);
+        // Agregar las etiquetas también
+        newLayers.cuencas.eachLayer((sublayer) => {
+          if (sublayer.cuencaLabel) {
+            sublayer.cuencaLabel.addTo(map);
+          }
+        });
+      }
+    }
+
+    // Balance de Fósforo (2018) - GeoJSON
+    if (ndrPTendenciaWS) {
+      newLayers.balanceFosforo2018 = L.geoJSON(ndrPTendenciaWS, {
+        style: (feature) => {
+          const value = feature.properties.S7;
+          let color = "#0c5406"; // Color por defecto
+
+          // Aplicar colores según los rangos del SLD NDR_P_S7_WS.sld
+          if (value >= 0 && value <= 5000) {
+            color = "#0c5406";
+          } else if (value > 5000 && value <= 10000) {
+            color = "#85a503";
+          } else if (value > 10000 && value <= 20000) {
+            color = "#fff700";
+          } else if (value > 20000 && value <= 40000) {
+            color = "#e27c00";
+          } else if (value > 40000 && value <= 80607) {
+            color = "#c40000";
+          }
+
+          return {
+            color: "#232323",
+            weight: 1,
+            fillColor: color,
+            fillOpacity: opacity.balanceFosforo2018,
+            opacity: 0.8,
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent = "<strong>Balance de Fósforo (2018)</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
+      });
+      if (activeLayers.balanceFosforo2018) {
+        newLayers.balanceFosforo2018.addTo(map);
+      }
+    }
+
+    // Tendencia de Fósforo (2100) - GeoJSON
+    if (ndrPTendenciaWS) {
+      newLayers.tendenciaFosforo2100 = L.geoJSON(ndrPTendenciaWS, {
+        style: (feature) => {
+          const value = feature.properties.A_2100;
+          let color = "#0c5406"; // Color por defecto
+
+          // Aplicar colores según los rangos del SLD NDR_P_Tendencia_WS.sld
+          if (value >= -74171 && value <= 5000) {
+            color = "#0c5406";
+          } else if (value > 5000 && value <= 10000) {
+            color = "#8ed500";
+          } else if (value > 10000 && value <= 20000) {
+            color = "#fff700";
+          } else if (value > 20000 && value <= 40000) {
+            color = "#ff9f00";
+          } else if (value > 40000 && value <= 80455) {
+            color = "#c40000";
+          } else if (value > 80456 && value <= 106012) {
+            color = "#601c2a";
+          }
+
+          return {
+            color: "#232323",
+            weight: 1,
+            fillColor: color,
+            fillOpacity: opacity.tendenciaFosforo2100,
+            opacity: 0.8,
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties) {
+            let popupContent =
+              "<strong>Tendencia de Fósforo (2100)</strong><br>";
+            Object.keys(feature.properties).forEach((key) => {
+              if (
+                feature.properties[key] !== null &&
+                feature.properties[key] !== undefined
+              ) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+              }
+            });
+            layer.bindPopup(popupContent);
+          }
+        },
+      });
+      if (activeLayers.tendenciaFosforo2100) {
+        newLayers.tendenciaFosforo2100.addTo(map);
+      }
+    }
+
     setLayers(newLayers);
 
     return () => {
       Object.values(newLayers).forEach((layer) => {
         if (map.hasLayer(layer)) {
           map.removeLayer(layer);
+        }
+        // Limpiar etiquetas de cuencas
+        if (layer.eachLayer) {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel && map.hasLayer(sublayer.cuencaLabel)) {
+              map.removeLayer(sublayer.cuencaLabel);
+            }
+          });
         }
       });
       Object.values(baseLayers).forEach((layer) => {
@@ -702,158 +867,17 @@ const GroupedLayerControl = ({
     area,
     paisajes,
     municipios,
+    cuencas,
+    ndrPTendenciaWS,
     activeBaseLayer,
     activeLayers.area,
     activeLayers.paisajes,
     activeLayers.municipios,
-    activeLayers.balanceFosforo2018,
-    activeLayers.tendenciaFosforo2100,
-  ]);
-
-  useEffect(() => {
-    // Manejo de capas GeoJSON de fósforo
-    if (ndrPTendenciaWS) {
-      // Balance de Fósforo (2018) - GeoJSON
-      if (activeLayers.balanceFosforo2018) {
-        const balanceFosforo2018Layer = L.geoJSON(ndrPTendenciaWS, {
-          style: (feature) => {
-            const value = feature.properties.S7;
-            let color = "#0c5406"; // Color por defecto
-
-            // Aplicar colores según los rangos del SLD NDR_P_S7_WS.sld
-            if (value >= 0 && value <= 5000) {
-              color = "#0c5406";
-            } else if (value > 5000 && value <= 10000) {
-              color = "#85a503";
-            } else if (value > 10000 && value <= 20000) {
-              color = "#fff700";
-            } else if (value > 20000 && value <= 40000) {
-              color = "#e27c00";
-            } else if (value > 40000 && value <= 80607) {
-              color = "#c40000";
-            }
-
-            return {
-              color: "#232323",
-              weight: 1,
-              fillColor: color,
-              fillOpacity: opacity.balanceFosforo2018,
-              opacity: 0.8,
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature.properties) {
-              let popupContent =
-                "<strong>Balance de Fósforo (2018)</strong><br>";
-              popupContent += `<strong>Valor S7:</strong> ${
-                feature.properties.S7 || "N/A"
-              } kg P/ha/año<br>`;
-              Object.keys(feature.properties).forEach((key) => {
-                if (
-                  key !== "S7" &&
-                  feature.properties[key] !== null &&
-                  feature.properties[key] !== undefined
-                ) {
-                  popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
-                }
-              });
-              layer.bindPopup(popupContent);
-            }
-          },
-        });
-
-        if (!layers.balanceFosforo2018) {
-          setLayers((prev) => ({
-            ...prev,
-            balanceFosforo2018: balanceFosforo2018Layer,
-          }));
-          balanceFosforo2018Layer.addTo(map);
-        }
-      } else if (layers.balanceFosforo2018) {
-        map.removeLayer(layers.balanceFosforo2018);
-        setLayers((prev) => {
-          const newLayers = { ...prev };
-          delete newLayers.balanceFosforo2018;
-          return newLayers;
-        });
-      }
-
-      // Tendencia de Fósforo (2100) - GeoJSON
-      if (activeLayers.tendenciaFosforo2100) {
-        const tendenciaFosforo2100Layer = L.geoJSON(ndrPTendenciaWS, {
-          style: (feature) => {
-            const value = feature.properties.A_2100;
-            let color = "#0c5406"; // Color por defecto
-
-            // Aplicar colores según los rangos del SLD NDR_P_Tendencia_WS.sld
-            if (value >= -74171 && value <= 5000) {
-              color = "#0c5406";
-            } else if (value > 5000 && value <= 10000) {
-              color = "#8ed500";
-            } else if (value > 10000 && value <= 20000) {
-              color = "#fff700";
-            } else if (value > 20000 && value <= 40000) {
-              color = "#ff9f00";
-            } else if (value > 40000 && value <= 80455) {
-              color = "#c40000";
-            } else if (value > 80455 && value <= 106012) {
-              color = "#601c2a";
-            }
-
-            return {
-              color: "#232323",
-              weight: 1,
-              fillColor: color,
-              fillOpacity: opacity.tendenciaFosforo2100,
-              opacity: 0.8,
-            };
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature.properties) {
-              let popupContent =
-                "<strong>Tendencia de Fósforo (2100)</strong><br>";
-              popupContent += `<strong>Valor A_2100:</strong> ${
-                feature.properties.A_2100 || "N/A"
-              } kg P/ha/año<br>`;
-              Object.keys(feature.properties).forEach((key) => {
-                if (
-                  key !== "A_2100" &&
-                  feature.properties[key] !== null &&
-                  feature.properties[key] !== undefined
-                ) {
-                  popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
-                }
-              });
-              layer.bindPopup(popupContent);
-            }
-          },
-        });
-
-        if (!layers.tendenciaFosforo2100) {
-          setLayers((prev) => ({
-            ...prev,
-            tendenciaFosforo2100: tendenciaFosforo2100Layer,
-          }));
-          tendenciaFosforo2100Layer.addTo(map);
-        }
-      } else if (layers.tendenciaFosforo2100) {
-        map.removeLayer(layers.tendenciaFosforo2100);
-        setLayers((prev) => {
-          const newLayers = { ...prev };
-          delete newLayers.tendenciaFosforo2100;
-          return newLayers;
-        });
-      }
-    }
-  }, [
-    map,
-    ndrPTendenciaWS,
+    activeLayers.cuencas,
     activeLayers.balanceFosforo2018,
     activeLayers.tendenciaFosforo2100,
     opacity.balanceFosforo2018,
     opacity.tendenciaFosforo2100,
-    layers.balanceFosforo2018,
-    layers.tendenciaFosforo2100,
   ]);
 
   const toggleLayer = (layerKey) => {
@@ -865,8 +889,36 @@ const GroupedLayerControl = ({
     if (layer) {
       if (newActiveLayers[layerKey]) {
         layer.addTo(map);
+
+        // Solo aplicar opacidad a capas que no son límites
+        if (
+          layerKey !== "area" &&
+          layerKey !== "paisajes" &&
+          layerKey !== "municipios" &&
+          layerKey !== "cuencas"
+        ) {
+          layer.setStyle({ fillOpacity: opacity[layerKey] || 0.6 });
+        }
+
+        // Agregar etiquetas especiales para cuencas
+        if (layerKey === "cuencas") {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel) {
+              sublayer.cuencaLabel.addTo(map);
+            }
+          });
+        }
       } else {
         map.removeLayer(layer);
+
+        // Remover etiquetas especiales para cuencas
+        if (layerKey === "cuencas") {
+          layer.eachLayer((sublayer) => {
+            if (sublayer.cuencaLabel && map.hasLayer(sublayer.cuencaLabel)) {
+              map.removeLayer(sublayer.cuencaLabel);
+            }
+          });
+        }
       }
     }
   };
@@ -1137,6 +1189,12 @@ const GroupedLayerControl = ({
               layerKey="municipios"
               title="Municipios"
               data={municipios}
+              showOpacity={false}
+            />
+            <LayerItem
+              layerKey="cuencas"
+              title="Cuencas"
+              data={cuencas}
               showOpacity={false}
             />
           </div>
@@ -1792,6 +1850,7 @@ const Fosforo = () => {
   const [area, setArea] = useState(null);
   const [paisajes, setPaisajes] = useState(null);
   const [municipios, setMunicipios] = useState(null);
+  const [cuencas, setCuencas] = useState(null);
   const [ndrPTendenciaWS, setNdrPTendenciaWS] = useState(null);
 
   // Estados para visualización
@@ -1799,6 +1858,7 @@ const Fosforo = () => {
     area: true,
     paisajes: true,
     municipios: true,
+    cuencas: false,
     balanceFosforo2018: true,
     tendenciaFosforo2100: false,
     balanceFosforoRaster: false,
@@ -1894,6 +1954,13 @@ const Fosforo = () => {
         if (municipiosResponse.ok) {
           const municipiosData = await municipiosResponse.json();
           setMunicipios(municipiosData);
+        }
+
+        // Cargar cuencas
+        const cuencasResponse = await fetch("/CUENCAS.geojson");
+        if (cuencasResponse.ok) {
+          const cuencasData = await cuencasResponse.json();
+          setCuencas(cuencasData);
         }
 
         // Cargar datos de fósforo
@@ -1994,6 +2061,7 @@ const Fosforo = () => {
           area={area}
           paisajes={paisajes}
           municipios={municipios}
+          cuencas={cuencas}
           ndrPTendenciaWS={ndrPTendenciaWS}
           activeLayers={activeLayers}
           setActiveLayers={setActiveLayers}
