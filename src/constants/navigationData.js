@@ -126,14 +126,6 @@ export const navigationData = {
           id: "5.1",
           titulo: "Zonificación",
         },
-        {
-          id: "5.2",
-          titulo: "Story map",
-        },
-        {
-          id: "5.3",
-          titulo: "Sistema de monitoreo",
-        },
       ],
     },
   ],
