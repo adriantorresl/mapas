@@ -585,12 +585,17 @@ export const dataPages = {
       data: [
         {
           type: "heading",
-          content: "Escenarios con cambio climático",
+          content: "Escenarios de cambio climático",
         },
         {
           type: "text",
           content:
-          "El potencial productivo del territorio se determinó con base en variables agroclimáticas —edafología, precipitación, temperatura, pendiente y altitud—. Estas permiten identificar zonas con distintos niveles de productividad, mediante un análisis jerárquico que integra las condiciones físicas y climáticas actuales del paisaje."
+          "La modelación de los impactos del cambio climático en el potencial productivo de agave, se utilizaron los parámetros con los que se construyó el Atlas Nacional de Vulnerabilidad al Cambio Climático  (INECC, 2023). \n" +
+          "Para la construcción del ANVCC, el INECC utilizó el modelo acoplado CMIP5 que consta de anomalías mensuales de 4 modelos de circulación general de la atmósfera que son: CNRM-CM5, HADGEM2-ES, MPI-ESM-LR, GFDL-CM3, así mismo considera tres horizontes de tiempo: \n" +
+          "•	Corto de 2015 -2039 \n" +
+          "•	Mediano plazo de 2045 – 2069 \n" +
+          "•	Largo plazo de 2075 – 2099. \n" +
+          "Los escenarios muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos del agave."
         },
       ],
     },
@@ -1157,5 +1162,53 @@ export const dataPages = {
         },
       ],
     },
+    {
+      id: "5.1",
+      data: [
+        {
+          type: "heading",
+          content: "Plan de Manejo Integral del paisaje - Zonificación",
+        },
+        {
+          type: "text",
+          content:
+          "La zonificación considera variables ecológicas, sociales y productivas, seleccionadas por su relevancia en la determinación de conflictos y oportunidades en el paisaje. "
+        },
+        {
+          type: "table",
+          header: [
+            ["","","","","Enfoque de manejo",""],
+            ["","", "Preservación",
+              "Conservación",
+              "Restauración",
+              "Aprovechamiento",
+              ]
+          ],
+          body: [
+            ["Criterios de zonificación", "Sitios de alto valor cultural","✓","✓","✓","X"],
+            ["","Corredores biológicos", "✓", "✓", "✓", "X"],
+            ["","Importancia ecológica", "✓", "✓", "✓", "X"],
+            ["","Áreas protegidas", "✓", "✓", "✓", "X"],
+            ["","Ecosistemas sensibles", "", "", "", ""],
+            ["","Potencial productivo", "X", "X", "X", "Óptimo"],
+            ["","Degradación funcional del paisaje", "Muy bajo", "Bajo", "Medio - Muy Alto", "Medio - Muy Alto"],
+            ["","Vegetación primaria", "✓", "✓", "X", "X"],
+            ["","Vegetación secundaria arbórea", "✓", "✓", "X", "X"],
+            ["","Vegetación secundaria arbustiva", "X", "X", "✓", "✓"],
+            ["","Vegetación secundaria arbustiva", "X", "X", "✓", "✓"],
+            ["","Zonas agrícolas permanentes", "X", "X", "✓", "X"],
+            ["","Zonas agrícolas temporales", "X", "X", "✓", "✓"],
+            ["","Zonas ganaderas", "X", "X", "✓", "✓"],
+            ["","Pobreza", "Moderada - Extrema", "Moderada - Extrema", "Moderada - Extrema", "Moderada - Extrema"],
+            ["","Urbano", "X", "X", "X", "X"],
+          ],
+        },
+        {
+          type: "text",
+          content:
+          "Las variables fueron reclasificadas en 5 rangos (muy alto, alto, medio, bajo y muy bajo), valores que fueron ordenándose en una matriz de exclusión, de tal manera que permitirán identificar las áreas de conservación, preservación, restauración (ecológica y productiva) y aprovechamiento sustentable."
+        }
+        ],
+    }
   ],
 };

@@ -9,7 +9,7 @@
     height: 100%;
     
     .content-left-sidebar {
-        width: 32%;
+        width: 34%;
         background: #1e3c20;
         height: 100%;
         display: flex;
@@ -31,7 +31,7 @@
     }
     
     .core-template-map {
-        width: 68%;
+        width: 66%;
         height: 100%;
     }
 }
