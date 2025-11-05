@@ -1,12 +1,14 @@
 import React from 'react';
 
-const ImageBlock = ({ src, title, alt, caption }) => {
+const ImageBlock = ({ src, title, alt, caption, width, height }) => {
   return (
-    <div style={{ marginTop: "25px", marginBottom: "25px" }}>
+    <div style={{ marginTop: "25px", marginBottom: "25px"}}>
       <div
         style={{
           borderRadius: "8px",
-          padding: "15px",
+          padding: "15px", 
+          display: "grid",
+          justifyItems: "center"
         }}
       >
         {title && (
@@ -26,8 +28,8 @@ const ImageBlock = ({ src, title, alt, caption }) => {
           src={src}
           alt={alt || title || "Imagen"}
           style={{
-            width: "100%",
-            height: "auto",
+            width: width || "100%",
+            height: height || "auto",
             borderRadius: "6px",
             display: "block"
           }}

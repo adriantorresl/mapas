@@ -27,6 +27,8 @@ const TextOverlay = ({ title, content, tables, images, blocks }) => {
       case 'image':
         return (
           <ImageBlock
+            width={block.width}
+            height={block.height}
             key={index}
             src={block.src}
             title={block.title}
@@ -120,6 +122,8 @@ const TextOverlay = ({ title, content, tables, images, blocks }) => {
             {/* Imágenes dinámicas (sistema anterior) */}
             {images && Array.isArray(images) && images.map((image, imageIndex) => (
               <ImageBlock
+                width={image.width}
+                height={image.height}
                 key={imageIndex}
                 src={image.src}
                 title={image.title}

@@ -36,6 +36,9 @@ html,
   cursor: pointer;
   padding: 10px 15px 10px 10px;
   border-right: 1px solid #8b795d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Efectos sutiles de botón */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

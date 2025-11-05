@@ -4,7 +4,7 @@ import tendenciaClimatica from "../assets/media/tendencia-climatica.png";
 import zonaCentralPieChart from "../assets/media/zona-central-pie-chart.png";
 import pieChartTerritorio from "../assets/media/pie-chart-territorio.png";
 import temperaturaPrecipitacion from "../assets/media/temperature-precipitacion.png";
-
+import mapaZonificacionChart from "../assets/media/zonificacion-chart.png";
 export const dataPages = {
   pages: [
     {
@@ -16,25 +16,47 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-            "El área de estudio se localiza en la zona central del estado de Oaxaca, con una superficie total de 816,566.9 hectáreas.",
+          content:[
+            {
+              type: "paragraph",
+              content: "El área de estudio se localiza en la zona central del estado de Oaxaca, con una superficie total de ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "816,566.9 hectáreas.",
+              color: "#FFE699",
+            }
+          ]
         },
         {
           type: "image",
           src: zonaCentralPieChart,
           title: "",
           alt: "Gráfica de zona central del estado de Oaxaca",
+          width: "60%",
+          height: "auto",
           caption:
             "",
         },
         {
           type: "text",
-          content:
-            "Los municipios incluidos en el paisaje biocultural de la Sierra de Yautepec y Valles Centrales: 59",
+          content:[
+            {
+              type: "paragraph",
+              content: "Los municipios incluidos en el paisaje biocultural de la Sierra de Yautepec y Valles Centrales: ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "59",
+              color: "#FFE699",
+            }
+          ]
         },
         {
           type: "table",
-          title: "Distribución de paisajes bioculturales",
+          title: "",
           header: ["Paisaje", "Municipios", "Superficie", "%"],
           body: [
             ["Valles Centrales", "11", "401,208 has", "41%"],
@@ -52,61 +74,203 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "En el área de estudio se identifican 11 tipos de suelo, de los cuales ocho presentan condiciones óptimas para la producción de agaves, equivalentes al 90 % de la superficie total (macados en color amarillo)."
+          content:[
+            {
+              type: "paragraph",
+              content: "En el área de estudio se identifican ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "11 tipos de suelo,",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " de los cuales ocho presentan condiciones óptimas para la producción de ",
+              color: "#000",
+            },
+            {
+              type: "paragraph",
+              content: "agaves, equivalentes al ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "90 % de la superficie total",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " (macados en color amarillo).",
+              color: "#fff",
+            }
+          ]
         },
         {
           type: "table",
-          title: "Distribución de suelos por textura (hectáreas)",
+          title: "",
           header: [[
-            "Suelo / textura",
-            "",
-            "Sierra de Yautepec ",
-            "",
-            "",
-            "Valles Centrales ",
-            "",
+            {content: "Suelo / textura", colSpan: 1, backgroundColor: "#fff2cc"},
+            {content: "Sierra de Yautepec ", colSpan: 3, backgroundColor: "#fff2cc"},
+            {content: "Valles Centrales ", colSpan: 3, backgroundColor: "#fff2cc"},
           ],
-        ["","Fina", "Media", "Gruesa","Fina", "Media", "Gruesa"]],
+        [ {content: "", colSpan: 1, backgroundColor: "#fff2cc"},
+          {content: "Fina", backgroundColor: "#fff2cc"}, 
+          {content: "Media", backgroundColor: "#fff2cc"}, 
+          {content: "Gruesa", backgroundColor: "#fff2cc"},
+          {content: "Fina", backgroundColor: "#fff2cc"}, 
+          {content: "Media", backgroundColor: "#fff2cc"}, 
+          {content: "Gruesa", backgroundColor: "#fff2cc"},
+        ]],
           body: [
-            ["Regosol", "0", "25,278", "24,255", "0", "66,154", "4,694"],
             [
-              "Phaeozem",
-              "3,235",
-              "16,998",
+              {content: "Regosol", backgroundColor: "#FFE699"}, 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              {content: "25,278", backgroundColor: "#FFE699"}, 
+              {content: "24,255", backgroundColor: "#FFE699"}, 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              {content: "66,154", backgroundColor: "#FFE699"}, 
+              {content: "4,694", backgroundColor: "#FFE699"}, 
+            ],
+            [
+              {content: "Phaeozem", backgroundColor: "#FFE699"},
+              {content: "3,235", backgroundColor: "#FFE699"},
+              {content: "16,998", backgroundColor: "#FFE699"},
               "19,168",
-              "18,449",
-              "11,629",
+              {content: "18,449", backgroundColor: "#FFE699"},
+              {content: "11,629", backgroundColor: "#FFE699"},
               "303",
             ],
-            ["Leptosol", "43,610", "72,452", "0", "36,377", "58,806", "321"],
-            ["Luvisol", "35,491", "67,062", "0", "66,493", "22,652", "7,944"],
-            ["Cambisol", "37,197", "40,724", "0", "28,640", "24,296", "1,098"],
-            ["Calcisol", "0", "0", "0", "0", "12,756", "0"],
-            ["Kastanozem", "0", "4,751", "0", "0", "0", "0"],
-            ["Vertisol", "0", "0", "0", "9,162", "0", "0"],
-            ["Fluvisol", "0", "981", "6,433", "0", "0", "4,421"],
+            [
+              {content: "Leptosol", backgroundColor: "#FFE699"}, 
+              {content: "43,610", backgroundColor: "#FFE699"}, 
+              {content: "72,452", backgroundColor: "#FFE699"}, 
+              "0", 
+              {content: "36,377", backgroundColor: "#FFE699"}, 
+              {content: "58,806", backgroundColor: "#FFE699"}, 
+              "321"],
+            [
+              {content: "Luvisol", backgroundColor: "#FFE699"}, 
+              {content: "35,491", backgroundColor: "#FFE699"}, 
+              {content: "67,062", backgroundColor: "#FFE699"},
+              "0",
+              {content: "66,493", backgroundColor: "#FFE699"}, 
+              {content: "22,652", backgroundColor: "#FFE699"},
+              "7,944"],
+            [
+              {content: "Cambisol", backgroundColor: "#FFE699"}, 
+              {content: "37,197", backgroundColor: "#FFE699"}, 
+              "40,724", "0", 
+              {content: "28,640", backgroundColor: "#FFE699"}, 
+              {content: "24,296", backgroundColor: "#FFE699"},
+              "1,098"],
+            [
+              {content: "Calcisol", backgroundColor: "#FFE699"},
+              "0", 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              "0", "0", 
+              {content: "12,756", backgroundColor: "#FFE699"}, 
+              "0"],
+            [
+              {content: "Kastanozem", backgroundColor: "#FFE699"},
+              "0",
+              {content: "4,751", backgroundColor: "#FFE699"},
+              "0",
+              {content: "0", backgroundColor: "#FFE699"}, 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              "0"],
+            [
+              {content: "Vertisol", backgroundColor: "#FFE699"}, 
+              "0", 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              "0", "9,162", 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              "0"],
+            [
+              {content: "Fluvisol", backgroundColor: "#FFE699"}, 
+              "0", "981", "6,433", 
+              {content: "0", backgroundColor: "#FFE699"}, 
+              "0", "4,421"],
             ["Acrisol", "0", "2,994", "0", "26,750", "10,844", "0"],
-            ["Umbrisol", "379", "0", "0", "1,005", "0", "0"],
+            [
+              {content: "Umbrisol", backgroundColor: "#FFE699"}, 
+              "379", "0", "0", 
+              {content: "1,005", backgroundColor: "#FFE699"},
+               "0", "0"],
           ],
         },
         {
           type: "text",
-          content:
-          "La humedad del suelo varía entre 2 y 12 meses por año, predominando las zonas con 6 meses de humedad (212 mil has aproximadamente)."
+          content: [
+            {
+              type: "paragraph",
+              content: "La ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "humedad del suelo ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "varía entre",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "2 y 12 meses por año, ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "predominando las zonas con ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "6 meses de humedad",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "(212 mil has aproximadamente).",
+              color: "#fff",
+            },{
+              type: "paragraph",
+              content: "",
+              color: "#FFE699",
+            }
+          ]
         },
         {
           type: "text",
-          content:
-          "El periodo de lluvias se concentra de junio–septiembre, base de la agricultura de temporal."
+          content:[
+            {
+              type: "paragraph",
+              content: "El periodo de lluvias se concentra de ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "junio–septiembre,",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "base de la agricultura de temporal.",
+              color: "#fff",
+            }
+          ]
         },
         {
           type: "image",
           src: duracionHumedad,
-          title: "Duración de humedad en suelos",
+          title: "",
           alt: "Gráfica de duración de humedad en suelos",
           caption:
-            "Distribución de meses con humedad en los suelos del área de estudio",
+            "",
         },
       ],
     },
@@ -119,13 +283,73 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "La altitud varía entre 250 y 3,319 msnm, siendo las zonas más altas el parteaguas entre ambos paisajes."
+          content:[
+            {
+              type: "paragraph",
+              content: "La altitud varía entre ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "250 y 3,319 msnm,",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "siendo las zonas más altas el parteaguas entre ambos paisajes.",
+              color: "#fff",
+            }
+          ]
         },
         {
           type: "text",
-          content:
-          "El 34 % del territorio son valles (0–10°), el 38 % laderas medias (11–20°) y el 28 % pendientes fuertes (21–60°)."
+          content:[
+            {
+              type: "paragraph",
+              content: "El ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "34 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "del territorio son ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "valles ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "(0–10°), el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "38 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "laderas medias (11–20°) y el",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "28 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "pendientes fuertes (21–60°).",
+              color: "#fff",
+            },
+          ]
         },
         {
           type: "image",
@@ -146,12 +370,27 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "En la entidad se presentan seis de los siete tipos de clima del país, faltando solo el clima frío. Predomina el semicálido (59 %), seguido del templado (22 %), cálido (18 %) y semifrío (1 %)."
+          content: [
+            {
+              type: "paragraph",
+              content: "En la entidad se presentan ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "6 de los 7 tipos de clima del país, faltando solo el clima frío.",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "Predomina el semicálido (59 %), seguido del templado (22 %), cálido (18 %) y semifrío (1 %).",
+              color: "#fff",
+            },
+          ]
         },
         {
           type: "table",
-          title: "Distribución de tipos de clima (hectáreas)",
+          title: "",
           header: [
             "Tipos de clima",
             "Árido",
@@ -168,8 +407,43 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "Los registros meteorológicos de 1985 a 2018 muestran un aumento de temperatura y una disminución de la precipitación en el estado."
+          content: [
+            {
+              type: "paragraph",
+              content: "Los registros meteorológicos de ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "1985 a 2018",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " muestran un ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "aumento de temperatura",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " y una ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "disminución de la precipitación",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " en el estado",
+              color: "#fff"
+            }
+          ]
         },
         {
           type: "image",
@@ -198,13 +472,27 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "En 2018 se identificaron 14 clases, 9 tipos de vegetación y 4 de uso de suelo. \n" +
-          "Predomina la vegetación arbustiva (43 %), la agricultura de temporal (18 %) y la selva baja caducifolia (17 %). "
+          content: [
+            {
+              type: "paragraph",
+              content: "En 2018 se identificaron ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "14 clases, 9 tipos de vegetación y 4 de uso de suelo.",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "\nPredomina la vegetación arbustiva (43 %) la agricultura de temporal (18 %) y la selva baja caducifolia (17 %).",
+              color: "#fff"
+            },
+          ]
         },
         {
           type: "table",
-          title: "Distribución de vegetación y uso de suelo",
+          title: "",
           header: ["", "Hectáreas", "Porcentaje"],
           body: [
             ["Agua", "1,251", "0.2%"],
@@ -235,7 +523,7 @@ export const dataPages = {
         },
         {
           type: "table",
-          title: "Procesos de cambio de uso de suelo y vegetación",
+          title: "",
           header: [
             "Proceso de cambio",
             "Tipo de uso de suelo y vegetación",
@@ -246,7 +534,7 @@ export const dataPages = {
           body: [
             [
               "A - A - A - A - A - A - A",
-              "Agricultura Permanente",
+              "",
               "> 38 años",
               "194,076",
               "22.1%",
@@ -260,20 +548,21 @@ export const dataPages = {
             ],
             [
               "A - A - A - A - A",
-              "Agricultura Permanente",
+              "",
               "16 años",
               "14,962",
               "1.7%",
             ],
             [
               "A - A - A - A",
-              "Agricultura Temporal",
+              "",
               "11 años",
               "6,439",
               "0.7%",
             ],
-            ["A - A - A", "Agricultura Temporal", "7 años", "7,785", "0.9%"],
-            ["A - A", "Agricultura Temporal", "4 años", "3,535", "0.4%"],
+            ["A - A - A", "Agricultura ", "7 años", "7,785", "0.9%"],
+            ["A - A", " Temporal", "4 años", "3,535", "0.4%"],
+            ["A", " ", "< 4 años", "0", "0.0%"],
             [
               "V",
               "Vegetación Secundaria Herbácea",
@@ -283,42 +572,42 @@ export const dataPages = {
             ],
             [
               "V - V",
-              "Vegetación Secundaria Arbustiva",
+              "Vegetación ",
               "4 años",
               "20,235",
               "2.3%",
             ],
             [
               "V - V - V",
-              "Vegetación Secundaria Arbustiva",
+              "Secundaria ",
               "7 años",
               "6,948",
               "0.8%",
             ],
             [
               "V - V - V - V",
-              "Vegetación Secundaria Arbustiva",
+              "Arbustiva",
               "11 años",
               "8,725",
               "1.0%",
             ],
             [
               "V - V - V - V - V",
-              "Vegetación Secundaria Arbustiva",
+              "",
               "16 años",
               "7,784",
               "0.9%",
             ],
             [
               "V - V - V - V - V - V",
-              "Vegetación Secundaria Arbórea",
+              "Vegetación",
               "25 años",
               "12,135",
               "1.4%",
             ],
             [
               "V - V - V - V - V - V - V",
-              "Vegetación Primaria Arbórea",
+              "Primaria Arbórea",
               "> 38 años",
               "539,343",
               "61.3%",
@@ -336,13 +625,33 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "Se identifican dos Áreas Naturales Protegidas de carácter federal: el Monumento Nacional Yagul (1,077 ha) y la Reserva Estatal Hierve el Agua (4,129 ha), que en su conjunto suman 5,206 hectáreas."
+          content: [
+            {
+              type: "paragraph",
+              content: "Se identifican dos Áreas Naturales Protegidas de carácter federal: el Monumento Nacional Yagul (1,077 ha) y la Reserva Estatal Hierve el Agua (4,129 ha), que en su conjunto suman ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "5,206 hectáreas.",
+              color: "#FFE699"
+            }
+          ]
         },
         {
           type: "text",
-          content:
-          "Además de siete Áreas Destinadas Voluntariamente a la Conservación que en conjunto suman cerca de 27,000 ha."
+          content: [
+            {
+              type: "paragraph",
+              content: "Además de siete Áreas Destinadas Voluntariamente a la Conservación que en conjunto suman cerca de ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "27,000 ha.",
+              color: "#FFE699"
+            }
+          ]
         },
       ],
     },
@@ -355,8 +664,53 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "Según el Censo de Población y Vivienda 2020, habitan 306,142 personas, de las cuales 146,249 son hombres y 159,893 mujeres, distribuidas en distintos grupos de edad."
+          content: [
+            {
+              type: "paragraph",
+              content: "Según el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "Censo de Población y Vivienda 2020",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ", habitan ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "306,142 personas",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ", de las cuales ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "146,249 son hombres",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " y ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "159,893 mujeres",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ", distribuidas en distintos grupos de edad.",
+              color: "#fff",
+            }
+          ]
         },
         {
           type: "image",
@@ -367,7 +721,7 @@ export const dataPages = {
         },
         {
           type: "table",
-          title: "Distribución de pobreza por paisaje",
+          title: "",
           header: [
             "Paisaje",
             "Población Total",
@@ -395,19 +749,86 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "El 15 % de los municipios presenta marginación muy alta y el 40 % alta, concentrando a la mayoría de la población en condiciones desfavorables. \n" +
-          "Solo el 10 % muestra niveles bajos o muy bajos. \n" +
-          "Estos datos reflejan una alta vulnerabilidad social en el territorio."
+          [
+            {
+              type: "paragraph",
+              content: "El ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "15 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " de los municipios presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "marginación muy alta",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " y el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "40 % alta,",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " concentrando a la mayoría de la población en condiciones desfavorables.",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Solo el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "10 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " muestra niveles ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "bajos o muy bajos.",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "\nEstos datos reflejan una ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "alta vulnerabilidad social",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " en el territorio.",
+              color: "#fff"
+            }
+          ]
         },
         {
           type: "table",
-          title: "Grado de marginación por región",
+          title: "",
           header: [[
-            "Grado de marginación",
-            "Valles Centrales ",
-            "",
-            "Sierra de Yautepec",
-            "",
+            {content: "Grado de marginación", colSpan: 1},
+            {content: "Valles Centrales ", colSpan: 2},
+            {content: "Sierra de Yautepec", colSpan: 2},
           ],
         ["", "Nº de municipios", "Habitantes", "Nº de municipios", "Habitantes", ],],
           body: [
@@ -430,13 +851,77 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "El 60.9 % de la población es económicamente activa, y de ella el 98.8 % tiene alguna ocupación. \n" +
-          "No obstante, el 90.1 % trabaja en el sector informal, principalmente en actividades agrícolas y ganaderas."
+          content: [
+            {
+              type: "paragraph",
+              content: "El ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "60.9 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "de la población total es ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "económicamente activa",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ", y de ella el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "98.8 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "tiene alguna ocupación.",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "Sin embargo, el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "90.1 % ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "trabaja en el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "sector informal",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ", principalmente en ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "actividades agrícolas y ganaderas.",
+              color: "#FFE699",
+            },
+          ]
         },
         {
           type: "table",
-          title: "Indicadores laborales por región",
+          title: "",
           header: [
             "",
             "Población total",
@@ -451,13 +936,67 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "En 2023, se registraron 64,776 ha de superficie sembrada. \n" +
-          "Diez municipios concentran el 69 % del total, destacando Miahuatlán de Porfirio Díaz con 9,636 ha (14.9 %)."
+          content: [
+            {
+              type: "paragraph",
+              content: "En ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "2023,",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " se registraron ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "64,776 ha",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " de superficie sembrada.",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "\nDiez municipios concentran el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "69 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " del total, destacando ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Miahuatlán de Porfirio Díaz",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " con ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "9,636 ha (14.9 %).",
+              color: "#FFE699"
+            },
+          ]
         },
         {
           type: "table",
-          title: "Municipios con mayor superficie sembrada",
+          title: "",
           header: [
             "Posición",
             "Municipio",
@@ -478,6 +1017,21 @@ export const dataPages = {
             // ["Total de hectáreas sembradas en la zona de estudio (64,776.3 ha)."]
           ],
         },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "Históricamente (2013-2023) son los cinco cultivos que concentran la mayor proporción de la superficie sembrada son:",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "el maíz en grano (78.1%), el agave (8.6%), los pastos para ganadería (5.2%), el frijol (3.5%) y el café (2.2%). ",
+              color: "#FFE699"
+            }
+          ]
+        }
       ],
     },
     {
@@ -491,9 +1045,30 @@ export const dataPages = {
           type: "text",
           content:
           "La erosión hídrica es la principal causa de degradación del suelo.\n" +
-          "Se identificaron zonas con alta pérdida de suelo por efecto de la lluvia, pendiente y uso del terreno. \n" +
-          "Los valores fueron normalizados de 0 a 1000 para destacar las áreas con mayor riesgo de erosión."
+          "Se identificaron zonas con alta pérdida de suelo por efecto de la lluvia, pendiente y uso del terreno. \n" 
         },
+        {
+          type: "text",
+          content: "De acuerdo al uso de suelo Serie VII del 2018, en la zona de estudio son 8 las microcuencas (3, 4, 8, 9, 10, 11, 19, 26) que presentan una exportación muy alta de sedimentos y 9 microcuencas con valores altos (1, 6, 13, 14, 20, 21, 45, 63, 66), casi en su totalidad se localizan en el paisaje de La Sierra de Yautepec, por lo que esta región debe ser atendida para atender problemas de erosión."
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "De acuerdo al análisis tendencial a 100 años en la zona de estudio: \n",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "• 367, 986 hectáreas, no presentan una tendencia de erosión \n"+
+              "• 385, 964 hectáreas su tendencia es moderada \n"+
+              "• 24,015 hectáreas alta \n"+
+              "• 38,524 hectáreas muy alta.",
+              color: "#FFE699"
+            }
+          ]
+        }
       ],
     },
     {
@@ -506,9 +1081,30 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "El cambio de uso de suelo y la actividad agropecuaria, por la aplicación de agroquímicos, elevan la acumulación de nitrógeno. \n" +
-          "Se destacan siete microcuencas críticas en Valles Centrales y una tendencia muy alta al 2100 en la Sierra de Yautepec."
+          "La acumulación de nitrógeno es causada por la aplicación de agroquímicos en las zonas agropecuarias."
         },
+        {
+          type:"text",
+          content: "Se destacan siete microcuencas críticas (42, 48, 50, 51, 59, 60, 70) en Valles Centrales y una tendencia media al 2100 en la Sierra de Yautepec (microcuencas 15, 16, 18 y 19). "
+        },
+        {
+          type:"text",
+          content: [
+            {
+              type: "paragraph",
+              content: "La tendencia al 2100 en la zona de estudio identifica que: \n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: " • 688,857 hectáreas no presentan una tendencia en la acumulación de nitrógeno \n"+
+                  " • 97,652 hectareas la tendencia es alta, \n"+
+                  " • 24,015 hectáreas 10,968 hectáreas es muy alta, \n"+
+                  " • 10,968 hectáreas es muy alta.",
+              color: "#FFE699"
+            }
+          ]
+        }
       ],
     },
     {
@@ -521,9 +1117,24 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "En 2018, se identificaron 14 microcuencas con muy alta acumulación de fósforo y 12 con valores altos, abarcando gran parte de Valles Centrales. \n" +
-          "Hacia 2100, se proyectan 135,458 ha con tendencia alta y 22,995 ha muy alta, concentradas en la Sierra de Yautepec, donde se requiere acciones preventivas."
+          "En 2018, se identificaron 14 microcuencas con muy alta acumulación de fósforo (29, 37, 41, 42, 46, 48, 50, 51, 57, 58, 59, 60, 70, 73) y 12 con valores altos (15, 18, 19, 26, 44, 45, 54, 56, 62, 67, 71, 72), abarcando gran parte de Valles Centrales."
         },
+        {
+          type:"text",
+          content: [
+            {
+              type: "paragraph",
+              content: "La tendencia al 2100 proyectan: \n",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: " • 135,458 ha con tendencia alta \n"+
+                  " • 22,995 ha muy alta",
+              color: "#FFE699"
+            }
+          ]
+        }
       ],
     },
     {
@@ -536,10 +1147,25 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "El almacenamiento y balance de carbono reflejan la capacidad de los ecosistemas para capturar o emitir gases. \n" +
-          "En 2018, se estimaron 66.9 millones de toneladas de carbono concentradas en 9 microcuencas montañosas. \n" +
-          "Estas zonas presentan la mayor tendencia a pérdida, con 131,154 ha en riesgo alto y 25,527 ha muy alto."
+          "El almacenamiento y balance de carbono reflejan la capacidad de los ecosistemas para capturar o emitir gases. \n\n" +
+          "En 2018, se estimaron 66.9 millones de toneladas de carbono concentradas principalmente en 9 microcuencas (3, 9, 11,19, 29, 37, 48, 60, 62). \n\n"
         },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "Así mismo, estas áreas presentan la mayor tendencia a pérdida, con \n",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: " • 131,154 hectáreas con riesgo alto \n"+
+                  " • 25,527 hectáreas con riesgo muy alto.",
+              color: "#FFE699"
+            }
+          ]
+        }
       ],
     },
     {
@@ -589,14 +1215,56 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "La modelación de los impactos del cambio climático en el potencial productivo de agave, se utilizaron los parámetros con los que se construyó el Atlas Nacional de Vulnerabilidad al Cambio Climático  (INECC, 2023). \n" +
-          "Para la construcción del ANVCC, el INECC utilizó el modelo acoplado CMIP5 que consta de anomalías mensuales de 4 modelos de circulación general de la atmósfera que son: CNRM-CM5, HADGEM2-ES, MPI-ESM-LR, GFDL-CM3, así mismo considera tres horizontes de tiempo: \n" +
-          "•	Corto de 2015 -2039 \n" +
-          "•	Mediano plazo de 2045 – 2069 \n" +
-          "•	Largo plazo de 2075 – 2099. \n" +
-          "Los escenarios muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos del agave."
+          content:[
+            {
+              type: "paragraph",
+              content: "La modelación de los impactos del cambio climático en el potencial productivo de agave, se utilizaron los parámetros con los que se construyó el Atlas Nacional de Vulnerabilidad al Cambio Climático  (INECC, 2023). \n",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "Para la construcción del ANVCC, el INECC utilizó el modelo ",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "acoplado CMIP5",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "que consta de anomalías mensuales de 4 modelos de circulación general de la atmósfera que son:",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "CNRM-CM5, ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "HADGEM2-ES, MPI-ESM-LR, GFDL-CM3, así mismo considera tres horizontes de tiempo: \n",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "• Corto de 2015 -2039 \n"+
+              "• Mediano plazo de 2045 – 2069 \n"+
+              "• Largo plazo de 2075 – 2099.",
+              color: "#FFE699"
+            }
+          ]
         },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "Los escenarios muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos del agave.",
+              color: "#000"
+            }
+          ]
+        }
       ],
     },
     {
@@ -608,81 +1276,223 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "El agave presenta alto potencial productivo y amplia plasticidad ecológica, adaptándose a diversos suelos y pendientes. \n" +
-          "Es el prototipo de los magueyes, originario del noreste de México, y su mezcal destaca por su sabor dulce."
+          content:[
+            {
+              type: "paragraph",
+              content: "El agave presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "alto potencial productivo y amplia plasticidad ecológica, ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "adaptándose a diversos suelos y pendientes.",
+              color: "#000"
+            }
+          ]
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "El",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "42 % del territorio (340,332 ha)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "condiciones óptimas ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "para el cultivo de ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Agave americana, y el 57 % condiciones medias.",
+              color: "#FFE699"
+            }
+          ]
         },
         {
           type: "table",
-          title: "Requerimientos agroecológicos - Agave Arroqueño",
-          header: ["", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          title: "",
+          header: [
+            {
+            content: "Escenario actual",
+            backgroundColor: "#fff"
+          }, {
+            content: "Óptimo",
+            backgroundColor: "#80ba59"
+          }, {
+            content: "Medio",
+            backgroundColor: "#ebec89"
+          }, {
+            content: "Bajo",
+            backgroundColor: "#fd9a1e"
+          }, {
+            content: "No apto/Marginal",
+            backgroundColor: "#595959"
+          }],
           body: [
             [
-              "Productividad (t/ha)",
-              "75 ton/ha",
-              "53 ton/ha",
-              "21 ton/ha",
-              "10 ton/ha",
+              "Sierra de Yautepec",
+              "232,283",
+              "167,342",
+              "101",
+              "302",
             ],
             [
-              "Precipitación media anual (mm)",
-              "800 - 1500",
-              "1500 - 2000 / 600 - 800",
-              "2000 - 2400 / 400 - 600",
-              "> 2400 / ≤ 400",
-            ],
-            [
-              "Temperatura media anual (°C)",
-              "18 - 22",
-              "22 - 24 / 16 - 18",
-              "24 - 26 / 12 - 16",
-              "> 26 / ≤ 12",
-            ],
-            [
-              "Edafología Perfil textura",
-              "Chernozem: fina y media, Kastanozem: media, Luvisol: fina y media, Nitisol: media, Phaeozem: fina y media, Vertisol: fina y media",
-              "Andosol: media, Calcisol: media, Cambisol: media, Leptosol: media, Lixisol: fina, gruesa, Luvisol: gruesa, Nitisol: fina, Phaeozem: gruesa, Umbrisol: media",
-              "Acrisol: fina, media y gruesa, Arenosol: gruesa, Calcisol: fina y gruesa, Cambisol: fina y gruesa, Durisol: fina, media y gruesa, Gipsisol: media, Leptosol: fina y gruesa, Regosol: fina, media y gruesa, Umbrisol: fina y gruesa",
-              "Fluvisol: fina, media y gruesa, Gleysol: fina, media y gruesa, Planosol: fina, media y gruesa, Solonchak: fina, media y gruesa",
-            ],
-            ["Pendiente (%)", "≤ 30", "30 - 35", "35 - 45", "> 45"],
-            [
-              "Altitud (msnm)",
-              "800 - 1800",
-              "1800 - 2000 / 600 - 800",
-              "2000 - 2200 / 400 - 600",
-              "> 2200 / < 400",
+              "Valles Centrales",
+              "108,049",
+              "300,058",
+              "3,887",
+              "1,943",
             ],
           ],
         },
         {
           type: "text",
-          content:
-          "El 42 % del territorio (340,332 ha) presenta condiciones óptimas para el cultivo de Agave americana, y el 57 % condiciones medias."
+          content:[
+            {
+              type: "paragraph",
+              content: "Con el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "cambio climático, la Sierra de Yautepec pierde 31,573 ha óptimas,",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "mientras que ",
+              color: "#000"
+            },
+            {
+              type: "paragraph",
+              content: "Valles Centrales gana 32,681 ha.",
+              color: "#FFE699"
+            }
+          ]
         } ,
         {
           type: "table",
           header: [
-            "Potencial productivo actual",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            
+            {
+              content: "Escenario con cambio climático",
+              backgroundColor: "#fff"
+            }, {
+              content: "Óptimo",
+              backgroundColor: "#80ba59"
+            }, {
+              content: "Medio",
+              backgroundColor: "#ebec89"
+            }, {
+              content: "Bajo",
+              backgroundColor: "#fd9a1e"
+            }, {
+              content: "No apto/Marginal",
+              backgroundColor: "#595959"
+            }
           ],
           body: [
-            ["Sierra de Yautepec", "232,283", "167,342", "101", "302"],
-            ["Valles Centrales", "108,049", "300,058", "3,887", "1,943"],
+            ["Sierra de Yautepec", "200,710", "199,318", "0", "0"],
+            ["Valles Centrales", "140,730", "270,811", "0", "2,396"],
           ],
         },
         {
           type: "text",
-          content:
-          "Al comparar los mapas de potencial productivo bajo condiciones actuales y escenarios de cambio climático, se identificaron tres tipos de cambio:\n" +
-          "a) 244,831 ha (72 %) mantienen condición óptima, \n" +
-          "b) 96,609 ha mejoran sus condiciones, y \n" +
-          "c) 95,501 ha las pierden, principalmente en la Sierra de Yautepec. "
+          content: [
+            {
+              type: "paragraph",
+              content: "Al comparar el escenario actual con el impacto del cambio climático se identificaron tres tipos de cambio:",
+              color: "#fff"
+            }
+          ]
         },
-
+        {
+          type: "text",
+          content:[
+            {
+              type: "paragraph",
+              content: "I. 244,831 ha (72 %) ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "mantienen condición óptima,\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "II. 96,609 ha ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "mejoran sus condiciones, y \n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "III. 95,501 ha ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "pierden su potencial productivo (principalmente en la ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Sierra de Yautepec). \n",
+              color: "#FFE699"
+            }
+          ]
+        },
+        {
+          type: "table",
+          header: [
+            {
+              content: "",
+              backgroundColor: "#fff"
+            },
+            {
+              content: "Sin cambio",
+              backgroundColor: "#a2c953"
+            }, {
+              content: "Incremento",
+              backgroundColor: "#4e89d1"
+            }, {
+              content: "Pérdida",
+              backgroundColor: "#c84b4a"
+            },{
+              content: "No apto",
+              backgroundColor: "#595959"
+            }
+          ],
+          body: [
+            ["Sierra de Yautepec", "166,873", "33,837", "65,410", "133,908"],
+            ["Valles Centrales", "77,958", "62,772", "30,091", "243,116"],
+          ],
+        },
       ],
     },
     {
@@ -695,111 +1505,456 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "Es la especie más cultivada y distribuida en Oaxaca por su alto contenido de azúcares, rápido crecimiento y amplia adaptabilidad agroecológica, con rendimientos de hasta 75 t/ha."
+          "Es la especie más cultivada y distribuida en Oaxaca por su alto contenido de azúcares, rápido crecimiento y amplia adaptabilidad agroecológica." 
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "El ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "67 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " del área evaluada (729,734 ha) presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "condiciones óptimas",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " para el cultivo, concentradas en los Valles Centrales y la Sierra de Yautepec. Un ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "12 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " (81,889 ha) muestra ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "aptitud media",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: ", y solo el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "1 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " (2,342 ha) se considera ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "baja o no apta.",
+              color: "#FFE699"
+            }
+          ]
         },
         {
           type: "table",
           title: "",
-          header: ["", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          header: [
+            {
+              content: "Escenario actual",
+              backgroundColor: "#fff"
+            }, {
+              content: "Óptimo",
+              backgroundColor: "#80ba59"
+            }, {
+              content: "Medio",
+              backgroundColor: "#ebec89"
+            }, {
+              content: "Bajo",
+              backgroundColor: "#fd9a1e"
+            }, {
+              content: "No apto/Marginal",
+              backgroundColor: "#595959"
+            }
+          ],
           body: [
             [
-              "Productividad (t/ha)",
-              "75 ton/ha",
-              "59 ton/ha",
-              "34 ton/ha",
-              "10 ton/ha",
+              {
+                content: "Valles Centrales",
+                backgroundColor: "#fff"
+              }, {
+                content: "360,093",
+                backgroundColor: "#fff"
+              }, {
+                content: "51,901",
+                backgroundColor: "#fff"
+              }, {
+                content: "0",
+                backgroundColor: "#fff"
+              }, {
+                content: "1,943",
+                backgroundColor: "#fff"
+              }
             ],
             [
-              "Precipitación media anual (mm)",
-              "500 - 1300",
-              "1300 - 1700 / 400 - 500",
-              "1700 - 2000 / 250 - 400",
-              "> 2000 / ≤ 250",
-            ],
-            [
-              "Temperatura media anual (°C)",
-              "18 - 24",
-              "24 - 26 / 16 - 18",
-              "26 - 28 / 12 - 16",
-              "> 28 / ≤ 12",
-            ],
-            [
-              "Edafología Perfil Textura",
-              "Chernozem: fina y media, Kastanozem: media, Luvisol: fina y media, Nitisol: media, Phaeozem: fina y media, Vertisol: fina y media",
-              "Andosol: media, Calcisol: media, Cambisol: media, Leptosol: media, Lixisol: fina, gruesa, Luvisol: gruesa, Nitisol: fina, Phaeozem: gruesa, Umbrisol: media",
-              "Acrisol: fina, media y gruesa, Arenosol: gruesa, Calcisol: fina y gruesa, Cambisol: fina y gruesa, Durisol: fina, media y gruesa, Gipsisol: media, Leptosol: fina y gruesa, Regosol: fina, media y gruesa, Umbrisol: fina y gruesa",
-              "Fluvisol: fina, media y gruesa, Gleysol: fina, media y gruesa, Planosol: fina, media y gruesa, Solonchak: fina, media y gruesa",
-            ],
-            ["Pendiente (%)", "≤ 30", "30 - 35", "35 - 45", "> 45"],
-            [
-              "Altitud (msnm)",
-              "600 - 1800",
-              "1800 - 2000 / 400 - 600",
-              "2000 - 2,200 / 300 - 400",
-              "> 2,200",
-            ],
+              {
+                content: "Sierra de Yautepec",
+                backgroundColor: "#fff"
+              }, {
+                content: "369,641",
+                backgroundColor: "#fff"
+              }, {
+                content: "29,988",
+                backgroundColor: "#fff"
+              }, {
+                content: "97",
+                backgroundColor: "#fff"
+              }, {
+                content: "302",
+                backgroundColor: "#fff"
+              }
+            ]
           ],
         },
         {
           type: "text",
-          content:
-          "El 67 % del área evaluada (729,734 ha) presenta condiciones óptimas para el cultivo, concentradas en los Valles Centrales y la Sierra de Yautepec. \n" +
-          "Un 12 % (81,889 ha) muestra aptitud media, y solo el 1 % (2,342 ha) se considera baja o no apta."
+          content:[
+            {
+              type: "paragraph",
+              content: "Con ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "escenarios de cambio climático",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: ", el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "92 % del territorio",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " mantiene ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "aptitud óptima,",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " con ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "396,174 ha",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " en ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Valles Centrales",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " y ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "365,717 ha",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " en la ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "Sierra de Yautepec.",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " Un ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "6 %",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "aptitud media,",
+              color: "#ebec89"
+            },
+            {
+              type: "paragraph",
+              content: " mientras que las áreas ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "no aptas son mínimas,",
+              color: "#b7b7a4"
+            },
+            {
+              type: "paragraph",
+              content: " reflejando una ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "alta resiliencia",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " frente a futuros impactos climáticos.",
+              color: "#fff"
+            }
+          ]
         },
         {
           type: "table",
           header: [
-            "Potencial productivo actual",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            {
+              content: "Escenario con cambio climático",
+              backgroundColor: "#fff"
+            },
+            {
+              content: "Óptimo",
+              backgroundColor: "#80ba59"
+            }, {
+              content: "Medio",
+              backgroundColor: "#ebec89"
+            }, {
+              content: "Bajo",
+              backgroundColor: "#fd9a1e"
+            }, {
+              content: "No apto/Marginal",
+              backgroundColor: "#595959"
+            }
           ],
           body: [
-            ["Valles Centrales", "108,049", "300,058", "3,887", "1,943"],
-            ["Sierra de Yautepec", "232,283", "167,342", "101", "302"],
+
+            [
+              {
+                content: "Valles Centrales",
+                backgroundColor: "#fff"
+              }, {
+                content: "396,174",
+                backgroundColor: "#fff"
+              }, {
+                content: "15,367",
+                backgroundColor: "#fff"
+              }, {
+                content: "0",
+                backgroundColor: "#fff"
+              }, {
+                content: "2,396",
+                backgroundColor: "#fff"
+            }
           ],
+            [
+              {
+                content: "Sierra de Yautepec",
+                backgroundColor: "#fff"
+              }, {
+                content: "365,717",
+                backgroundColor: "#fff"
+              }, {
+                content: "34,117",
+                backgroundColor: "#fff"
+              }, {
+                content: "194",
+                backgroundColor: "#fff"
+              }, {
+                content: "0",
+                backgroundColor: "#fff"
+              }
+            ],
+        ]
         },
         {
           type: "text",
           content:
-          "Bajo los escenarios de cambio climático, el 92 % del territorio mantiene aptitud óptima, con 396,174 ha en Valles Centrales y 365,717 ha en la Sierra de Yautepec. \n" +
-          "Un 6 % presenta aptitud media, mientras que las áreas no aptas son mínimas, reflejando una alta resiliencia frente a futuros impactos climáticos."
-        },
-        {
-          type: "table",
-          header: [
-            "Potencial productivo con cambio climático",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
-          ],
-          body: [
-            ["Valles Centrales", "396,174", "15,367", "0", "2,396"],
-            ["Sierra de Yautepec", "365,717", "34,117", "194", "0"],
-          ],
+            [
+              {
+                type: "paragraph",
+                content: "Al comparar los ",
+                color: "#fff"
+              },
+              {
+                type: "paragraph",
+                content: "escenarios actual y futuro",
+                color: "#FFE699"
+              },
+              {
+                type: "paragraph",
+                content: " bajo ",
+                color: "#fff"
+              },
+              {
+                type: "paragraph",
+                content: "condiciones de cambio climático",
+                color: "#FFE699"
+              },
+              {
+                type: "paragraph",
+                content: ", se identifican tres tendencias:",
+                color: "#fff"
+              }
+            ]
         },
         {
           type: "text",
-          content:
-          "Al comparar los escenarios actual y futuro bajo condiciones de cambio climático, se identifican tres tendencias:\n" +
-          "a) 714,431 ha (92.7 %) mantienen condiciones óptimas, \n" +
-          "b) 44,460 ha (5.7 %) mejoran su aptitud, y \n" +
-          "c) 12,303 ha (1.6 %) la pierden, principalmente en la Sierra de Yautepec. "
+          content: [
+            {
+              type: "paragraph",
+              content: "I.  ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "714,431 ha (92.7 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " mantienen condiciones óptimas.",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "\nII.  ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "44,460 ha (5.7 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " mejoran su aptitud.",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "\nIII.  ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "12,303 ha (1.6 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " la pierden su aptitud",
+              color: "#fff"
+            }
+          ]
         },
         {
           type: "table",
           header: [
-            "",
-            "Sin cambio",
-            "Incremento",
-            "Pérdida",
-            "No apto",
+            {
+              content: "",
+              backgroundColor: "#fff"
+            },
+            {
+              content: "Sin cambio",
+              backgroundColor: "#a2c953"
+            },
+            {
+              content: "Incremento",
+              backgroundColor: "#4e89d1"
+            },
+            {
+              content: "Pérdida",
+              backgroundColor: "#c84b4a"
+            },
+            {
+              content: "No apto",
+              backgroundColor: "#595959"
+            }
           ],
           body: [
-            ["Sierra de Yautepec", "36,0286", "5,431", "9,355", "24,956"],
-            ["Valles Centrales", "357,145", "39,029", "2,948", "14,815"],
+            [
+              {
+                  content: "Sierra de Yautepec",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "36,0286",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "5,431",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "9,355",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "24,956",
+                  backgroundColor: "#fff"
+                }
+              ],
+              [
+                {
+                  content: "Valles Centrales",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "357,145",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "39,029",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "2,948",
+                  backgroundColor: "#fff"
+                }, {
+                  content: "14,815",
+                  backgroundColor: "#fff"
+                }
+              ]
           ],
         },
       ],
@@ -813,111 +1968,350 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "Es una especie silvestre con alta adaptabilidad en zonas semiáridas de los Valles Centrales. Crece entre 1,500–1,700 msnm y pendientes de hasta 45 %, mostrando alta plasticidad ecológica. \n" +
-          "Se recomienda su uso productivo en Valles Centrales y manejo silvestre en la Sierra de Yautepec."
+          content:[
+            {
+              type: "paragraph",
+              content: "Es una especie silvestre con alta adaptabilidad en zonas semiáridas de los Valles Centrales. \n\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "El 50 % ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " del área ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "(410,091 ha) ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " presenta ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "condición óptima, ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "29 % media y 21 % baja.",
+              color: "#FFE699"
+            }
+          ]
         },
         {
           type: "table",
-          title: "Requerimientos agroecológicos - Agave Iyoba",
-          header: ["Parámetro", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          title: "",
+          header: [
+            {
+              content: "",
+              backgroundColor: "#fff",
+            },
+            {
+              content: "Óptimo",
+              backgroundColor: "#80ba59", // Green, matches image
+            },
+            {
+              content: "Medio",
+              backgroundColor: "#ebec89", // Yellow, matches image
+            },
+            {
+              content: "Bajo",
+              backgroundColor: "#fd9a1e", // Orange, matches image
+            },
+            {
+              content: "No apto/ marginal",
+              backgroundColor: "#595959", // Grey, matches image
+            },
+          ],
           body: [
             [
-              "Productividad (t/ha)",
-              "75 ton/ha",
-              "53 ton/ha",
-              "21 ton/ha",
-              "10 ton/ha",
+              {
+                content: "Valles centrales",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "269,926",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "76,526",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "65,542",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "1,943",
+                backgroundColor: "#fff",
+              },
             ],
             [
-              "Precipitación media anual (mm)",
-              "500 - 700",
-              "700 - 800 / 400 - 500",
-              "800 - 1000 / 300 - 400",
-              "> 1000 / ≤ 300",
-            ],
-            [
-              "Temperatura media anual (°C)",
-              "18 - 22",
-              "22 - 24 / 16 - 18",
-              "24 - 26 / 12 - 16",
-              "> 26 / ≤ 12",
-            ],
-            [
-              "Edafología Perfil textura",
-              "Luvisol: media y fina, Vertisol: media, Regosol: media, Calcicol: media, Cambisol: media y fina, Phaeozem: media",
-              "Andosol: media, Leptosol: media, Luvisol: gruesa, Umbrisol: media",
-              "Acrisol: fina, media y gruesa, Arenosol: gruesa, Calcisol: fina y gruesa, Durisol: fina, media y gruesa, Gipsisol: media, Leptosol: fina y gruesa, Umbrisol: fina y gruesa",
-              "Fluvisol: fina, media y gruesa, Gleysol: fina, media y gruesa, Planosol: fina, media y gruesa, Solonchak: fina, media y gruesa",
-            ],
-            ["Pendiente (%)", "≤ 30", "30 - 35", "35 - 45", "> 45"],
-            [
-              "Altitud (msnm)",
-              "1500 - 1700",
-              "1700 - 1900 / 1200 - 1500",
-              "1900 - 2000 / 1000 - 1200",
-              "> 2000 / < 1000",
+              {
+                content: "Sierra de Yautepec",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "140,091",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "156,897",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "102,738",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "302",
+                backgroundColor: "#fff",
+              },
             ],
           ],
         },
         {
           type: "text",
-          content:
-          "En el escenario actual, los Valles Centrales presentan 49 % (269,926 ha) con condición óptima, 25 % media y 12 % baja. \n" +
-          "En la Sierra de Yautepec, el 26 % (140,091 ha) es óptimo, el 30 % medio y el 20 % bajo, con áreas no aptas menores al 1 %."
+          content: [
+            {
+              type: "paragraph",
+              content:
+                "Bajo condiciones de cambio climático se reduce la superficie al ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "39 % (320,737 ha)",
+              color: "#FFE699", // Highlight same as table
+            },
+            {
+              type: "paragraph",
+              content: " con ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "aptitud óptima,",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " mientras que el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "36 %",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " mantiene las condiciones medias y el ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "24 %",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: " baja.",
+              color: "#fff",
+            },
+          ],
         },
         {
           type: "table",
+          title: "",
           header: [
-            "Potencial productivo actual",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            {
+              content: "",
+              backgroundColor: "#fff",
+            },
+            {
+              content: "Óptimo",
+              backgroundColor: "#a2c953",
+            },
+            {
+              content: "Medio",
+              backgroundColor: "#e3ea81",
+            },
+            {
+              content: "Bajo",
+              backgroundColor: "#fd9a1e",
+            },
+            {
+              content: "No apto/ marginal",
+              backgroundColor: "#595959",
+            },
           ],
           body: [
-            ["Valles Centrales", "269,926", "76,526", "65,542", "1,943"],
-            ["Sierra de Yautepec", "156,897", "102,738", "0", "302"],
+            [
+              {
+                content: "Valles centrales",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "81,989",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "177,597",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "140,442",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "0",
+                backgroundColor: "#fff",
+              },
+            ],
+            [
+              {
+                content: "Sierra de Yautepec",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "238,748",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "114,405",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "58,388",
+                backgroundColor: "#fff",
+              },
+              {
+                content: "2,396",
+                backgroundColor: "#fff",
+              },
+            ],
           ],
         },
         {
           type: "text",
-          content:
-          "Bajo condiciones de cambio climático, los Valles Centrales conservan 15 % (81,989 ha) con aptitud óptima, mientras que el 33 % es media y el 26 % baja. \n" +
-          "En la Sierra de Yautepec, el 45 % (238,748 ha) se mantiene óptimo, el 22 % medio y el 11 % bajo, con solo 0.4 % no apto"
+          content: [
+            {
+              type: "paragraph",
+              content:
+                "La comparación entre escenarios muestra tres cambios principales:",
+              color: "#fff",
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "I.",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: " 258,620 ha (69%) ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "mantienen su ",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: "aptitud productiva óptima",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: ",",
+              color: "#fff",
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "II.",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: " 19,731 ha ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "mejoran su aptitud",
+              color: "#fff",
+            },
+          ],
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "III.",
+              color: "#fff",
+            },
+            {
+              type: "paragraph",
+              content: " 87,701 ha ",
+              color: "#FFE699",
+            },
+            {
+              type: "paragraph",
+              content: "pierden su aptitud",
+              color: "#fff",
+            },
+          ],
         },
         {
           type: "table",
+          title: "",
           header: [
-            "Potencial productivo con cambio climático",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            { content: "", backgroundColor: "#fff" },
+            { content: "Sin cambio", backgroundColor: "#a2c953" },
+            { content: "Incremento", backgroundColor: "#4e89d1" },
+            { content: "Pérdida", backgroundColor: "#c84b4a" },
+            { content: "No apto", backgroundColor: "#595959" }
           ],
           body: [
-            ["Valles Centrales", "81,989", "177,597", "140,442", "0"],
-            ["Sierra de Yautepec", "238,748", "114,405", "58,388", "2,396"],
-          ],
-        },
-        {type: "text",
-          content:
-          "La comparación entre escenarios muestra tres cambios principales:\n" +
-          "a) 258,620 ha (69 %) mantienen su aptitud productiva en Valles Centrales, \n" +
-          "b) 19,731 ha mejoran sus condiciones, y \n" +
-          "c) 87,701 ha las pierden, con mayor afectación en la Sierra de Yautepec. "
-        },
-        {type: "table",
-          header: [
-            "",
-            "Sin cambio",
-            "Incremento",
-            "Pérdida",
-            "No apto",
-          ],
-          body: [
-            ["Sierra de Yautepec", "104,228", "2,578", "62,427", "23,0795"],
-            ["Valles Centrales", "258,620", "17,153", "25,274", "112,890"],
+            [
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "104,228", backgroundColor: "#fff" },
+              { content: "2,578", backgroundColor: "#fff" },
+              { content: "62,427", backgroundColor: "#fff" },
+              { content: "22,795", backgroundColor: "#fff" }
+            ],
+            [
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "258,620", backgroundColor: "#fff" },
+              { content: "17,153", backgroundColor: "#fff" },
+              { content: "25,274", backgroundColor: "#fff" },
+              { content: "112,890", backgroundColor: "#fff" }
+            ],
           ],
         },
       ],
@@ -931,113 +2325,213 @@ export const dataPages = {
         },
         {
           type: "text",
-          content:
-          "Es una especie endémica de Oaxaca con alto potencial productivo entre 1,000–1,700 msnm. \n" +
-          "Crece en zonas con 500–700 mm de lluvia, 18–22 °C y suelos Luvisol, Leptosol y Cambisol, apta para producción sustentable y restauración ecológica."
+          content:[
+            {
+              type: "paragraph",
+              content: "Es una especie endémica de Oaxaca con alto potencial productivo \n\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "El ", color: "#fff" },
+                { type: "text", text: "62 %", color: "#FFE699" },
+                { type: "text", text: " del área (", color: "#fff" },
+                { type: "text", text: "502,012ha", color: "#FFE699" },
+                { type: "text", text: ") presenta ", color: "#fff" },
+                { type: "text", text: "condición óptima", color: "#FFE699" },
+                { type: "text", text: ", el ", color: "#fff" },
+                { type: "text", text: "32 %", color: "#FFE699" },
+                { type: "text", text: " media y ", color: "#fff" },
+                { type: "text", text: "6 %", color: "#FFE699" },
+                { type: "text", text: " baja.", color: "#fff" }
+              ]
+            }
+          ]
         },
         {
           type: "table",
-          title: "Requerimientos agroecológicos - Agave Karwinskii",
-          header: ["Parámetro", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          title: "",
+          header: [
+            { content: "", backgroundColor: "#fff" },
+            { content: "Óptimo", backgroundColor: "#80ba59" },
+            { content: "Medio", backgroundColor: "#ebec89" },
+            { content: "Bajo", backgroundColor: "#fd9a1e" },
+            { content: "No apto/marginal", backgroundColor: "#595959" }
+          ],
           body: [
             [
-              "Productividad (t/ha)",
-              "75 ton/ha",
-              "53 ton/ha",
-              "21 ton/ha",
-              "10 ton/ha",
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "198,901", backgroundColor: "#fff" },
+              { content: "173,078", backgroundColor: "#fff" },
+              { content: "27,747", backgroundColor: "#fff" },
+              { content: "302", backgroundColor: "#fff" }
             ],
             [
-              "Precipitación media anual (mm)",
-              "500 - 800",
-              "800 - 1200 / 400 - 500",
-              "1200 - 1500 / 350 - 400",
-              "> 1500 / ≤ 350",
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "303,111", backgroundColor: "#fff" },
+              { content: "86,967", backgroundColor: "#fff" },
+              { content: "21,916", backgroundColor: "#fff" },
+              { content: "1,943", backgroundColor: "#fff" }
+            ]
+          ],
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: "Bajo condiciones de cambio climático se reduce la superficie al ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "54 % (437,040 ha)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " con ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "aptitud óptima",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: ", mientras que el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "41 % ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "mantiene las condiciones medias y el ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "5 % ",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: "baja.",
+              color: "#fff"
+            }
+          ]
+        },
+        {
+          type: "table",
+          title: "",
+          header: [
+            { content: "", backgroundColor: "#fff" },
+            { content: "Óptimo", backgroundColor: "#80ba59" },
+            { content: "Medio", backgroundColor: "#ebec89" },
+            { content: "Bajo", backgroundColor: "#fd9a1e" },
+            { content: "No apto/marginal", backgroundColor: "#595959" }
+          ],
+          body: [
+            [
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "137,312", backgroundColor: "#fff" },
+              { content: "226,439", backgroundColor: "#fff" },
+              { content: "36,277", backgroundColor: "#fff" },
+              { content: "0", backgroundColor: "#fff" }
             ],
             [
-              "Temperatura media anual (°C)",
-              "18 - 22",
-              "22 - 24 / 16 - 18",
-              "24 - 26 / 12 - 16",
-              "> 26 / ≤ 12",
-            ],
-            [
-              "Edafología Perfil textura",
-              "Regosol: fina, media y gruesa, Leptosol: fina y media, Cambisol: fina, Luvisol: fina y media, Phaeozem: fina y media, Vertisol: fina y media",
-              "Andosol: media, Calcisol: media, Cambisol: media, Leptosol: media, Lixisol: fina, gruesa, Luvisol: gruesa, Nitisol: fina, Phaeozem: gruesa, Umbrisol: media",
-              "Acrisol: fina, media y gruesa, Arenosol: gruesa, Calcisol: fina y gruesa, Cambisol: fina y gruesa, Durisol: fina, media y gruesa, Gipsisol: media, Leptosol: fina y gruesa, Umbrisol: fina y gruesa",
-              "Fluvisol: fina, media y gruesa, Gleysol: fina, media y gruesa, Planosol: fina, media y gruesa, Solonchak: fina, media y gruesa",
-            ],
-            ["Pendiente (%)", "≤ 30", "30 - 35", "35 - 45", "> 45"],
-            [
-              "Altitud (msnm)",
-              "1000 - 1700",
-              "1700 - 2000 / 800 - 1000",
-              "2000 - 2300 / 550 - 800",
-              "> 2300 / < 550",
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "299,728", backgroundColor: "#fff" },
+              { content: "104,556", backgroundColor: "#fff" },
+              { content: "7,257", backgroundColor: "#fff" },
+              { content: "2,396", backgroundColor: "#fff" }
             ],
           ],
         },
         {
           type: "text",
-          content:
-          "Los Valles Centrales concentran 59 % (303,111 ha) con condición óptima, y la Sierra de Yautepec 35 % (173,078 ha) con aptitud media. \n" +
-          "Las áreas no aptas son mínimas, favoreciendo el manejo sostenible."
+          content: [
+            {
+              type: "paragraph",
+              content: "La comparación entre escenarios muestra tres cambios principales:\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "I. ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "414,926 ha (51 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " mantienen su aptitud productiva óptima.\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "II. ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "22,114 ha (3 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " mejoran su aptitud.\n",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "III. ",
+              color: "#fff"
+            },
+            {
+              type: "paragraph",
+              content: "87,086 ha (11 %)",
+              color: "#FFE699"
+            },
+            {
+              type: "paragraph",
+              content: " pierden su aptitud.",
+              color: "#fff"
+            }
+          ]
         },
         {
           type: "table",
           header: [
-            "Potencial productivo actual",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            { content: "", backgroundColor: "#fff" },
+            { content: "Sin cambio", backgroundColor: "#a2c953" },
+            { content: "Incremento", backgroundColor: "#4e89d1" },
+            { content: "Pérdida", backgroundColor: "#c84b4a" },
+            { content: "No apto", backgroundColor: "#595959" },
           ],
           body: [
-            ["Sierra de Yautepec", "198,901", "173,078", "27,747", "302"],
-            ["Valles Centrales", "303,111", "86,967", "21,916", "1,943"],
-          ],
-        },
-        {
-          type: "text",
-          content:
-          "Con el cambio climático, los Valles Centrales mantienen 58 % (299,728 ha) con aptitud óptima, mientras que la Sierra de Yautepec reduce a 28 %, aumentando la aptitud media (47 %)."
-        },
-        {
-          type: "table",
-          header: [
-            "Potencial productivo con cambio climático",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
-          ],
-          body: [
-            ["Sierra de Yautepec", "137,312", "226,439", "36,277", "0"],
-            ["Valles Centrales", "299,728", "104,556", "7,257", "2,396"],
-          ],
-        },
-        {
-          type: "text",
-          content:
-          "La comparación entre escenarios muestra:\n" +
-          "a) Valles Centrales mantienen 54 % (280,001 ha) con condición óptima, \n" +
-          "b) Sierra de Yautepec reduce a 28 % y aumenta áreas no aptas (42 %), \n" +
-          "c) Mejoras mínimas (4 % y <1 %). \n" +
-          "Se requiere priorizar estrategias de adaptación en la Sierra de Yautepec."
-        },
-        {
-          type: "table",
-          header: [
-            "",
-            "Sin cambio",
-            "Incremento",
-            "Pérdida",
-            "No apto",
-          ],
-          body: [
-            ["Sierra de Yautepec", "134,925", "2,387", "63,976", "19,8740"],
-            ["Valles Centrales", "280,001", "19,727", "23,110", "91,099"],
+            [
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "134,925", backgroundColor: "#fff" },
+              { content: "2,387", backgroundColor: "#fff" },
+              { content: "63,976", backgroundColor: "#fff" },
+              { content: "19,8740", backgroundColor: "#fff" },
+            ],
+            [
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "280,001", backgroundColor: "#fff" },
+              { content: "19,727", backgroundColor: "#fff" },
+              { content: "23,110", backgroundColor: "#fff" },
+              { content: "91,099", backgroundColor: "#fff" },
+            ],
           ],
         },
       ],
@@ -1052,112 +2546,160 @@ export const dataPages = {
         {
           type: "text",
           content:
-          "También conocido como pichomel o maguey curadero, se distribuye desde la cuenca del Balsas hasta el Istmo de Tehuantepec entre 680–1,600 msnm. \n" +
-          "Alcanza 1.5–2 m y puede rendir hasta 75 t/ha en condiciones óptimas. \n" +
-          "Por su lento crecimiento (12 a 35 años), requiere manejo técnico y uso en restauración productiva sustentable."
+          "También conocido como pichomel o maguey curadero, se distribuye desde la cuenca del Balsas hasta el Istmo de Tehuantepec. "
+        },
+        {
+          type: "text",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "El ", color: "#fff" },
+                { type: "text", text: "55 %", color: "#ffe26f" },
+                { type: "text", text: " del área (", color: "#fff" },
+                { type: "text", text: "450,549 ha", color: "#ffe26f" },
+                { type: "text", text: ") presenta ", color: "#fff" },
+                { type: "text", text: "condición óptima", color: "#ffe26f" },
+                { type: "text", text: ", el ", color: "#fff" },
+                { type: "text", text: "28 %", color: "#ffe26f" },
+                { type: "text", text: " media y ", color: "#fff" },
+                { type: "text", text: "16 %", color: "#ffe26f" },
+                { type: "text", text: " baja.", color: "#fff" },
+              ],
+            },
+          ]
         },
         {
           type: "table",
-          title: "Requerimientos agroecológicos - Agave Marmorata (Tepeztate)",
-          header: ["Parámetro", "Óptimo", "Medio", "Bajo", "No apto/Marginal"],
+          title: "",
+          header: [
+            { content: "Escenario actual", backgroundColor: "#fff", color: "#fff", colSpan: 1 },
+            { content: "Óptimo", backgroundColor: "#367b1d", color: "#fff" },
+            { content: "Medio", backgroundColor: "#e5c02d", color: "#222" },
+            { content: "Bajo", backgroundColor: "#e37e13", color: "#fff" },
+            { content: "No apto/\nmarginal", backgroundColor: "#adb3aa", color: "#222" },
+          ],
           body: [
             [
-              "Productividad (t/ha)",
-              "75 ton/ha",
-              "53 ton/ha",
-              "21 ton/ha",
-              "10 ton/ha",
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "166,655", backgroundColor: "#fff" },
+              { content: "153,448", backgroundColor: "#fff" },
+              { content: "79,623", backgroundColor: "#fff" },
+              { content: "302", backgroundColor: "#fff" },
             ],
             [
-              "Precipitación media anual (mm)",
-              "500 - 700",
-              "700 - 800 / 400 - 500",
-              "800 - 1000 / 300 - 400",
-              "> 1000 / ≤ 300",
-            ],
-            [
-              "Temperatura media anual (°C)",
-              "18 - 22",
-              "22 - 24 / 16 - 18",
-              "24 - 26 / 12 - 16",
-              "> 26 / ≤ 12",
-            ],
-            [
-              "Edafología Perfil textura",
-              "Luvisol: fina, Phaeozem: media, Leptosol: fina y media, Cambisol: fina, Regosol: media y gruesa",
-              "Calcisol: media, Cambisol: media, Luvisol: media",
-              "Calcisol: fina y gruesa, Cambisol: fina y gruesa, Phaeozem: gruesa",
-              "Fluvisol: fina, media y gruesa, Gleysol: fina, media y gruesa, Planosol: fina, media y gruesa, Solonchak: fina, media y gruesa",
-            ],
-            ["Pendiente (%)", "≤ 30", "30 - 35", "35 - 45", "> 45"],
-            [
-              "Altitud (msnm)",
-              "1000 - 1700",
-              "1700 - 2000 / 800 - 1000",
-              "2000 - 2300 / 550 - 800",
-              "> 2300 / < 550",
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "283,894", backgroundColor: "#fff" },
+              { content: "75,322", backgroundColor: "#fff" },
+              { content: "52,778", backgroundColor: "#fff" },
+              { content: "1,943", backgroundColor: "#fff" },
             ],
           ],
         },
         {
           type: "text",
-          content:
-          "Bajo condiciones actuales, los Valles Centrales presentan 64 % (283,894 ha) con aptitud óptima, y la Sierra de Yautepec 37 % (166,655 ha). \n" +
-          "Esta última muestra baja área no apta (0.1 %) y alta continuidad territorial, favoreciendo la expansión y adaptación sustentable."
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "Bajo condiciones de cambio climático se reduce la superficie al ", color: "#fff" },
+                { type: "text", text: "47 % (382,579 ha)", color: "#ffe26f" },
+                { type: "text", text: " con ", color: "#fff" },
+                { type: "text", text: "aptitud óptima", color: "#ffe26f" },
+                { type: "text", text: ", mientras que el ", color: "#fff"},
+                { type: "text", text: "31 %", color: "#e5c02d" },
+                { type: "text", text: " mantiene las condiciones medias y el ", color: "#fff" },
+                { type: "text", text: "21 %", color: "#ffe26f" },
+                { type: "text", text: " baja.", color: "#fff" },
+              ],
+            }
+          ],
         },
         {
           type: "table",
           header: [
-            "Potencial productivo actual",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            { content: "Escenario con\ncambio climático", backgroundColor: "#fff", color: "#fff" },
+            { content: "Óptimo", backgroundColor: "#367b1d", color: "#fff" },
+            { content: "Medio", backgroundColor: "#e5c02d", color: "#222" },
+            { content: "Bajo", backgroundColor: "#e37e13", color: "#fff" },
+            { content: "No apto/\nmarginal", backgroundColor: "#adb3aa", color: "#222" },
           ],
           body: [
-            ["Sierra de Yautepec", "166,655", "153,448", "79,623", "302"],
-            ["Valles Centrales", "283,894", "75,322", "52,778", "1,943"],
+            [
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "275,773", backgroundColor: "#fff" },
+              { content: "77,570", backgroundColor: "#fff" },
+              { content: "58,198", backgroundColor: "#fff" },
+              { content: "2,396", backgroundColor: "#fff" },
+            ],
+            [
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "106,806", backgroundColor: "#fff" },
+              { content: "176,887", backgroundColor: "#fff" },
+              { content: "116,335", backgroundColor: "#fff" },
+              { content: "0", backgroundColor: "#fff" },
+            ],
           ],
         },
         {
           type: "text",
-          content:
-          "En el escenario futuro, la Sierra de Yautepec conservaría 58 % (275,773 ha) con aptitud óptima, mientras que los Valles Centrales reducirían a 22 % (106,806 ha). \n" +
-          "Las áreas no aptas son mínimas, reflejando alta capacidad de adaptación."
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "La comparación entre escenarios muestra tres cambios principales: \n", color: "#fff", fontSize: "1rem" },
+              ],
+            },
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "I. ", color: "#fff" },
+                { type: "text", text: "362,848 ha (45 %)", color: "#ffe26f" },
+                { type: "text", text: " mantienen su aptitud productiva óptima,\n", color: "#fff" }
+              ]
+            },
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "II. ", color: "#fff"},
+                { type: "text", text: "19,731 ha (2 %)", color: "#ffe26f"},
+                { type: "text", text: " mejoran su aptitud.\n", color: "#fff"}
+              ]
+            },
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "III. ", color: "#fff"},
+                { type: "text", text: "87,701 ha (11 %)", color: "#ffe26f"},
+                { type: "text", text: " pierden su aptitud.", color: "#fff"}
+              ]
+            }
+          ]
         },
         {
           type: "table",
           header: [
-            "Potencial productivo con cambio climático",
-            "Óptimo",
-            "Medio",
-            "Bajo",
-            "No apto/Marginal",
+            { content: "", backgroundColor: "#fff", color: "#fff" },
+            { content: "Sin cambio", backgroundColor: "#367b1d", color: "#fff" },
+            { content: "Incremento", backgroundColor: "#42b6e8", color: "#fff" },
+            { content: "Pérdida", backgroundColor: "#e96025", color: "#fff" },
+            { content: "No apto", backgroundColor: "#adb3aa", color: "#222" },
           ],
           body: [
-            ["Sierra de Yautepec", "275,773", "77,570", "58,198", "2,396"],
-            ["Valles Centrales", "106,806", "176,887", "116,335", "0"],
-          ],
-        },
-        {type: "text",
-          content:
-          "La comparación entre escenarios muestra:\n" +
-          "a) 362,848 ha (77.2 %) mantienen condición óptima, \n" +
-          "b) 19,731 ha (4.2 %) mejoran, y \n" +
-          "c) 87,701 ha (18.6 %) la pierden, principalmente en la Sierra de Yautepec, donde el 49 % resulta no apto. \n" +
-          "Se requiere priorizar estrategias de adaptación en la Sierra de Yautepec."
-        },
-        {type: "table",
-          header: [
-            "",
-            "Sin cambio",
-            "Incremento",
-            "Pérdida",
-            "No apto",
-          ],
-          body: [
-            ["Sierra de Yautepec", "104,228", "2,578", "62,427", "230,795"],
-            ["Valles Centrales", "258,620", "17,153", "25,274", "112,890"],
+            [
+              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
+              { content: "104,228", backgroundColor: "#fff" },
+              { content: "2,578", backgroundColor: "#fff" },
+              { content: "62,427", backgroundColor: "#fff" },
+              { content: "230,795", backgroundColor: "#fff" },
+            ],
+            [
+              { content: "Valles centrales", backgroundColor: "#fff" },
+              { content: "258,620", backgroundColor: "#fff" },
+              { content: "17,153", backgroundColor: "#fff" },
+              { content: "25,274", backgroundColor: "#fff" },
+              { content: "112,890", backgroundColor: "#fff" },
+            ],
           ],
         },
       ],
@@ -1177,15 +2719,15 @@ export const dataPages = {
         {
           type: "table",
           header: [
-            ["","","","","Enfoque de manejo",""],
-            ["","", "Preservación",
-              "Conservación",
-              "Restauración",
-              "Aprovechamiento",
+            [{content: "", colSpan: 2},{content: "Enfoque de manejo", colSpan: 4}],
+            [{content: "Criterios de zonificación", colSpan: 2}, {content: "Preservación", colSpan: 1},
+              {content: "Conservación", colSpan: 1},
+              {content: "Restauración", colSpan: 1},
+              {content: "Aprovechamiento", colSpan: 1},
               ]
           ],
           body: [
-            ["Criterios de zonificación", "Sitios de alto valor cultural","✓","✓","✓","X"],
+            ["", "Sitios de alto valor cultural","✓","✓","✓","X"],
             ["","Corredores biológicos", "✓", "✓", "✓", "X"],
             ["","Importancia ecológica", "✓", "✓", "✓", "X"],
             ["","Áreas protegidas", "✓", "✓", "✓", "X"],
@@ -1207,6 +2749,12 @@ export const dataPages = {
           type: "text",
           content:
           "Las variables fueron reclasificadas en 5 rangos (muy alto, alto, medio, bajo y muy bajo), valores que fueron ordenándose en una matriz de exclusión, de tal manera que permitirán identificar las áreas de conservación, preservación, restauración (ecológica y productiva) y aprovechamiento sustentable."
+        },
+        {
+          type: "image",
+          src: mapaZonificacionChart,
+          alt: "Mapa de zonificación",
+          width: "60%",
         }
         ],
     }

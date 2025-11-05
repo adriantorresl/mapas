@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { Typography, Space, Drawer } from "antd";
-import { RightOutlined } from "@ant-design/icons";
+import { MenuOutlined, RightOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 import { findSectionById } from "../../constants/navigationData";
 import { useHeaderNavigation } from "../../hooks/useHeaderNavigation";
@@ -17,13 +17,12 @@ import LazyMenuSection from "./LazyMenuSection";
 
 // Componente memoizado para el logo
 const HeaderLogo = memo(({ logo, onClick }) => (
-  <img
-    src={logo}
-    alt="Logo Tierra de Agaves"
-    className="header-logo"
-    onClick={onClick}
-    style={{ cursor: "pointer" }}
-  />
+  <>
+    <MenuOutlined style={{ fontSize: "35px", cursor: "pointer" }} onClick={onClick}
+        className="header-logo"
+        />
+   
+    </>
 ));
 
 HeaderLogo.propTypes = {
