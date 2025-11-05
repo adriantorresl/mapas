@@ -1,4 +1,7 @@
+import React from "react";
+
 const TableBlock = ({ title, header, body }) => {
+  console.log(header);
   return (
     <div style={{ marginTop: "25px", marginBottom: "25px" }}>
       {title && (
@@ -45,21 +48,34 @@ const TableBlock = ({ title, header, body }) => {
             <thead>
               {(Array.isArray(header[0]) ? header : [header]).map((headerRow, headerRowIdx) => (
                 <tr key={headerRowIdx}>
-                  {headerRow.map((headerCell, headerIndex) => (
-                    <th
-                      key={headerIndex}
-                      style={{
-                        padding: "12px 8px",
-                        backgroundColor: "#FFE699",
-                        textAlign: "center",
-                        fontWeight: "600",
-                        fontSize: "0.8rem",
-                        color: "#1E3620",
-                      }}
-                    >
-                      {headerCell}
-                    </th>
-                  ))}
+                  {headerRow.map((headerCell, headerIndex) => {
+                    // Handle both object format {content: "", colSpan: 2} and simple string format
+                    const cellContent = typeof headerCell === 'object' && headerCell !== null 
+                      ? (headerCell.content !== undefined ? headerCell.content : headerCell)
+                      : headerCell;
+                    const colSpan = typeof headerCell === 'object' && headerCell !== null && headerCell.colSpan
+                      ? headerCell.colSpan
+                      : 1;
+                    const backgroundColor = typeof headerCell === 'object' && headerCell !== null && headerCell.backgroundColor
+                      ? headerCell.backgroundColor
+                      : "#FFE699";
+                    return (
+                      <th
+                        key={headerIndex}
+                        style={{
+                          padding: "12px 8px",
+                          backgroundColor: backgroundColor,
+                          textAlign: "center",
+                          fontWeight: "600",
+                          fontSize: "0.8rem",
+                          color: "#1E3620",
+                        }}
+                        colSpan={colSpan}
+                      >
+                        {cellContent}
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
@@ -74,21 +90,37 @@ const TableBlock = ({ title, header, body }) => {
                     backgroundColor: "#fff2cc",
                   }}
                 >
-                  {row.map((cell, cellIndex) => (
+                  {row.map((cell, cellIndex) => {
+                    const cellContent = typeof cell === 'object' && cell !== null 
+                    ? (cell.content !== undefined ? cell.content : cell)
+                    : cell;
+                  const colSpan = typeof cell === 'object' && cell !== null && cell.colSpan
+                    ? cell.colSpan
+                    : 1;
+                  const backgroundColor = typeof cell === 'object' && cell !== null && cell.backgroundColor
+                    ? cell.backgroundColor
+                    : "#fff2cc";
+                  const borderBottom = typeof cell === 'object' && cell !== null && cell.borderBottom
+                    ? cell.borderBottom
+                    : "";
+                    return (
                     <td
                       key={cellIndex}
                       style={{
                         padding: "10px 8px",
-                        borderBottom: "1px solid #BF9000",
+                        borderBottom,
                         textAlign: cellIndex === 0 ? "left" : "center",
                         fontSize: "0.7rem",
                         fontWeight: "normal",
                         color: "#000000",
+                        backgroundColor,
                       }}
-                    >
-                      {cell}
-                    </td>
-                  ))}
+                      colSpan={colSpan}
+                      >
+                        {cellContent}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
