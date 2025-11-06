@@ -5,6 +5,33 @@ import zonaCentralPieChart from "../assets/media/zona-central-pie-chart.png";
 import pieChartTerritorio from "../assets/media/pie-chart-territorio.png";
 import temperaturaPrecipitacion from "../assets/media/temperature-precipitacion.png";
 import mapaZonificacionChart from "../assets/media/zonificacion-chart.png";
+
+import mapaZonificacion from "../assets/media/tables/municipiosTable.png";
+import edafologiaTable from "../assets/media/tables/edafologia.png";
+import tiposClima from "../assets/media/tables/clima.png";
+import cambioUsoSuelo from "../assets/media/tables/vegetacion.png";
+import clasificacionUsoSuelo from "../assets/media/tables/clasificacionVegetacion.png";
+import piramidePoblacionalTable from "../assets/media/tables/poblacion.png";
+import actividadesProductivas from "../assets/media/tables/vulnerabilidad.png";
+import actividadesGanaderasTable from "../assets/media/tables/actividadesGanaderas.png";
+import superficieSembradaTable from "../assets/media/tables/superficieSembrada.png";
+import agaveArroqueno1 from "../assets/media/tables/agaveArroqueno1.png";
+import agaveArroqueno2 from "../assets/media/tables/agaveArroqueno2.png";
+import agaveArroqueno3 from "../assets/media/tables/agaveArroqueno3.png";
+import Angustifolia1 from "../assets/media/tables/Angustifolia1.png";
+import Angustifolia2 from "../assets/media/tables/Angustifolia2.png";
+import Angustifolia3 from "../assets/media/tables/Angustifolia3.png";
+import Iyoba1 from "../assets/media/tables/Iyoba1.png";
+import Iyoba2 from "../assets/media/tables/Iyoba2.png";
+import Iyoba3 from "../assets/media/tables/Iyoba3.png";
+import Karwinskii1 from "../assets/media/tables/Karwinskii1.png";
+import Karwinskii2 from "../assets/media/tables/Karwinskii2.png";
+import Karwinskii3 from "../assets/media/tables/Karwinskii3.png";
+import Marmorata1 from "../assets/media/tables/Marmorata1.png";
+import Marmorata2 from "../assets/media/tables/Marmorata2.png";
+import Marmorata3 from "../assets/media/tables/Marmorata3.png";
+import ZonificacionTable from "../assets/media/tables/Zonificacion.png";
+
 export const dataPages = {
   pages: [
     {
@@ -55,13 +82,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: ["Paisaje", "Municipios", "Superficie", "%"],
-          body: [
-            ["Valles Centrales", "11", "401,208 has", "41%"],
-            ["Sierra de Yautepec", "48", "415,358 has", "49%"],
-          ],
+          type: "image",
+          src: mapaZonificacion,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -108,97 +134,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [[
-            {content: "Suelo / textura", colSpan: 1, backgroundColor: "#fff2cc"},
-            {content: "Sierra de Yautepec ", colSpan: 3, backgroundColor: "#fff2cc"},
-            {content: "Valles Centrales ", colSpan: 3, backgroundColor: "#fff2cc"},
-          ],
-        [ {content: "", colSpan: 1, backgroundColor: "#fff2cc"},
-          {content: "Fina", backgroundColor: "#fff2cc"}, 
-          {content: "Media", backgroundColor: "#fff2cc"}, 
-          {content: "Gruesa", backgroundColor: "#fff2cc"},
-          {content: "Fina", backgroundColor: "#fff2cc"}, 
-          {content: "Media", backgroundColor: "#fff2cc"}, 
-          {content: "Gruesa", backgroundColor: "#fff2cc"},
-        ]],
-          body: [
-            [
-              {content: "Regosol", backgroundColor: "#FFE699"}, 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              {content: "25,278", backgroundColor: "#FFE699"}, 
-              {content: "24,255", backgroundColor: "#FFE699"}, 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              {content: "66,154", backgroundColor: "#FFE699"}, 
-              {content: "4,694", backgroundColor: "#FFE699"}, 
-            ],
-            [
-              {content: "Phaeozem", backgroundColor: "#FFE699"},
-              {content: "3,235", backgroundColor: "#FFE699"},
-              {content: "16,998", backgroundColor: "#FFE699"},
-              "19,168",
-              {content: "18,449", backgroundColor: "#FFE699"},
-              {content: "11,629", backgroundColor: "#FFE699"},
-              "303",
-            ],
-            [
-              {content: "Leptosol", backgroundColor: "#FFE699"}, 
-              {content: "43,610", backgroundColor: "#FFE699"}, 
-              {content: "72,452", backgroundColor: "#FFE699"}, 
-              "0", 
-              {content: "36,377", backgroundColor: "#FFE699"}, 
-              {content: "58,806", backgroundColor: "#FFE699"}, 
-              "321"],
-            [
-              {content: "Luvisol", backgroundColor: "#FFE699"}, 
-              {content: "35,491", backgroundColor: "#FFE699"}, 
-              {content: "67,062", backgroundColor: "#FFE699"},
-              "0",
-              {content: "66,493", backgroundColor: "#FFE699"}, 
-              {content: "22,652", backgroundColor: "#FFE699"},
-              "7,944"],
-            [
-              {content: "Cambisol", backgroundColor: "#FFE699"}, 
-              {content: "37,197", backgroundColor: "#FFE699"}, 
-              "40,724", "0", 
-              {content: "28,640", backgroundColor: "#FFE699"}, 
-              {content: "24,296", backgroundColor: "#FFE699"},
-              "1,098"],
-            [
-              {content: "Calcisol", backgroundColor: "#FFE699"},
-              "0", 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              "0", "0", 
-              {content: "12,756", backgroundColor: "#FFE699"}, 
-              "0"],
-            [
-              {content: "Kastanozem", backgroundColor: "#FFE699"},
-              "0",
-              {content: "4,751", backgroundColor: "#FFE699"},
-              "0",
-              {content: "0", backgroundColor: "#FFE699"}, 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              "0"],
-            [
-              {content: "Vertisol", backgroundColor: "#FFE699"}, 
-              "0", 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              "0", "9,162", 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              "0"],
-            [
-              {content: "Fluvisol", backgroundColor: "#FFE699"}, 
-              "0", "981", "6,433", 
-              {content: "0", backgroundColor: "#FFE699"}, 
-              "0", "4,421"],
-            ["Acrisol", "0", "2,994", "0", "26,750", "10,844", "0"],
-            [
-              {content: "Umbrisol", backgroundColor: "#FFE699"}, 
-              "379", "0", "0", 
-              {content: "1,005", backgroundColor: "#FFE699"},
-               "0", "0"],
-          ],
+          type: "image",
+          src: edafologiaTable,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -389,21 +330,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            "Tipos de clima",
-            "Árido",
-            "Semiárido",
-            "Subhúmedo",
-            "Húmedo",
-          ],
-          body: [
-            ["Cálido", "45,488", "100,972", "58", ""],
-            ["Semicálido", "", "110,842", "350,395", "22,180"],
-            ["Semifrío", "", "", "498", "5,254"],
-            ["Templado", "", "7,708", "170,572", "2,600"],
-          ],
+          type: "image",
+          src: tiposClima,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -491,25 +423,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: ["", "Hectáreas", "Porcentaje"],
-          body: [
-            ["Agua", "1,251", "0.2%"],
-            ["Agricultura de temporal", "149,394", "18.3%"],
-            ["Agricultura de riego", "14,350", "1.8%"],
-            ["Ganadería", "32,196", "3.9%"],
-            ["Urbano", "7,392", "0.9%"],
-            ["Vegetación secundaria arbustiva", "354,497", "43.4%"],
-            ["Selva baja caducifolia", "142,507", "17.5%"],
-            ["Bosque de mezquite", "44", "0.0%"],
-            ["Bosque de encino", "31,013", "3.8%"],
-            ["Bosque de encino-pino", "16,365", "2.0%"],
-            ["Bosque de pino", "12,176", "1.5%"],
-            ["Bosque de pino-encino", "52,395", "6.4%"],
-            ["Bosque de oyamel", "9", "0.0%"],
-            ["Bosque mesófilo", "2,979", "0.4%"],
-          ],
+          type: "image",
+          src: cambioUsoSuelo,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -522,97 +441,12 @@ export const dataPages = {
           "Se clasificaron los usos en vegetación “V” y no vegetación “A”, obteniendo 14 combinaciones que muestran la edad y transformación."
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            "Proceso de cambio",
-            "Tipo de uso de suelo y vegetación",
-            "Edad",
-            "Hectárea",
-            "Porcentaje",
-          ],
-          body: [
-            [
-              "A - A - A - A - A - A - A",
-              "",
-              "> 38 años",
-              "194,076",
-              "22.1%",
-            ],
-            [
-              "A - A - A - A - A - A",
-              "Agricultura Permanente",
-              "25 años",
-              "12,349",
-              "1.4%",
-            ],
-            [
-              "A - A - A - A - A",
-              "",
-              "16 años",
-              "14,962",
-              "1.7%",
-            ],
-            [
-              "A - A - A - A",
-              "",
-              "11 años",
-              "6,439",
-              "0.7%",
-            ],
-            ["A - A - A", "Agricultura ", "7 años", "7,785", "0.9%"],
-            ["A - A", " Temporal", "4 años", "3,535", "0.4%"],
-            ["A", " ", "< 4 años", "0", "0.0%"],
-            [
-              "V",
-              "Vegetación Secundaria Herbácea",
-              "< 4 años",
-              "45,826",
-              "5.2%",
-            ],
-            [
-              "V - V",
-              "Vegetación ",
-              "4 años",
-              "20,235",
-              "2.3%",
-            ],
-            [
-              "V - V - V",
-              "Secundaria ",
-              "7 años",
-              "6,948",
-              "0.8%",
-            ],
-            [
-              "V - V - V - V",
-              "Arbustiva",
-              "11 años",
-              "8,725",
-              "1.0%",
-            ],
-            [
-              "V - V - V - V - V",
-              "",
-              "16 años",
-              "7,784",
-              "0.9%",
-            ],
-            [
-              "V - V - V - V - V - V",
-              "Vegetación",
-              "25 años",
-              "12,135",
-              "1.4%",
-            ],
-            [
-              "V - V - V - V - V - V - V",
-              "Primaria Arbórea",
-              "> 38 años",
-              "539,343",
-              "61.3%",
-            ],
-          ],
+          type: "image",
+          src: clasificacionUsoSuelo,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -720,31 +554,12 @@ export const dataPages = {
           caption: "",
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            "Paisaje",
-            "Población Total",
-            "Pobreza",
-            "Pobreza moderada",
-            "Pobreza extrema",
-          ],
-          body: [
-            [
-              "Sierra de Yautepec",
-              "48,668",
-              "81% (40,673)",
-              "56% (7,956)",
-              "26% (3,677)",
-            ],
-            [
-              "Valles Centrales",
-              "296,996",
-              "76% (204,938)",
-              "49% (30,494)",
-              "27% (16,680)",
-            ],
-          ],
+          type: "image",
+          src: piramidePoblacionalTable,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -823,22 +638,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [[
-            {content: "Grado de marginación", colSpan: 1},
-            {content: "Valles Centrales ", colSpan: 2},
-            {content: "Sierra de Yautepec", colSpan: 2},
-          ],
-        ["", "Nº de municipios", "Habitantes", "Nº de municipios", "Habitantes", ],],
-          body: [
-            ["Muy baja", "2", "14,154", "0", "0"],
-            ["Baja", "3", "32,463", "1", "3,294"],
-            ["Media", "14", "113,260", "6", "14,785"],
-            ["Alta", "21", "106,285", "3", "18,559"],
-            ["Muy alta", "8", "30,834", "1", "11,930"],
-            ["Total", "48", "296,996", "11", "48,668"],
-          ],
+          type: "image",
+          src: actividadesProductivas,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -920,19 +725,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
+          type: "image",
+          src: actividadesGanaderasTable,
+          width: "90%",
+          height: "auto",
+          caption:
             "",
-            "Población total",
-            "PEA",
-            "PEA ocupada",
-            "PEA ocupada informal",
-          ],
-          body: [
-            ["Sierra de Yautepec", "38,844", "56.6%", "99.2%", "91.4%"],
-            ["Valles Centrales", "267,405", "61.7%", "98.8%", "89.8%"],
-          ],
         },
         {
           type: "text",
@@ -995,27 +793,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            "Posición",
-            "Municipio",
-            "Superficie Sembrada (ha)",
-            "% del total",
-          ],
-          body: [
-            ["1", "Miahuatlán de Porfirio Díaz", "9,636", "14.9"],
-            ["2", "Nejapa de Madero", "7,519", "11.6"],
-            ["3", "Heroica Ciudad de Ejutla de Crespo", "5,921", "9.1"],
-            ["4", "San Carlos Yautepec", "5,180", "8.0"],
-            ["5", "San Luis Amatlán", "4,197", "6.5"],
-            ["6", "San Dionisio Ocotepec", "3,780", "5.8"],
-            ["7", "San José del Progreso", "2,598", "4.0"],
-            ["8", "San Pedro Quiatoni", "2,562", "4.0"],
-            ["9", "San Baltazar Chichicápam", "1,660", "2.6"],
-            ["10", "San Pablo Villa de Mitla", "1,564", "2.4"],
-            // ["Total de hectáreas sembradas en la zona de estudio (64,776.3 ha)."]
-          ],
+          type: "image",
+          src: superficieSembradaTable,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -1330,41 +1113,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            {
-            content: "Escenario actual",
-            backgroundColor: "#fff"
-          }, {
-            content: "Óptimo",
-            backgroundColor: "#80ba59"
-          }, {
-            content: "Medio",
-            backgroundColor: "#ebec89"
-          }, {
-            content: "Bajo",
-            backgroundColor: "#fd9a1e"
-          }, {
-            content: "No apto/Marginal",
-            backgroundColor: "#595959"
-          }],
-          body: [
-            [
-              "Sierra de Yautepec",
-              "232,283",
-              "167,342",
-              "101",
-              "302",
-            ],
-            [
-              "Valles Centrales",
-              "108,049",
-              "300,058",
-              "3,887",
-              "1,943",
-            ],
-          ],
+          type: "image",
+          src: agaveArroqueno1,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -1392,30 +1146,12 @@ export const dataPages = {
           ]
         } ,
         {
-          type: "table",
-          header: [
-            
-            {
-              content: "Escenario con cambio climático",
-              backgroundColor: "#fff"
-            }, {
-              content: "Óptimo",
-              backgroundColor: "#80ba59"
-            }, {
-              content: "Medio",
-              backgroundColor: "#ebec89"
-            }, {
-              content: "Bajo",
-              backgroundColor: "#fd9a1e"
-            }, {
-              content: "No apto/Marginal",
-              backgroundColor: "#595959"
-            }
-          ],
-          body: [
-            ["Sierra de Yautepec", "200,710", "199,318", "0", "0"],
-            ["Valles Centrales", "140,730", "270,811", "0", "2,396"],
-          ],
+          type: "image",
+          src: agaveArroqueno2,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -1468,30 +1204,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          header: [
-            {
-              content: "",
-              backgroundColor: "#fff"
-            },
-            {
-              content: "Sin cambio",
-              backgroundColor: "#a2c953"
-            }, {
-              content: "Incremento",
-              backgroundColor: "#4e89d1"
-            }, {
-              content: "Pérdida",
-              backgroundColor: "#c84b4a"
-            },{
-              content: "No apto",
-              backgroundColor: "#595959"
-            }
-          ],
-          body: [
-            ["Sierra de Yautepec", "166,873", "33,837", "65,410", "133,908"],
-            ["Valles Centrales", "77,958", "62,772", "30,091", "243,116"],
-          ],
+          type: "image",
+          src: agaveArroqueno3,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -1573,64 +1291,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            {
-              content: "Escenario actual",
-              backgroundColor: "#fff"
-            }, {
-              content: "Óptimo",
-              backgroundColor: "#80ba59"
-            }, {
-              content: "Medio",
-              backgroundColor: "#ebec89"
-            }, {
-              content: "Bajo",
-              backgroundColor: "#fd9a1e"
-            }, {
-              content: "No apto/Marginal",
-              backgroundColor: "#595959"
-            }
-          ],
-          body: [
-            [
-              {
-                content: "Valles Centrales",
-                backgroundColor: "#fff"
-              }, {
-                content: "360,093",
-                backgroundColor: "#fff"
-              }, {
-                content: "51,901",
-                backgroundColor: "#fff"
-              }, {
-                content: "0",
-                backgroundColor: "#fff"
-              }, {
-                content: "1,943",
-                backgroundColor: "#fff"
-              }
-            ],
-            [
-              {
-                content: "Sierra de Yautepec",
-                backgroundColor: "#fff"
-              }, {
-                content: "369,641",
-                backgroundColor: "#fff"
-              }, {
-                content: "29,988",
-                backgroundColor: "#fff"
-              }, {
-                content: "97",
-                backgroundColor: "#fff"
-              }, {
-                content: "302",
-                backgroundColor: "#fff"
-              }
-            ]
-          ],
+          type: "image",
+          src: Angustifolia1,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -1753,65 +1419,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          header: [
-            {
-              content: "Escenario con cambio climático",
-              backgroundColor: "#fff"
-            },
-            {
-              content: "Óptimo",
-              backgroundColor: "#80ba59"
-            }, {
-              content: "Medio",
-              backgroundColor: "#ebec89"
-            }, {
-              content: "Bajo",
-              backgroundColor: "#fd9a1e"
-            }, {
-              content: "No apto/Marginal",
-              backgroundColor: "#595959"
-            }
-          ],
-          body: [
-
-            [
-              {
-                content: "Valles Centrales",
-                backgroundColor: "#fff"
-              }, {
-                content: "396,174",
-                backgroundColor: "#fff"
-              }, {
-                content: "15,367",
-                backgroundColor: "#fff"
-              }, {
-                content: "0",
-                backgroundColor: "#fff"
-              }, {
-                content: "2,396",
-                backgroundColor: "#fff"
-            }
-          ],
-            [
-              {
-                content: "Sierra de Yautepec",
-                backgroundColor: "#fff"
-              }, {
-                content: "365,717",
-                backgroundColor: "#fff"
-              }, {
-                content: "34,117",
-                backgroundColor: "#fff"
-              }, {
-                content: "194",
-                backgroundColor: "#fff"
-              }, {
-                content: "0",
-                backgroundColor: "#fff"
-              }
-            ],
-        ]
+          type: "image", 
+          src: Angustifolia2,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -1895,67 +1508,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          header: [
-            {
-              content: "",
-              backgroundColor: "#fff"
-            },
-            {
-              content: "Sin cambio",
-              backgroundColor: "#a2c953"
-            },
-            {
-              content: "Incremento",
-              backgroundColor: "#4e89d1"
-            },
-            {
-              content: "Pérdida",
-              backgroundColor: "#c84b4a"
-            },
-            {
-              content: "No apto",
-              backgroundColor: "#595959"
-            }
-          ],
-          body: [
-            [
-              {
-                  content: "Sierra de Yautepec",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "36,0286",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "5,431",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "9,355",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "24,956",
-                  backgroundColor: "#fff"
-                }
-              ],
-              [
-                {
-                  content: "Valles Centrales",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "357,145",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "39,029",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "2,948",
-                  backgroundColor: "#fff"
-                }, {
-                  content: "14,815",
-                  backgroundColor: "#fff"
-                }
-              ]
-          ],
+          type: "image",
+          src: Angustifolia3,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -2012,76 +1570,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            {
-              content: "",
-              backgroundColor: "#fff",
-            },
-            {
-              content: "Óptimo",
-              backgroundColor: "#80ba59", // Green, matches image
-            },
-            {
-              content: "Medio",
-              backgroundColor: "#ebec89", // Yellow, matches image
-            },
-            {
-              content: "Bajo",
-              backgroundColor: "#fd9a1e", // Orange, matches image
-            },
-            {
-              content: "No apto/ marginal",
-              backgroundColor: "#595959", // Grey, matches image
-            },
-          ],
-          body: [
-            [
-              {
-                content: "Valles centrales",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "269,926",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "76,526",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "65,542",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "1,943",
-                backgroundColor: "#fff",
-              },
-            ],
-            [
-              {
-                content: "Sierra de Yautepec",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "140,091",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "156,897",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "102,738",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "302",
-                backgroundColor: "#fff",
-              },
-            ],
-          ],
+          type: "image",
+          src: Iyoba1,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2135,76 +1629,12 @@ export const dataPages = {
           ],
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            {
-              content: "",
-              backgroundColor: "#fff",
-            },
-            {
-              content: "Óptimo",
-              backgroundColor: "#a2c953",
-            },
-            {
-              content: "Medio",
-              backgroundColor: "#e3ea81",
-            },
-            {
-              content: "Bajo",
-              backgroundColor: "#fd9a1e",
-            },
-            {
-              content: "No apto/ marginal",
-              backgroundColor: "#595959",
-            },
-          ],
-          body: [
-            [
-              {
-                content: "Valles centrales",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "81,989",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "177,597",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "140,442",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "0",
-                backgroundColor: "#fff",
-              },
-            ],
-            [
-              {
-                content: "Sierra de Yautepec",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "238,748",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "114,405",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "58,388",
-                backgroundColor: "#fff",
-              },
-              {
-                content: "2,396",
-                backgroundColor: "#fff",
-              },
-            ],
-          ],
+          type: "image",
+          src: Iyoba2,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2288,31 +1718,12 @@ export const dataPages = {
           ],
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            { content: "", backgroundColor: "#fff" },
-            { content: "Sin cambio", backgroundColor: "#a2c953" },
-            { content: "Incremento", backgroundColor: "#4e89d1" },
-            { content: "Pérdida", backgroundColor: "#c84b4a" },
-            { content: "No apto", backgroundColor: "#595959" }
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "104,228", backgroundColor: "#fff" },
-              { content: "2,578", backgroundColor: "#fff" },
-              { content: "62,427", backgroundColor: "#fff" },
-              { content: "22,795", backgroundColor: "#fff" }
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "258,620", backgroundColor: "#fff" },
-              { content: "17,153", backgroundColor: "#fff" },
-              { content: "25,274", backgroundColor: "#fff" },
-              { content: "112,890", backgroundColor: "#fff" }
-            ],
-          ],
+          type: "image",
+          src: Iyoba3,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -2350,31 +1761,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            { content: "", backgroundColor: "#fff" },
-            { content: "Óptimo", backgroundColor: "#80ba59" },
-            { content: "Medio", backgroundColor: "#ebec89" },
-            { content: "Bajo", backgroundColor: "#fd9a1e" },
-            { content: "No apto/marginal", backgroundColor: "#595959" }
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "198,901", backgroundColor: "#fff" },
-              { content: "173,078", backgroundColor: "#fff" },
-              { content: "27,747", backgroundColor: "#fff" },
-              { content: "302", backgroundColor: "#fff" }
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "303,111", backgroundColor: "#fff" },
-              { content: "86,967", backgroundColor: "#fff" },
-              { content: "21,916", backgroundColor: "#fff" },
-              { content: "1,943", backgroundColor: "#fff" }
-            ]
-          ],
+          type: "image",
+          src: Karwinskii1,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2427,31 +1819,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            { content: "", backgroundColor: "#fff" },
-            { content: "Óptimo", backgroundColor: "#80ba59" },
-            { content: "Medio", backgroundColor: "#ebec89" },
-            { content: "Bajo", backgroundColor: "#fd9a1e" },
-            { content: "No apto/marginal", backgroundColor: "#595959" }
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "137,312", backgroundColor: "#fff" },
-              { content: "226,439", backgroundColor: "#fff" },
-              { content: "36,277", backgroundColor: "#fff" },
-              { content: "0", backgroundColor: "#fff" }
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "299,728", backgroundColor: "#fff" },
-              { content: "104,556", backgroundColor: "#fff" },
-              { content: "7,257", backgroundColor: "#fff" },
-              { content: "2,396", backgroundColor: "#fff" }
-            ],
-          ],
+          type: "image",
+          src: Karwinskii2,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2509,30 +1882,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          header: [
-            { content: "", backgroundColor: "#fff" },
-            { content: "Sin cambio", backgroundColor: "#a2c953" },
-            { content: "Incremento", backgroundColor: "#4e89d1" },
-            { content: "Pérdida", backgroundColor: "#c84b4a" },
-            { content: "No apto", backgroundColor: "#595959" },
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "134,925", backgroundColor: "#fff" },
-              { content: "2,387", backgroundColor: "#fff" },
-              { content: "63,976", backgroundColor: "#fff" },
-              { content: "19,8740", backgroundColor: "#fff" },
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "280,001", backgroundColor: "#fff" },
-              { content: "19,727", backgroundColor: "#fff" },
-              { content: "23,110", backgroundColor: "#fff" },
-              { content: "91,099", backgroundColor: "#fff" },
-            ],
-          ],
+          type: "image",
+          src: Karwinskii3,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -2570,31 +1925,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          title: "",
-          header: [
-            { content: "Escenario actual", backgroundColor: "#fff", color: "#fff", colSpan: 1 },
-            { content: "Óptimo", backgroundColor: "#367b1d", color: "#fff" },
-            { content: "Medio", backgroundColor: "#e5c02d", color: "#222" },
-            { content: "Bajo", backgroundColor: "#e37e13", color: "#fff" },
-            { content: "No apto/\nmarginal", backgroundColor: "#adb3aa", color: "#222" },
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "166,655", backgroundColor: "#fff" },
-              { content: "153,448", backgroundColor: "#fff" },
-              { content: "79,623", backgroundColor: "#fff" },
-              { content: "302", backgroundColor: "#fff" },
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "283,894", backgroundColor: "#fff" },
-              { content: "75,322", backgroundColor: "#fff" },
-              { content: "52,778", backgroundColor: "#fff" },
-              { content: "1,943", backgroundColor: "#fff" },
-            ],
-          ],
+          type: "image",
+          src: Marmorata1,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2616,30 +1952,12 @@ export const dataPages = {
           ],
         },
         {
-          type: "table",
-          header: [
-            { content: "Escenario con\ncambio climático", backgroundColor: "#fff", color: "#fff" },
-            { content: "Óptimo", backgroundColor: "#367b1d", color: "#fff" },
-            { content: "Medio", backgroundColor: "#e5c02d", color: "#222" },
-            { content: "Bajo", backgroundColor: "#e37e13", color: "#fff" },
-            { content: "No apto/\nmarginal", backgroundColor: "#adb3aa", color: "#222" },
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "275,773", backgroundColor: "#fff" },
-              { content: "77,570", backgroundColor: "#fff" },
-              { content: "58,198", backgroundColor: "#fff" },
-              { content: "2,396", backgroundColor: "#fff" },
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "106,806", backgroundColor: "#fff" },
-              { content: "176,887", backgroundColor: "#fff" },
-              { content: "116,335", backgroundColor: "#fff" },
-              { content: "0", backgroundColor: "#fff" },
-            ],
-          ],
+          type: "image",
+          src: Marmorata2,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
@@ -2677,30 +1995,12 @@ export const dataPages = {
           ]
         },
         {
-          type: "table",
-          header: [
-            { content: "", backgroundColor: "#fff", color: "#fff" },
-            { content: "Sin cambio", backgroundColor: "#367b1d", color: "#fff" },
-            { content: "Incremento", backgroundColor: "#42b6e8", color: "#fff" },
-            { content: "Pérdida", backgroundColor: "#e96025", color: "#fff" },
-            { content: "No apto", backgroundColor: "#adb3aa", color: "#222" },
-          ],
-          body: [
-            [
-              { content: "Sierra de Yautepec", backgroundColor: "#fff" },
-              { content: "104,228", backgroundColor: "#fff" },
-              { content: "2,578", backgroundColor: "#fff" },
-              { content: "62,427", backgroundColor: "#fff" },
-              { content: "230,795", backgroundColor: "#fff" },
-            ],
-            [
-              { content: "Valles centrales", backgroundColor: "#fff" },
-              { content: "258,620", backgroundColor: "#fff" },
-              { content: "17,153", backgroundColor: "#fff" },
-              { content: "25,274", backgroundColor: "#fff" },
-              { content: "112,890", backgroundColor: "#fff" },
-            ],
-          ],
+          type: "image",
+          src: Marmorata3,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
       ],
     },
@@ -2717,33 +2017,12 @@ export const dataPages = {
           "La zonificación considera variables ecológicas, sociales y productivas, seleccionadas por su relevancia en la determinación de conflictos y oportunidades en el paisaje. "
         },
         {
-          type: "table",
-          header: [
-            [{content: "", colSpan: 2},{content: "Enfoque de manejo", colSpan: 4}],
-            [{content: "Criterios de zonificación", colSpan: 2}, {content: "Preservación", colSpan: 1},
-              {content: "Conservación", colSpan: 1},
-              {content: "Restauración", colSpan: 1},
-              {content: "Aprovechamiento", colSpan: 1},
-              ]
-          ],
-          body: [
-            ["", "Sitios de alto valor cultural","✓","✓","✓","X"],
-            ["","Corredores biológicos", "✓", "✓", "✓", "X"],
-            ["","Importancia ecológica", "✓", "✓", "✓", "X"],
-            ["","Áreas protegidas", "✓", "✓", "✓", "X"],
-            ["","Ecosistemas sensibles", "", "", "", ""],
-            ["","Potencial productivo", "X", "X", "X", "Óptimo"],
-            ["","Degradación funcional del paisaje", "Muy bajo", "Bajo", "Medio - Muy Alto", "Medio - Muy Alto"],
-            ["","Vegetación primaria", "✓", "✓", "X", "X"],
-            ["","Vegetación secundaria arbórea", "✓", "✓", "X", "X"],
-            ["","Vegetación secundaria arbustiva", "X", "X", "✓", "✓"],
-            ["","Vegetación secundaria arbustiva", "X", "X", "✓", "✓"],
-            ["","Zonas agrícolas permanentes", "X", "X", "✓", "X"],
-            ["","Zonas agrícolas temporales", "X", "X", "✓", "✓"],
-            ["","Zonas ganaderas", "X", "X", "✓", "✓"],
-            ["","Pobreza", "Moderada - Extrema", "Moderada - Extrema", "Moderada - Extrema", "Moderada - Extrema"],
-            ["","Urbano", "X", "X", "X", "X"],
-          ],
+          type: "image",
+          src: ZonificacionTable,
+          width: "90%",
+          height: "auto",
+          caption:
+            "",
         },
         {
           type: "text",
