@@ -88,7 +88,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: " de los cuales ocho presentan condiciones óptimas para la producción de ",
-              color: "#000",
+              color: "#fff",
             },
             {
               type: "paragraph",
@@ -1057,7 +1057,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "De acuerdo al análisis tendencial a 100 años en la zona de estudio: \n",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1125,7 +1125,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "La tendencia al 2100 proyectan: \n",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1156,7 +1156,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "Así mismo, estas áreas presentan la mayor tendencia a pérdida, con \n",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1219,12 +1219,12 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "La modelación de los impactos del cambio climático en el potencial productivo de agave, se utilizaron los parámetros con los que se construyó el Atlas Nacional de Vulnerabilidad al Cambio Climático  (INECC, 2023). \n",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
               content: "Para la construcción del ANVCC, el INECC utilizó el modelo ",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1234,7 +1234,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "que consta de anomalías mensuales de 4 modelos de circulación general de la atmósfera que son:",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1244,7 +1244,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "HADGEM2-ES, MPI-ESM-LR, GFDL-CM3, así mismo considera tres horizontes de tiempo: \n",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
@@ -1261,7 +1261,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "Los escenarios muestran las anomalías en las temperaturas y los porcentajes de cambio en la precipitación, variables de los que dependen los sistemas productivos del agave.",
-              color: "#000"
+              color: "#fff"
             }
           ]
         }
@@ -1290,7 +1290,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "adaptándose a diversos suelos y pendientes.",
-              color: "#000"
+              color: "#fff"
             }
           ]
         },
@@ -1382,7 +1382,7 @@ export const dataPages = {
             {
               type: "paragraph",
               content: "mientras que ",
-              color: "#000"
+              color: "#fff"
             },
             {
               type: "paragraph",
